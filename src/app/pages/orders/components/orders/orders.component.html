@@ -1,0 +1,15 @@
+<app-order-filter [filter]="filter" (filterChange)="onFilterChange($event)"></app-order-filter>
+
+<app-order-bulk-actions
+  [selectedCount]="selectedOrders.length"
+  (printLabels)="onPrintLabels()"
+></app-order-bulk-actions>
+
+<app-order-list
+  [orders]="orders"
+  [total]="total"
+  [loading]="loading"
+  [filter]="filter"
+  (selectionChange)="onSelectionChange($event)"
+  (pageChange)="onPageChange($event)"
+></app-order-list>

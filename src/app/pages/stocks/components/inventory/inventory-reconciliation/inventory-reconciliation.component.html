@@ -1,0 +1,23 @@
+<div class="stock-reconciliation-head">
+  <div>
+    <h3>Сверка остатков</h3>
+    <p>
+      Физический остаток 1С минус заказы, которые точно появились после снимка 1С. Необъяснённое
+      повышение на маркетплейсе блокируется.
+    </p>
+  </div>
+  <span class="badge blue">Автозащита от перепродажи</span>
+</div>
+
+<div class="table-scroll stock-reconciliation-table">
+    <app-data-table
+    [columns]="reconciliationColumns"
+    [data]="items"
+    [totalRecords]="items.length"
+    [loading]="loading"
+    [rows]="50"
+    [selectionMode]="'none'"
+    [scrollHeight]="'410px'"
+    (rowClick)="openProduct.emit($event.offer_id)"
+  ></app-data-table>
+</div>

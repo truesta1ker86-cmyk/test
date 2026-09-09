@@ -1,0 +1,60 @@
+.filter-control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+
+    .filter-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .slider-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1976d2;
+      min-width: 40px;
+      text-align: center;
+      background: #e3f2fd;
+      padding: 2px 12px;
+      border-radius: 4px;
+    }
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #999;
+    padding: 0 2px;
+    margin-top: 2px;
+  }
+
+  .p-error {
+    color: #f44336;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  &.has-error {
+    :deep(.p-slider) {
+      border-color: #f44336;
+
+      .p-slider-handle {
+        border-color: #f44336;
+      }
+    }
+  }
+
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

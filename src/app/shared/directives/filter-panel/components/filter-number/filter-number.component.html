@@ -1,0 +1,40 @@
+<div class="filter-control" 
+     [class.has-error]="!!error" 
+     [class.disabled]="disabled">
+  
+  <label *ngIf="showLabel" class="filter-label" [for]="key">
+    {{ getDisplayLabel() }}
+    <span class="required" *ngIf="filterConfig?.validation">*</span>
+  </label>
+  
+  <p-input-number 
+    [id]="key"
+    [(ngModel)]="value"
+    (ngModelChange)="updateValue($event)"
+    [placeholder]="getPlaceholder()"
+    [min]="filterConfig?.min"
+    [max]="filterConfig?.max"
+    [step]="filterConfig?.step || 1"
+    [disabled]="disabled"
+    [showButtons]="true"
+    [buttonLayout]="'horizontal'"
+    [style]="{ width: '100%' }"
+    [inputStyle]="{ width: '100%' }"
+    [class.ng-invalid]="!!error"
+  >
+
+    <ng-template pTemplate="prefix">
+      <span *ngIf="prefix" class="input-prefix">{{ prefix }}</span>
+    </ng-template>
+    <ng-template pTemplate="suffix">
+      <span *ngIf="suffix" class="input-suffix">{{ suffix }}</span>
+    </ng-template>
+  </p-input-number>
+  
+  <div class="range-hint" *ngIf="filterConfig?.min !== undefined || filterConfig?.max !== undefined">
+    <span *ngIf="filterConfig?.min !== undefined">от {{ filterConfig?.min }}</span>
+    <span *ngIf="filterConfig?.max !== undefined">до {{ filterConfig?.max }}</span>
+  </div>
+  
+  <small *ngIf="error" class="p-error">{{ error }}</small>
+</div>

@@ -1,0 +1,92 @@
+<div class="card operation-table-shell workspace-card">
+  <div class="table-scroll workspace-table-scroll">
+    <app-data-table
+      [columns]="columns"
+      [data]="orders"
+      [totalRecords]="total"
+      [loading]="loading"
+      [rows]="filter.pageSize || 50"
+      [first]="((filter.page || 1) - 1) * (filter.pageSize || 50)"
+      [selection]="selectedOrders"
+      [selectionMode]="'multiple'"
+      [lazy]="true"
+      sortField="posting_number"
+      [sortOrder]="filter.sort === 'date_desc' ? -1 : 1"
+      (selectionChange)="onSelectionChange($event)"
+      (rowClick)="openDetail($event)"
+      [rowClickable]="true"
+      [emptyMessage]="'Заказов не найдено'"
+    >
+      <!-- Кастомные шаблоны для ячеек -->
+      <ng-template #cellTemplate let-row="row" let-column="column" let-value="value">
+        <!-- Колонка "Номер" -->
+        <ng-container *ngIf="column.field === 'posting_number'">
+          <span class="mono">{{ row.posting_number }}</span>
+        </ng-container>
+
+        <!-- Колонка "Схема" -->
+        <ng-container *ngIf="column.field === 'scheme'">
+          <span class="badge" [ngClass]="row.scheme === 'fbo' ? 'blue' : 'dim'">
+            {{ getSchemeLabel(row.scheme) }}
+          </span>
+        </ng-container>
+
+        <!-- Колонка "Статус" -->
+        <ng-container *ngIf="column.field === 'status'">
+          <span class="badge" [ngClass]="getStatusSeverity(row.status)">
+            {{ getStatusLabel(row.status) }}
+          </span>
+        </ng-container>
+
+        <!-- Колонка "Дата заказа" -->
+        <ng-container *ngIf="column.field === 'created_at'">
+          <span class="muted" style="font-size: 12px; white-space: nowrap">
+            {{ row.created_at | date: 'dd.MM.yyyy HH:mm' }}
+          </span>
+        </ng-container>
+
+        <!-- Колонка "Состав" -->
+        <ng-container *ngIf="column.field === 'items'">
+          <span class="muted" style="font-size: 12px">
+            <span *ngFor="let item of row.items; let last = last">
+              {{ item.offer_id }} × {{ item.quantity }}<span *ngIf="!last">, </span>
+            </span>
+          </span>
+        </ng-container>
+
+        <!-- Колонка "Сумма" -->
+        <ng-container *ngIf="column.field === 'total_price'">
+          <span class="num">{{ row.total_price }} {{ row.currency }}</span>
+        </ng-container>
+
+        <!-- Колонка "Действия" -->
+        <ng-container *ngIf="column.field === 'actions'">
+          <div class="order-row-actions">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-eye"
+              class="btn btn-ghost"
+              (click)="openDetail(row); $event.stopPropagation()"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-printer"
+              class="btn btn-ghost"
+              [disabled]="!canDownloadLabel(row)"
+              pTooltip="Скачать этикетку"
+              (click)="downloadLabel(row); $event.stopPropagation()"
+            ></button>
+          </div>
+        </ng-container>
+      </ng-template>
+    </app-data-table>
+  </div>
+</div>
+
+<app-order-detail-modal
+  [(visible)]="displayDetailModal"
+  [order]="selectedOrder"
+  (close)="displayDetailModal = false; selectedOrder = null"
+></app-order-detail-modal>

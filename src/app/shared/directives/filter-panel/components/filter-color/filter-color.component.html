@@ -1,0 +1,28 @@
+<!-- components/filter-color/filter-color.component.html -->
+<div class="filter-control" [class.has-error]="!!error" [class.disabled]="disabled">
+  <label *ngIf="showLabel" class="filter-label" [for]="key">
+    {{ getDisplayLabel() }}
+    <span class="required" *ngIf="filterConfig?.validation">*</span>
+  </label>
+
+  <div class="color-wrapper">
+    <p-colorPicker
+      [id]="key"
+      [(ngModel)]="value"
+      (ngModelChange)="updateValue($event)"
+      [disabled]="disabled"
+      [style]="{ width: '100%' }"
+      [class.ng-invalid]="!!error"
+    ></p-colorPicker>
+
+    <div
+      class="color-preview"
+      [style.background-color]="value || '#000000'"
+      [style.border-color]="error ? '#f44336' : '#d0d0d0'"
+    ></div>
+
+    <span class="color-hex">{{ value || '#000000' }}</span>
+  </div>
+
+  <small *ngIf="error" class="p-error">{{ error }}</small>
+</div>

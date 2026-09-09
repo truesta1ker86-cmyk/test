@@ -1,0 +1,283 @@
+:host::ng-deep {
+  /* ============ FILTER BAR ============ */
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--hair);
+    background: var(--surface);
+
+
+
+    .p-inputtext {
+        height: 36px;
+        padding: 0 10px;
+        border-radius: var(--control-radius);
+        border: 1px solid var(--control-border);
+        background: var(--control-bg, #F8FAFC);
+        font-size: 13px;
+        color: var(--text);
+        width: 100%;
+        min-width: 0;
+    
+        &::placeholder {
+          color: var(--muted);
+          opacity: 0.82;
+        }
+    
+        &:hover {
+          border-color: var(--control-border-hover);
+          background: var(--surface);
+        }
+    
+        &:focus {
+          outline: none;
+          border-color: var(--brand);
+          box-shadow: 0 0 0 3px var(--brand-soft);
+        }
+    
+        &:disabled {
+          border-color: var(--control-disabled-border);
+          background: var(--control-disabled-bg);
+          color: var(--faint);
+          cursor: not-allowed;
+        }
+      }
+    
+      // Стили для p-select (новый компонент вместо p-dropdown)
+      .p-select {
+        height: 36px;
+        border-radius: var(--control-radius);
+        border: 1px solid var(--control-border);
+        background: var(--control-bg, #F8FAFC);
+        font-size: 13px;
+        color: var(--text);
+        width: 100%;
+        min-width: 0;
+    
+        .p-select-label {
+          padding: 0 10px;
+          line-height: 34px; // чтобы текст был по центру
+        }
+    
+        .p-select-trigger {
+          width: 2.5rem;
+          color: var(--muted);
+        }
+    
+        &:hover {
+          border-color: var(--control-border-hover);
+          background: var(--surface);
+        }
+    
+        &:focus {
+          outline: none;
+          border-color: var(--brand);
+          box-shadow: 0 0 0 3px var(--brand-soft);
+        }
+    
+        &.p-disabled {
+          border-color: var(--control-disabled-border);
+          background: var(--control-disabled-bg);
+          color: var(--faint);
+          cursor: not-allowed;
+        }
+      }
+    
+      // Стили для p-dropdown (если вы всё ещё используете его, но рекомендуется заменить на p-select)
+      // Оставим на всякий случай для обратной совместимости
+      .p-dropdown {
+        height: 36px;
+        border-radius: var(--control-radius);
+        border: 1px solid var(--control-border);
+        background: var(--control-bg, #F8FAFC);
+        font-size: 13px;
+        color: var(--text);
+        width: 100%;
+        min-width: 0;
+    
+        .p-dropdown-label {
+          padding: 0 10px;
+          line-height: 34px;
+        }
+    
+        .p-dropdown-trigger {
+          width: 2.5rem;
+          color: var(--muted);
+        }
+    
+        &:hover {
+          border-color: var(--control-border-hover);
+          background: var(--surface);
+        }
+    
+        &:focus {
+          outline: none;
+          border-color: var(--brand);
+          box-shadow: 0 0 0 3px var(--brand-soft);
+        }
+    
+        &.p-disabled {
+          border-color: var(--control-disabled-border);
+          background: var(--control-disabled-bg);
+          color: var(--faint);
+          cursor: not-allowed;
+        }
+      }
+    
+      // Стили для p-checkbox (если используется в таблице)
+      .p-checkbox {
+        .p-checkbox-box {
+          border-radius: 4px;
+          border-color: var(--control-border);
+          background: var(--surface);
+          width: 16px;
+          height: 16px;
+    
+          &.p-highlight {
+            background: var(--brand);
+            border-color: var(--brand);
+          }
+    
+          &:hover {
+            border-color: var(--brand);
+          }
+        }
+      }
+  }
+
+  .filter-bar .fld-grp {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .filter-bar .fld-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .filter-bar .fld {
+    height: 36px;
+    padding: 0 10px;
+    border-radius: var(--control-radius);
+    border: 1px solid var(--control-border);
+    background: var(--control-bg, #f8fafc);
+    font-size: 13px;
+    color: var(--text);
+    min-width: 0;
+  }
+
+  .filter-bar .fld:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+  }
+
+  .filter-bar .fld::placeholder {
+    color: var(--muted);
+    opacity: 0.82;
+  }
+
+  .filter-bar .fld:hover {
+    border-color: var(--control-border-hover);
+    background: var(--surface);
+  }
+
+  .filter-bar .fld:disabled {
+    border-color: var(--control-disabled-border);
+    background: var(--control-disabled-bg);
+    color: var(--faint);
+    cursor: not-allowed;
+  }
+
+  /* Кнопки в фильтре */
+  .filter-bar .btn {
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    border-radius: var(--control-radius);
+    min-height: var(--control-height, 38px);
+    padding: 8px 16px;
+    font-size: 13px;
+    transition:
+      background var(--motion-fast) var(--ease),
+      border-color var(--motion-fast) var(--ease),
+      color var(--motion-fast) var(--ease),
+      box-shadow var(--motion-fast) var(--ease),
+      transform var(--motion-fast) var(--ease);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+  }
+
+  .filter-bar .btn-primary {
+    background: var(--brand);
+    color: white;
+  }
+  .filter-bar .btn-primary:hover {
+    background: var(--brand-hi, #2b7bff);
+  }
+  .filter-bar .btn-primary:active {
+    transform: scale(0.98);
+  }
+
+  .filter-bar .btn-ghost {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--hair-2);
+  }
+  .filter-bar .btn-ghost:hover {
+    border-color: var(--brand);
+    color: var(--brand);
+  }
+  .filter-bar .btn-ghost:active {
+    transform: scale(0.98);
+  }
+
+  .filter-bar .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .filter-bar .btn:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+  .filter-bar .btn:not(:disabled):active {
+    transform: translateY(0) scale(0.985);
+  }
+
+  /* Адаптивность для фильтра */
+  @media (max-width: 880px) {
+    .filter-bar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .filter-bar .fld-grp {
+      width: 100%;
+    }
+    .filter-bar .btn {
+      justify-content: center;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .filter-bar {
+      padding: 12px 14px;
+    }
+    .filter-bar .fld {
+      height: 34px;
+      font-size: 12px;
+    }
+    .filter-bar .fld-label {
+      font-size: 10px;
+    }
+  }
+}

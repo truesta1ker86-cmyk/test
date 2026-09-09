@@ -1,0 +1,121 @@
+<div *ngIf="product" class="stock-matrix-cell" [class.is-dirty]="isDirty">
+  <!-- Текущий остаток Ozon -->
+  <div class="stock-matrix-current-stock">
+    <span>На этом складе сейчас <small>Ozon API</small></span>
+    <b>{{ currentOzonQty !== null ? currentOzonQty + ' шт.' : 'нет данных Ozon' }}</b>
+  </div>
+
+  <!-- Элементы управления -->
+  <div class="stock-matrix-cell-grid">
+    <!-- Режим расчёта -->
+    <label class="stock-matrix-rule-field">
+      <span class="stock-matrix-field-label">Режим расчёта</span>
+      <select class="fld" (change)="onModeChange($event)">
+        <option value="share" [selected]="mode === 'share'">По физическому остатку 1С</option>
+        <option value="target" [selected]="mode === 'target'">
+          Фиксированное количество к показу
+        </option>
+      </select>
+    </label>
+
+    <!-- Доля / процент -->
+    <label class="stock-matrix-rule-field">
+      <span class="stock-matrix-field-label">{{ percentFieldLabel }}</span>
+      <input
+        class="fld"
+        type="number"
+        min="0"
+        step="0.01"
+        [value]="value"
+        (input)="onValueChange($event)"
+        [disabled]="mode === 'target' && !hasPositivePhysicalQty"
+        [attr.aria-label]="percentFieldAriaLabel + ' ' + product.offer_id"
+      />
+    </label>
+
+    <!-- Количество к показу -->
+    <label class="stock-matrix-rule-field">
+      <span class="stock-matrix-field-label">К показу, шт.</span>
+      <input
+        class="fld"
+        type="number"
+        min="0"
+        [step]="mode === 'target' ? 1 : roundingStep"
+        [value]="mode === 'target' ? value : displayedQty !== null ? displayedQty : ''"
+        (input)="onValueChange($event)"
+        [disabled]="mode !== 'target' && !hasPositivePhysicalQty"
+        placeholder="Количество"
+      />
+    </label>
+
+    <!-- Округление -->
+    <details class="stock-matrix-rounding">
+      <summary>
+        <span>Дополнительно</span>
+        <b>{{ roundingStep > 1 ? 'Округлять до ' + roundingStep + ' шт.' : 'Без округления' }}</b>
+      </summary>
+      <div class="stock-matrix-rounding-body">
+        <label class="stock-matrix-rule-field">
+          <span class="stock-matrix-field-label">Округлять до, шт.</span>
+          <input
+            class="fld"
+            type="number"
+            min="1"
+            step="1"
+            [value]="quantum"
+            (input)="onQuantumChange($event)"
+          />
+        </label>
+        <small>1 — без округления; результат всегда округляется вниз.</small>
+      </div>
+    </details>
+  </div>
+
+  <!-- Нижняя часть: баланс и статус -->
+  <div class="stock-matrix-cell-foot">
+    <div
+      class="stock-matrix-balance"
+      *ngIf="physicalQty !== null && physicalQty !== undefined; else noStock"
+    >
+      <span
+        >Остаток 1С для расчёта: <b>{{ physicalQty }} шт.</b></span
+      >
+      <span
+        >После доли этого склада:
+        <b>{{ displayedQty !== null ? physicalQty - displayedQty : '—' }} шт.</b></span
+      >
+      <small>Каждый склад считается независимо; остаток не вычитается из других складов.</small>
+    </div>
+    <ng-template #noStock>
+      <div class="stock-matrix-balance">
+        <span>Свободно до склада: нет снимка 1С</span>
+        <span>После склада: не рассчитано</span>
+        <small>Процент считается от общего физического остатка 1С.</small>
+      </div>
+    </ng-template>
+
+    <span>
+      <b>К показу: {{ displayedQty !== null ? displayedQty + ' шт.' : 'нет снимка 1С' }}</b>
+      ·
+      <ng-container *ngIf="isDirty">
+        {{
+          !isEnabled || displayedQty === 0
+            ? 'Будет скрыт после сохранения'
+            : displayedQty !== null
+              ? 'Будет показан после сохранения'
+              : 'Будет рассчитан после сохранения'
+        }}
+      </ng-container>
+      <ng-container *ngIf="!isDirty">
+        {{
+          isSaved
+            ? isEnabled && displayedQty !== 0
+              ? 'Сохранено'
+              : 'Не показывается'
+            : 'Сейчас не показывается'
+        }}
+      </ng-container>
+    </span>
+    <small>0 — не показывать на этом складе</small>
+  </div>
+</div>

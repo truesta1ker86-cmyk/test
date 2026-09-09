@@ -1,0 +1,40 @@
+<div class="filter-control" 
+     [class.has-error]="!!error" 
+     [class.disabled]="disabled">
+  
+  <label *ngIf="showLabel" class="filter-label" [for]="key">
+    {{ getDisplayLabel() }}
+    <span class="required" *ngIf="filterConfig?.validation">*</span>
+  </label>
+  
+  <p-select 
+    [id]="key"
+    [options]="filterConfig?.options || []"
+    optionLabel="label"
+    optionValue="value"
+    [(ngModel)]="value"
+    (ngModelChange)="updateValue($event)"
+    [placeholder]="getPlaceholder() || 'Выберите...'"
+    [showClear]="true"
+    [disabled]="disabled"
+    [style]="{ width: '100%' }"
+    [class.ng-invalid]="!!error"
+    [filter]="true"
+    [filterBy]="'label'"
+  >
+    <ng-template pTemplate="selectedItem">
+      <span *ngIf="value">{{ getSelectedLabel() }}</span>
+      <span *ngIf="!value" class="placeholder-text">
+        {{ getPlaceholder() || 'Выберите...' }}
+      </span>
+    </ng-template>
+    <ng-template let-option pTemplate="item">
+      <div class="dropdown-item">
+        <span>{{ option.label }}</span>
+        <span *ngIf="option.disabled" class="disabled-tag">(недоступно)</span>
+      </div>
+    </ng-template>
+  </p-select>
+  
+  <small *ngIf="error" class="p-error">{{ error }}</small>
+</div>

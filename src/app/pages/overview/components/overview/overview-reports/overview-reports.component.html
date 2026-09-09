@@ -1,0 +1,48 @@
+<div class="section">
+    <div class="section-label">Отчёты</div>
+    
+    <div class="card">
+      <div class="card-pad">
+        
+        <div class="export-row">
+          <div class="export-info">
+            <div class="export-title">Экспорт в Excel</div>
+            <div class="export-desc">Сводка, заказы, финансы, остатки, цены</div>
+          </div>
+          
+          <p-select 
+            [options]="exportPeriodOptions" 
+            [(ngModel)]="exportDays" 
+            optionLabel="label" 
+            optionValue="value">
+          </p-select>
+          
+          <button 
+            class="btn btn-primary" 
+            type="button" 
+            [disabled]="isExcelLoading"
+            (click)="downloadExcel()">
+            <span>{{ isExcelLoading ? 'Формирование...' : 'Скачать' }}</span>
+          </button>
+        </div>
+        
+        <div class="export-row backup-export-row">
+          <div class="export-info">
+            <div class="export-title">Полная резервная выгрузка</div>
+            <div class="export-desc">Все товары, настройки, 1С, характеристики и журнал — без токенов и API-ключей</div>
+          </div>
+          
+          <button 
+            class="btn btn-ghost" 
+            id="backupExportBtn" 
+            type="button" 
+            [disabled]="isBackupLoading"
+            (click)="downloadBackup()">
+            <span>{{ isBackupLoading ? 'Создание архива...' : 'Скачать резервную копию' }}</span>
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  

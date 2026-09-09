@@ -1,0 +1,12 @@
+<div class="allocation-actions bulk-action-bar" [class.is-dirty]="hasChanges">
+    <div class="bulk-action-status">
+      <span class="bulk-action-dot" aria-hidden="true"></span>
+      <strong>Изменений: {{ hasChanges ? 'есть' : 'нет' }}</strong>
+      <small>Нажмите «Проверить» для предпросмотра</small>
+    </div>
+    <div class="bulk-action-buttons">
+      <button class="btn btn-ghost" (click)="cancel.emit()" [disabled]="!hasChanges">Отменить</button>
+      <button class="btn btn-primary" (click)="preview.emit()" [disabled]="!hasChanges">Проверить</button>
+      <button class="btn btn-dark" (click)="apply.emit()" [disabled]="!hasChanges" data-live-action>Сохранить и отправить</button>
+    </div>
+  </div>

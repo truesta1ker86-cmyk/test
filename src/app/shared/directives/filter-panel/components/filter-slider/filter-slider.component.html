@@ -1,0 +1,29 @@
+<div class="filter-control" 
+     [class.has-error]="!!error" 
+     [class.disabled]="disabled">
+  
+  <div class="slider-header">
+    <label *ngIf="showLabel" class="filter-label">
+      {{ getDisplayLabel() }}
+    </label>
+    <span class="slider-value">{{ displayValue }}</span>
+  </div>
+  
+  <p-slider 
+    [(ngModel)]="value"
+    (ngModelChange)="updateValue($event)"
+    [min]="filterConfig?.min || 0"
+    [max]="filterConfig?.max || 100"
+    [step]="filterConfig?.step || 1"
+    [disabled]="disabled"
+    [style]="{ width: '100%' }"
+    [class.ng-invalid]="!!error"
+  ></p-slider>
+  
+  <div class="slider-labels">
+    <span>{{ filterConfig?.min || 0 }}</span>
+    <span>{{ filterConfig?.max || 100 }}</span>
+  </div>
+  
+  <small *ngIf="error" class="p-error">{{ error }}</small>
+</div>

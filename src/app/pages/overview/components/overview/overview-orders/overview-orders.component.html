@@ -1,0 +1,88 @@
+<div class="section">
+    <div class="section-label">Последние заказы</div>
+    
+    <div class="card">
+      <div class="table-scroll">
+        
+        <div class="p-component p-datatable operation-table-wrapper">
+          <div class="p-datatable-table-container">
+            <table class="p-datatable-table operation-table" role="table"> 
+              <thead class="p-datatable-thead" role="rowgroup">
+                <tr role="row">
+                  <th (click)="sort('id')" class="sortable-th" role="columnheader">
+                    Номер 
+                    <span class="sort-icon">
+                      @if (currentSortColumn() === 'id') {
+                        {{ isAscending() ? '↑' : '↓' }}
+                      } @else { ↕ }
+                    </span>
+                  </th>
+                  <th (click)="sort('status')" class="sortable-th" role="columnheader">
+                    Статус 
+                    <span class="sort-icon">
+                      @if (currentSortColumn() === 'status') {
+                        {{ isAscending() ? '↑' : '↓' }}
+                      } @else { ↕ }
+                    </span>
+                  </th>
+                  <th (click)="sort('sku')" class="sortable-th" role="columnheader">
+                    Товары 
+                    <span class="sort-icon">
+                      @if (currentSortColumn() === 'sku') {
+                        {{ isAscending() ? '↑' : '↓' }}
+                      } @else { ↕ }
+                    </span>
+                  </th>
+                  <th (click)="sort('amount')" class="sortable-th" role="columnheader">
+                    Сумма 
+                    <span class="sort-icon">
+                      @if (currentSortColumn() === 'amount') {
+                        {{ isAscending() ? '↑' : '↓' }}
+                  } @else { ↕ }
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              
+              <tbody class="p-datatable-tbody" role="rowgroup">
+
+                @for (order of orders(); track order.id) {
+                  <tr class="row" role="row">
+                    <td role="cell">
+                      <span class="mono">{{ order.id }}</span>
+                    </td>
+                    <td role="cell">
+                      <span class="badge" [ngClass]="{
+                        'green': order.status === 'Доставлен',
+                        'red': order.status === 'Отменён',
+                        'amber': order.status === 'В пути'
+                      }">{{ order.status }}</span>
+                    </td>
+                    <td role="cell">
+                      <span class="muted-sku">{{ order.sku }}</span>
+                    </td>
+                    <td role="cell">
+                      <span class="num">
+                        @if (order.amount) {
+                          {{ order.amount | number:'1.0-0':'ru' }} ₽
+                        } @else {
+                          —
+                        }
+                      </span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr role="row">
+                    <td colspan="4" class="empty-cell" role="cell">Заказы не найдены</td>
+                  </tr>
+                }
+              </tbody>
+              
+            </table>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  

@@ -1,0 +1,34 @@
+<div class="card" [class.is-loading]="isLoading">
+  <div class="card-pad">
+    
+    <div class="chart-controls">
+      <p-select 
+        [options]="daysOptions" 
+        [(ngModel)]="dynDays" 
+        optionLabel="label" 
+        optionValue="value"
+        (onChange)="onDaysChange()">
+      </p-select>
+      
+      <div class="chart-hint">
+        Только доставленные заказы; отмены и заказы в пути исключены
+      </div>
+      
+      <div id="dynSummary" class="chart-summary">
+        Всего: {{ summary.totalCount }} шт · {{ summary.totalAmount | number:'1.0-0':'ru' }} ₽ · пик: {{ summary.peakDate }} ({{ summary.peakCount }} шт)
+      </div>
+    </div>
+    
+    <!-- Динамический контейнер графика PrimeNG Chart -->
+    <div class="chart-wrapper" [style.height]="chartHeight">
+      <p-chart 
+        *ngIf="chartData"
+        type="line" 
+        [data]="chartData" 
+        [options]="chartOptions" 
+        [height]="chartHeight">
+      </p-chart>
+    </div>
+    
+  </div>
+</div>

@@ -1,0 +1,210 @@
+<div class="filter-panel" 
+     [class.layout-grid]="layout === 'grid'" 
+     [class.layout-inline]="layout === 'inline'" 
+     [class.layout-vertical]="layout === 'vertical'">
+  
+  <!-- Заголовок -->
+  <div class="panel-header" *ngIf="showHeader">
+    <div class="header-left">
+      <h3 class="panel-title">
+        <i class="pi pi-filter"></i>
+        {{ title }}
+      </h3>
+
+      <p-badge 
+        *ngIf="activeCount() > 0"
+        [value]="activeCount()"
+        severity="info"
+        styleClass="filter-badge"
+      ></p-badge>
+    </div>
+    
+    <div class="header-actions">
+      <button 
+        pButton
+        type="button"
+        *ngIf="showReset"
+        (click)="resetAllFilters()"
+        [disabled]="!hasChanges() || isResetting()"
+        label="Сбросить все"
+        icon="pi pi-refresh"
+        class="p-button-secondary p-button-sm"
+        [loading]="isResetting()"
+      ></button>
+    </div>
+  </div>
+
+  <!-- Тело с фильтрами -->
+  <div class="panel-body" [style.grid-template-columns]="gridTemplate">
+    
+    <!-- ГРУППЫ (кроме дефолтной) -->
+    <ng-container *ngFor="let group of groupsWithoutDefault()">
+      <div class="filter-group">
+        <div class="group-title">
+          <i [class]="getGroupIcon(group.key)"></i>
+          {{ group.name }}
+        </div>
+        <div class="group-items">
+          
+          <!-- Текстовый фильтр -->
+          <ng-container *ngFor="let config of group.filters">
+            <app-filter-text
+              *ngIf="config.type === 'text'"
+              [key]="config.key"
+              [showLabel]="true"
+              [config]="config"
+            ></app-filter-text>
+          </ng-container>
+          
+          <!-- Числовой фильтр -->
+          <ng-container *ngFor="let config of group.filters">
+            <app-filter-number
+              *ngIf="config.type === 'number'"
+              [key]="config.key"
+              [showLabel]="true"
+              [config]="config"
+            ></app-filter-number>
+          </ng-container>
+          
+          <!-- Селект -->
+          <ng-container *ngFor="let config of group.filters">
+            <app-filter-select
+              *ngIf="config.type === 'select'"
+              [key]="config.key"
+              [showLabel]="true"
+              [config]="config"
+            ></app-filter-select>
+          </ng-container>
+          
+          <!-- Мультиселект -->
+          <ng-container *ngFor="let config of group.filters">
+            <app-filter-multiselect
+              *ngIf="config.type === 'multiselect'"
+              [key]="config.key"
+              [showLabel]="true"
+              [config]="config"
+            ></app-filter-multiselect>
+          </ng-container>
+          
+          <!-- Дата -->
+          <ng-container *ngFor="let config of group.filters">
+            <app-filter-date
+              *ngIf="config.type === 'date'"
+              [key]="config.key"
+              [showLabel]="true"
+              [config]="config"
+            ></app-filter-date>
+          </ng-container>
+          
+          <!-- Диапазон дат -->
+          <ng-container *ngFor="let config of group.filters">
+            <app-filter-daterange
+              *ngIf="config.type === 'daterange'"
+              [key]="config.key"
+              [showLabel]="true"
+              [config]="config"
+            ></app-filter-daterange>
+          </ng-container>
+          
+          <!-- Булевый -->
+          <ng-container *ngFor="let config of group.filters">
+            <app-filter-boolean
+              *ngIf="config.type === 'boolean'"
+              [key]="config.key"
+              [showLabel]="true"
+              [config]="config"
+            ></app-filter-boolean>
+          </ng-container>
+          
+          <!-- Слайдер -->
+          <ng-container *ngFor="let config of group.filters">
+            <app-filter-slider
+              *ngIf="config.type === 'slider'"
+              [key]="config.key"
+              [showLabel]="true"
+              [config]="config"
+            ></app-filter-slider>
+          </ng-container>
+          
+          <!-- Цвет -->
+          <ng-container *ngFor="let config of group.filters">
+            <app-filter-color
+              *ngIf="config.type === 'color'"
+              [key]="config.key"
+              [showLabel]="true"
+              [config]="config"
+            ></app-filter-color>
+          </ng-container>
+          
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="filter-group" *ngIf="defaultGroup().length > 0">
+      <div class="group-items">
+        
+        <!-- Текстовый фильтр -->
+        <ng-container *ngFor="let config of defaultGroup()">
+          <app-filter-text
+            *ngIf="config.type === 'text'"
+            [key]="config.key"
+            [showLabel]="true"
+            [config]="config"
+          ></app-filter-text>
+        </ng-container>
+        
+        <!-- Числовой фильтр -->
+        <ng-container *ngFor="let config of defaultGroup()">
+          <app-filter-number
+            *ngIf="config.type === 'number'"
+            [key]="config.key"
+            [showLabel]="true"
+            [config]="config"
+          ></app-filter-number>
+        </ng-container>
+        
+        <!-- Селект -->
+        <ng-container *ngFor="let config of defaultGroup()">
+          <app-filter-select
+            *ngIf="config.type === 'select'"
+            [key]="config.key"
+            [showLabel]="true"
+            [config]="config"
+          ></app-filter-select>
+        </ng-container>
+        
+        <!-- Булевый -->
+        <ng-container *ngFor="let config of defaultGroup()">
+          <app-filter-boolean
+            *ngIf="config.type === 'boolean'"
+            [key]="config.key"
+            [showLabel]="true"
+            [config]="config"
+          ></app-filter-boolean>
+        </ng-container>
+        
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="panel-footer" *ngIf="showApply">
+    <div class="footer-left">
+      <span class="filter-info" *ngIf="activeCount() > 0">
+        Выбрано фильтров: <strong>{{ activeCount() }}</strong>
+      </span>
+    </div>
+    <div class="footer-right">
+      <button 
+        pButton
+        type="button"
+        (click)="applyFilters()"
+        [disabled]="activeCount() === 0"
+        label="Применить"
+        icon="pi pi-check"
+        class="p-button-primary"
+      ></button>
+    </div>
+  </div>
+  
+</div>

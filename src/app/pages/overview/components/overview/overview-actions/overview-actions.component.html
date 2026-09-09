@@ -1,0 +1,22 @@
+<div class="overview-actions">
+  
+    <button 
+      class="btn btn-ghost" 
+      id="preflightBtn" 
+      type="button" 
+      [disabled]="isProcessing()"
+      (click)="runPreflight()">
+      <span>{{ isPreflightLoading() ? 'Проверка...' : 'Проверить готовность' }}</span>
+    </button>
+    
+    <button 
+      class="btn btn-dark" 
+      id="syncBtn" 
+      type="button" 
+      [disabled]="isProcessing()"
+      (click)="runSync()">
+      <span>{{ isSyncLoading() ? 'Синхронизация...' : 'Синхронизировать' }}</span>
+    </button>
+  
+  </div>
+  

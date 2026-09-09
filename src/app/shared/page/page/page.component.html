@@ -1,0 +1,74 @@
+<app-icons-sprite></app-icons-sprite>
+
+<div class="layout" [class.collapsed]="isSidebarCollapsed">
+  
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <div class="logo">
+        <div class="logo-mark">O1</div>
+        <div class="logo-text">Маркетплейс ↔ 1С<small>Интеграция</small></div>
+      </div>
+      <button
+        class="sidebar-collapse"
+        id="sidebarCollapse"
+        type="button"
+        [attr.aria-label]="isSidebarCollapsed ? 'Развернуть боковое меню' : 'Свернуть боковое меню'"
+        [attr.aria-expanded]="!isSidebarCollapsed"
+        data-sidebar-tooltip="Свернуть боковое меню"
+        (click)="toggleSidebarCollapsed()"
+        title="Свернуть боковое меню"
+      >
+        <svg class="icon-sm" aria-hidden="true">
+          <!-- Динамическая иконка или разворот CSS-стилями -->
+          <use href="#i-panel-toggle"></use>
+        </svg>
+      </button>
+    </div>
+
+    <app-navigation></app-navigation>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="main-head">
+      <div class="main-head-leading">
+        <button class="mobile-burger">
+          <svg class="icon-sm"><use href="#i-menu"></use></svg>
+        </button>
+        <div class="main-head-copy">
+          <h2>{{ currentTitle }}</h2>
+          @if (currentSubtitle) {
+            <div class="sub">{{ currentSubtitle }}</div>
+          }
+        </div>
+      </div>
+      <div class="main-head-right">
+        <div id="pageActions"></div>
+        <button
+          class="header-ai-balance"
+          id="headerAiBalance"
+          type="button"
+          (click)="navigateToBilling()"
+          aria-label="Открыть AI-баланс"
+        >
+          <svg class="icon-sm" aria-hidden="true"><use href="#i-wallet"></use></svg>
+          <span class="header-ai-balance-copy">
+            <small>AI-баланс</small>
+            <strong id="headerAiBalanceValue">238,00 ₽</strong>
+          </span>
+          <span
+            class="header-ai-balance-pending"
+            id="headerAiBalancePending"
+            hidden=""
+            aria-label="Есть оплата на проверке"
+          ></span>
+        </button>
+      </div>
+    </div>
+
+    <main class="page-content">
+      <ng-content></ng-content>
+    </main>
+  </div>
+</div>

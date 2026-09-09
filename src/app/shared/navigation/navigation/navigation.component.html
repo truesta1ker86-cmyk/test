@@ -1,0 +1,64 @@
+<nav class="nav">
+    @for (group of menuGroups; track group.title) {
+      <div class="nav-label" [style.margin-top.px]="group.marginTop || null">
+        {{ group.title }}
+      </div>
+  
+      @for (item of group.items; track item.tab) {
+        @if (item.children) {
+          <div class="nav-stock-group" [class.open]="isGroupExpanded(item.tab)">
+            <button
+              type="button"
+              class="nav-item"
+              [class.active]="isRouteActive(item.tab)"
+              [attr.data-tab]="item.tab"
+              [attr.data-sidebar-tooltip]="item.tooltip"
+              [attr.aria-expanded]="isGroupExpanded(item.tab)"
+              (click)="toggleGroup(item.tab)"
+            >
+              <svg class="icon-sm"><use [attr.href]="'#' + item.icon"></use></svg>
+              <span class="nav-item-label">{{ item.label }}</span>
+              @if (item.count !== undefined) {
+                <span class="count">{{ item.count }}</span>
+              }
+              <span class="nav-stock-chevron" aria-hidden="true">›</span>
+            </button>
+  
+            <div class="nav-stock-children" [attr.aria-hidden]="!isGroupExpanded(item.tab)">
+              <div class="nav-stock-children-inner">
+                @for (child of item.children; track child.workspace) {
+                  <button
+                    type="button"
+                    class="nav-stock-child"
+                    [routerLink]="['/', item.tab, child.workspace]"
+                    routerLinkActive="active"
+                  >
+                    {{ child.label }}
+                    @if (child.count !== undefined) {
+                      <span class="nav-stock-child-count">{{ child.count }}</span>
+                    }
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        } @else {
+          <button
+            type="button"
+            class="nav-item"
+            [routerLink]="['/', item.tab]"
+            routerLinkActive="active"
+            [attr.data-tab]="item.tab"
+            [attr.data-sidebar-tooltip]="item.tooltip"
+          >
+            <svg class="icon-sm"><use [attr.href]="'#' + item.icon"></use></svg>
+            <span class="nav-item-label">{{ item.label }}</span>
+            @if (item.count !== undefined) {
+              <span class="count">{{ item.count }}</span>
+            }
+          </button>
+        }
+      }
+    }
+  </nav>
+  

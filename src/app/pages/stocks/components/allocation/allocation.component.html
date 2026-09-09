@@ -1,0 +1,198 @@
+<section class="card stock-matrix" id="stockAllocationMatrix">
+  <div class="stock-matrix-controls">
+    <!-- ===== ПАНЕЛЬ АВТОМАТИЗАЦИИ ===== -->
+    <details class="stock-automation-panel">
+      <summary>
+        Фоновое удержание · ничего не нужно отдельно включать
+        <span class="stock-automation-state">Ожидает разрешения сервера</span>
+      </summary>
+      <div class="stock-automation-body">
+        <div class="stock-automation-toggle">
+          <span
+            ><b>Без дополнительных переключателей</b
+            ><small>Сохранённые правила поддерживаются автоматически.</small></span
+          >
+        </div>
+        <div class="stock-automation-actions">
+          <button type="button" class="btn btn-primary" hidden>Возобновить</button>
+          <button type="button" class="btn btn-danger" (click)="stopAutomation()">
+            Остановить сейчас
+          </button>
+        </div>
+        <div class="stock-automation-freshness">
+          <span>Интервал: 30 сек.</span>
+          <span>Цикл: {{ currentTimestamp | date: 'dd.MM.yyyy, HH:mm:ss' }}</span>
+        </div>
+      </div>
+    </details>
+
+    <!-- ===== ЗАГОЛОВОК ===== -->
+    <div class="stock-matrix-head">
+      <div>
+        <h3>Разделить остаток между складами</h3>
+        <p>
+          Доля распределяется из единого пула базовых единиц SKU 1С между всеми упаковками и
+          складами. К показу идут только полные упаковки.
+        </p>
+      </div>
+    </div>
+
+    <!-- ===== СТРОКА ПОИСКА И ФИЛЬТР ===== -->
+    <div class="stock-matrix-primarybar">
+      <div class="fld-grp stock-matrix-search">
+        <label class="fld-label">Артикул или SKU</label>
+        <input
+          class="fld"
+          type="search"
+          [(ngModel)]="searchOffer"
+          placeholder="Артикул маркетплейса или 1С"
+        />
+      </div>
+      <div class="fld-grp stock-matrix-search">
+        <label class="fld-label">Наименование</label>
+        <input
+          class="fld"
+          type="search"
+          list="nameSuggestions"
+          [(ngModel)]="searchName"
+          (input)="onNameSearchInput($any($event.target).value)"
+          (focus)="onNameSearchFocus()"
+          placeholder="Начните вводить название…"
+        />
+        <datalist id="nameSuggestions">
+          <option *ngFor="let name of nameSuggestions" [value]="name"></option>
+        </datalist>
+      </div>
+      <div class="stock-matrix-filter-menu">
+        <button type="button" class="stock-filter-trigger" (click)="toggleFilterPopover()">
+          <svg><use href="#i-filter" /></svg>
+          <span class="stock-filter-caret"></span>
+        </button>
+        <!-- ПОПАП ФИЛЬТРОВ -->
+        <div class="stock-filter-popover" [hidden]="!filterPopoverVisible">
+          <div class="stock-filter-popover-head">
+            <span>Фильтры товаров</span>
+            <small>категория · тип · подгруппа · бренд · серия · длина · цвет · упаковка</small>
+          </div>
+          <app-allocation-filter
+            [filter]="filter"
+            [categories]="categories"
+            [types]="types"
+            [brands]="brands"
+            [groups]="groups"
+            [series]="series"
+            [lengths]="lengths"
+            [colors]="colors"
+            [packages]="packages"
+            (facetChange)="onFacetChange($event.field, $event.value)"
+            (filterChange)="onFilterChange($event)"
+          ></app-allocation-filter>
+          <div class="stock-matrix-filter-actions">
+            <button class="btn btn-ghost" (click)="clearSelection(); closeFilterPopover()">
+              Снять выбор
+            </button>
+            <button class="btn btn-primary" (click)="selectAllFiltered(); closeFilterPopover()">
+              Выбрать найденные
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ВЫБОР СКЛАДОВ И НАСТРОЙКИ ===== -->
+    <div class="stock-matrix-warehouse-bar">
+      <app-warehouse-picker
+        [warehouses]="(warehouses$ | async) || []"
+        [selectedWarehouseIds]="selectedWarehouseIds"
+        (warehousesChange)="onWarehousesChange($event)"
+      ></app-warehouse-picker>
+
+      <app-allocation-warehouse-settings
+        [warehouses]="(warehouses$ | async) || []"
+        [selectedWarehouses]="selectedWarehouseIds"
+        [settings]="warehouseSettings"
+        (warehousesChange)="onWarehousesChange($event)"
+        (settingsChange)="onWarehouseSettingsChange($event)"
+        (globalShareApply)="onGlobalShareApply($event)"
+        (applyToSelected)="onApplyToSelected($event)"
+      ></app-allocation-warehouse-settings>
+    </div>
+
+    <!-- ===== СТРОКА ИТОГОВ ===== -->
+    <div class="stock-matrix-summary">
+      <span>Товаров: {{ matrixData.length }}</span>
+      <span class="stock-matrix-source-state" [class.is-ready]="isOneCReady">{{ oneCStatus }}</span>
+    </div>
+  </div>
+
+  <!-- ===== МАССОВЫЕ ДЕЙСТВИЯ ===== -->
+  <div class="stock-matrix-actions bulk-action-bar">
+    <div class="bulk-action-status">
+      <span class="bulk-action-dot"></span>
+      <strong>Выбрано: {{ selectedCount }}</strong>
+      <small>Изменений: {{ changedCount }}</small>
+    </div>
+    <div class="bulk-action-buttons">
+      <button class="btn btn-ghost" (click)="openExpectedStock()">Ожидаемая поставка</button>
+      <button class="btn btn-ghost" (click)="cancelChanges()">Отменить</button>
+      <button class="btn btn-primary" (click)="previewChanges()" [disabled]="!hasChanges">
+        Проверить
+      </button>
+      <button class="btn btn-dark" (click)="applyChanges()" [disabled]="!hasChanges">
+        Сохранить и отправить
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== МАТРИЦА ===== -->
+  <div class="stock-matrix-scroll">
+    <app-allocation-matrix
+      [products]="matrixData"
+      [warehouses]="(warehouses$ | async) || []"
+      [selectedWarehouses]="selectedWarehouseIds"
+      [stocks]="stocks"
+      [rows]="rows"
+      [categories]="categories"
+      [selectedCategory]="filter.category"
+      [searchOffer]="searchOffer"
+      [searchName]="searchName"
+      (categoryChange)="onCategoryChange($event)"
+      (selectionChange)="onSelectionChange($event)"
+      (dataChange)="onMatrixDataChange()"
+    ></app-allocation-matrix>
+  </div>
+
+  <!-- ===== РЕЗУЛЬТАТ ПРЕДПРОСМОТРА ===== -->
+  <div class="stock-matrix-output">
+    <div *ngIf="previewResult" class="preview-result">
+      <div class="warn-pill" [class.success]="previewResult.success">
+        {{ previewResult.message }}
+      </div>
+      <div *ngIf="previewResult.items?.length" class="preview-details">
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th>Артикул</th>
+              <th>Склад</th>
+              <th>Было</th>
+              <th>Станет</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of previewResult.items | slice: 0 : 10">
+              <td>{{ item.offer_id }}</td>
+              <td>{{ item.warehouse_id }}</td>
+              <td>{{ item.before }}</td>
+              <td>
+                <b>{{ item.after }}</b>
+              </td>
+            </tr>
+            <tr *ngIf="previewResult.items.length > 10">
+              <td colspan="4">И ещё {{ previewResult.items.length - 10 }}…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

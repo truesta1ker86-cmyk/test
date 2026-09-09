@@ -1,0 +1,18 @@
+<div class="bulk-bar" *ngIf="selectedCount > 0">
+  <span class="bulk-info">
+    <i class="pi pi-check-circle"></i>
+    <strong>{{ selectedCount }} выбрано</strong>
+    <span class="hint">Отметьте готовые FBS-заказы</span>
+  </span>
+  <div class="bulk-actions">
+    <button pButton label="Выбрать доступные" icon="pi pi-check" class="p-button-outlined"></button>
+    <button pButton label="Снять" icon="pi pi-times" class="p-button-outlined"></button>
+    <button
+      pButton
+      label="Этикетки PDF"
+      icon="pi pi-print"
+      (click)="printLabels.emit()"
+      [disabled]="selectedCount === 0"
+    ></button>
+  </div>
+</div>

@@ -1,0 +1,40 @@
+<p-dialog
+  [(visible)]="visible"
+  [header]="'Заказ ' + (order?.posting_number || '')"
+  [modal]="true"
+  [style]="{ width: '600px' }"
+  (onHide)="close.emit()"
+>
+  <div *ngIf="order && actions">
+    <div class="order-summary">
+      <div><strong>Схема:</strong> {{ order.scheme | uppercase }}</div>
+      <div>
+        <strong>Статус маркетплейса:</strong>
+        <p-tag [value]="marketplaceStatus" [severity]="statusSeverity"></p-tag>
+      </div>
+      <div><strong>Состав:</strong></div>
+      <ul>
+        <li *ngFor="let item of order.items">
+          {{ item.offer_id }} × {{ item.quantity }}
+        </li>
+      </ul>
+    </div>
+    <div class="order-actions-list">
+      <p>{{ notice }}</p>
+      <div *ngFor="let action of actions" class="action-item">
+        <div class="action-info">
+          <strong>{{ action.label }}</strong>
+          <p>{{ action.description }}</p>
+        </div>
+        <button pButton
+                [disabled]="!action.can_execute"
+                class="p-button-primary"
+                (click)="executeAction(action.code)"
+        >{{action.label}}</button>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Закрыть" icon="pi pi-times" class="p-button-text" (click)="close.emit()"></button>
+  </ng-template>
+</p-dialog>

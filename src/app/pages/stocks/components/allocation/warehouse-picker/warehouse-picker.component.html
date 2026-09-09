@@ -1,0 +1,91 @@
+<div class="stock-matrix-warehouse-picker">
+  <span class="stock-matrix-step"> <b>1</b> Выберите склад, где показывать товар </span>
+
+  <div class="stock-matrix-warehouse-add">
+    <div class="stock-matrix-warehouse-menu">
+      <button
+        type="button"
+        class="stock-matrix-warehouse-trigger"
+        [disabled]="!hasWarehouses"
+        [attr.aria-expanded]="popoverOpen"
+        (click)="togglePopover()"
+      >
+        <svg aria-hidden="true"><use href="#i-warehouse" /></svg>
+        <span class="stock-matrix-warehouse-trigger-copy">
+          <strong>{{ triggerLabel }}</strong>
+          <small>{{ triggerMeta }}</small>
+        </span>
+        <span class="stock-matrix-warehouse-caret" aria-hidden="true"></span>
+      </button>
+
+      <div class="stock-matrix-warehouse-popover" *ngIf="popoverOpen" role="dialog">
+        <div class="stock-matrix-warehouse-popover-head">
+          <div>
+            <strong>Склады маркетплейса</strong>
+            <small>Можно выбрать несколько складов сразу</small>
+          </div>
+          <button type="button" class="stock-matrix-warehouse-close" (click)="closePopover()">
+            <svg aria-hidden="true"><use href="#i-x" /></svg>
+          </button>
+        </div>
+
+        <div class="stock-matrix-warehouse-options" role="group">
+          <label
+            class="stock-matrix-warehouse-option"
+            [class.is-added]="isWarehouseAdded(w.warehouse_id)"
+            [class.is-limited]="!canAddMore && !isWarehouseAdded(w.warehouse_id)"
+            *ngFor="let w of warehouses"
+          >
+            <input
+              type="checkbox"
+              [value]="w.warehouse_id"
+              [checked]="isWarehouseSelected(w.warehouse_id) || isWarehouseAdded(w.warehouse_id)"
+              [disabled]="
+                isWarehouseAdded(w.warehouse_id) ||
+                (!canAddMore && !isWarehouseAdded(w.warehouse_id))
+              "
+              (change)="toggleWarehouseSelection(w.warehouse_id, $any($event.target).checked)"
+            />
+            <span class="stock-matrix-warehouse-option-copy">
+              <strong [title]="w.warehouse_name">{{ w.warehouse_name }}</strong>
+              <span class="stock-matrix-warehouse-option-meta">
+                <span class="stock-matrix-warehouse-scheme">{{
+                  getWarehouseScheme(w.warehouse_id)
+                }}</span>
+                <span *ngIf="isWarehouseAdded(w.warehouse_id)" class="stock-matrix-warehouse-added">
+                  <svg aria-hidden="true"><use href="#i-check" /></svg> Уже добавлен
+                </span>
+                <span
+                  *ngIf="!canAddMore && !isWarehouseAdded(w.warehouse_id)"
+                  class="stock-matrix-warehouse-limited"
+                >
+                  Достигнут лимит (12)
+                </span>
+              </span>
+            </span>
+          </label>
+          <div *ngIf="!hasWarehouses" class="stock-matrix-warehouse-empty">
+            Склады маркетплейса не найдены
+          </div>
+        </div>
+
+        <div class="stock-matrix-warehouse-popover-foot">
+          <span>{{ statusText }}</span>
+          <span>До 12 складов</span>
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-ghost"
+      [disabled]="isAddButtonDisabled"
+      (click)="addSelectedWarehouses()"
+    >
+      <svg class="icon-sm"><use href="#i-plus" /></svg>
+      <span data-stock-matrix-add-label>
+        {{ selectedCount > 0 ? 'Добавить выбранные · ' + selectedCount : 'Добавить выбранные' }}
+      </span>
+    </button>
+  </div>
+</div>

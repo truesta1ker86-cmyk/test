@@ -1,0 +1,86 @@
+<div class="allocation-filter">
+  <div class="fld-grp">
+    <label class="fld-label">Категория</label>
+    <select class="fld" (change)="onFieldChange('category', $any($event.target).value)">
+      <option value="">Все категории</option>
+      <option *ngFor="let cat of categories" [value]="cat.value" [selected]="cat.value === tempFilter.category">
+        {{ cat.label }}
+      </option>
+    </select>
+  </div>
+
+  <div class="fld-grp">
+    <label class="fld-label">Тип товара</label>
+    <select class="fld" (change)="onFieldChange('type', $any($event.target).value)">
+      <option value="">Все типы</option>
+      <option *ngFor="let t of types" [value]="t.value" [selected]="t.value === tempFilter.type">
+        {{ t.label }}
+      </option>
+    </select>
+  </div>
+
+  <div class="fld-grp" *ngIf="groups.length">
+    <label class="fld-label">Подгруппа</label>
+    <select class="fld" (change)="onFieldChange('group', $any($event.target).value)">
+      <option value="">Все подгруппы</option>
+      <option *ngFor="let g of groups" [value]="g" [selected]="g === tempFilter.group">
+        {{ g }}
+      </option>
+    </select>
+  </div>
+
+  <div class="fld-grp" *ngIf="brands.length">
+    <label class="fld-label">Бренд</label>
+    <select class="fld" (change)="onFieldChange('brand', $any($event.target).value)">
+      <option value="">Все бренды</option>
+      <option *ngFor="let b of brands" [value]="b" [selected]="b === tempFilter.brand">
+        {{ b }}
+      </option>
+    </select>
+  </div>
+
+  <div class="fld-grp" *ngIf="series.length">
+    <label class="fld-label">Серия</label>
+    <select class="fld" (change)="onFieldChange('series', $any($event.target).value)">
+      <option value="">Все серии</option>
+      <option *ngFor="let s of series" [value]="s" [selected]="s === tempFilter.series">
+        {{ s }}
+      </option>
+    </select>
+  </div>
+
+  <div class="fld-grp" *ngIf="lengths.length">
+    <label class="fld-label">Длина</label>
+    <select class="fld" (change)="onFieldChange('length', $any($event.target).value)">
+      <option value="">Любая длина</option>
+      <option *ngFor="let l of lengths" [value]="l" [selected]="l === tempFilter.length">
+        {{ l }}
+      </option>
+    </select>
+  </div>
+
+  <div class="fld-grp" *ngIf="colors.length">
+    <label class="fld-label">Цвет</label>
+    <select class="fld" (change)="onFieldChange('color', $any($event.target).value)">
+      <option value="">Все цвета</option>
+      <option *ngFor="let c of colors" [value]="c" [selected]="c === tempFilter.color">
+        {{ c }}
+      </option>
+    </select>
+  </div>
+
+  <div class="fld-grp" *ngIf="packages.length">
+    <label class="fld-label">Упаковка</label>
+    <select class="fld" (change)="onFieldChange('package', $any($event.target).value)">
+      <option value="">Любая упаковка</option>
+      <option *ngFor="let p of packages" [value]="p" [selected]="p === tempFilter.package">
+        {{ p }}
+      </option>
+    </select>
+  </div>
+
+  <div class="filter-actions">
+    <button class="btn btn-ghost" (click)="resetFilter()">Сбросить</button>
+    <button class="btn btn-primary" (click)="applyFilter()">Применить</button>
+  </div>
+</div>

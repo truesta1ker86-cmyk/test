@@ -1,0 +1,130 @@
+<div class="filter-bar">
+    <!-- Поиск -->
+    <div class="fld-grp">
+      <label class="fld-label" for="stkSearch">Поиск</label>
+      <input id="stkSearch" class="fld" type="search" [(ngModel)]="search" placeholder="артикул, SKU или название…" (keyup.enter)="applyFilter()" style="min-width:220px">
+    </div>
+  
+    <!-- Источник -->
+    <div class="fld-grp">
+      <label class="fld-label" for="stkSource">Источник</label>
+      <select id="stkSource" class="fld" [(ngModel)]="source" (change)="applyFilter()">
+        <option value="">Все</option>
+        <option value="ozon">Маркетплейс</option>
+        <option value="1c">1С</option>
+      </select>
+    </div>
+  
+    <!-- Кнопки: применить, сбросить -->
+    <button class="btn btn-primary" (click)="applyFilter()">Применить</button>
+    <button class="btn btn-ghost" (click)="resetFilter()">Сбросить</button>
+  
+    <div class="spacer"></div>
+  
+    <!-- Кнопка вызова попапа с фильтрами (обёртка для позиционирования) -->
+    <div class="compact-product-filter-wrapper">
+      <div class="compact-product-filter-menu">
+        <button type="button"
+                class="compact-product-filter-trigger btn btn-ghost"
+                (click)="togglePopover()"
+                [attr.aria-label]="'Фильтры товаров'"
+                [attr.aria-expanded]="popoverOpen">
+          <svg class="icon-sm" aria-hidden="true"><use href="#i-filter"/></svg>
+          <span class="compact-product-filter-count" [hidden]="activeFilterCount === 0">{{ activeFilterCount }}</span>
+        </button>
+      </div>
+  
+      <!-- Попап расширенных фильтров -->
+      <div class="compact-product-filter-popover"
+           *ngIf="popoverOpen"
+           #popover
+           role="dialog"
+           aria-label="Расширенные фильтры товаров">
+        <div class="compact-product-filter-head">
+          <div>
+            <b>Фильтры товаров</b>
+            <small>Категория, тип и характеристики</small>
+          </div>
+        </div>
+  
+        <div class="compact-product-filter-grid">
+          <!-- Категория -->
+          <div class="fld-grp">
+            <label class="fld-label" for="stkCategory">Категория</label>
+            <select id="stkCategory" class="fld" [(ngModel)]="tempFilter.category">
+              <option value="">Все категории</option>
+              <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
+            </select>
+          </div>
+  
+          <!-- Тип товара -->
+          <div class="fld-grp">
+            <label class="fld-label" for="stkType">Тип товара</label>
+            <select id="stkType" class="fld" [(ngModel)]="tempFilter.type">
+              <option value="">Все типы</option>
+              <option *ngFor="let t of types" [value]="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+  
+          <!-- Подгруппа -->
+          <div class="fld-grp" *ngIf="groups.length">
+            <label class="fld-label" for="stkGroup">Подгруппа</label>
+            <select id="stkGroup" class="fld" [(ngModel)]="tempFilter.group">
+              <option value="">Все подгруппы</option>
+              <option *ngFor="let g of groups" [value]="g">{{ g }}</option>
+            </select>
+          </div>
+  
+          <!-- Бренд -->
+          <div class="fld-grp" *ngIf="brands.length">
+            <label class="fld-label" for="stkBrand">Бренд</label>
+            <select id="stkBrand" class="fld" [(ngModel)]="tempFilter.brand">
+              <option value="">Все бренды</option>
+              <option *ngFor="let b of brands" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+  
+          <!-- Серия -->
+          <div class="fld-grp" *ngIf="series.length">
+            <label class="fld-label" for="stkSeries">Серия</label>
+            <select id="stkSeries" class="fld" [(ngModel)]="tempFilter.series">
+              <option value="">Все серии</option>
+              <option *ngFor="let s of series" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+  
+          <!-- Длина -->
+          <div class="fld-grp" *ngIf="lengths.length">
+            <label class="fld-label" for="stkLength">Длина</label>
+            <select id="stkLength" class="fld" [(ngModel)]="tempFilter.length">
+              <option value="">Любая длина</option>
+              <option *ngFor="let l of lengths" [value]="l">{{ l }}</option>
+            </select>
+          </div>
+  
+          <!-- Цвет -->
+          <div class="fld-grp" *ngIf="colors.length">
+            <label class="fld-label" for="stkColor">Цвет</label>
+            <select id="stkColor" class="fld" [(ngModel)]="tempFilter.color">
+              <option value="">Все цвета</option>
+              <option *ngFor="let c of colors" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+  
+          <!-- Упаковка -->
+          <div class="fld-grp" *ngIf="packages.length">
+            <label class="fld-label" for="stkPackage">Упаковка</label>
+            <select id="stkPackage" class="fld" [(ngModel)]="tempFilter.package">
+              <option value="">Любая упаковка</option>
+              <option *ngFor="let p of packages" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+        </div>
+  
+        <div class="compact-product-filter-actions">
+          <button type="button" class="btn btn-ghost" (click)="resetPopoverFilter()">Сбросить</button>
+          <button type="button" class="btn btn-primary" (click)="applyPopoverFilter()">Готово</button>
+        </div>
+      </div>
+    </div>
+  </div>

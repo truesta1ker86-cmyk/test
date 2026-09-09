@@ -1,0 +1,78 @@
+<div class="stock-matrix-selected-warehouses">
+  <span class="stock-matrix-step"
+    ><b>2</b> Отметьте товары, выберите долю или фиксированное количество.</span
+  >
+  <div class="stock-matrix-global-share">
+    <div class="fld-grp">
+      <label class="fld-label">Доля на каждый склад, %</label>
+      <input class="fld" type="number" min="0" max="100" step="1" [(ngModel)]="globalShare" />
+    </div>
+    <button class="btn btn-ghost" (click)="applyGlobalShare()">Установить на все склады</button>
+    <small>100% можно поставить на все склады. 0% — не показывать.</small>
+  </div>
+  <details class="stock-matrix-warehouse-settings">
+    <summary>
+      <span class="stock-matrix-warehouse-settings-title">
+        <svg><use href="#i-warehouse" /></svg>
+        <span
+          ><strong>Настроить добавленные склады</strong
+          ><small>Режим расчёта, доля и округление</small></span
+        >
+      </span>
+      <span class="stock-matrix-warehouse-settings-count"
+        >{{ selectedWarehouses.length }} склада</span
+      >
+      <span class="stock-matrix-warehouse-settings-meta">Свернуто</span>
+    </summary>
+    <div class="stock-matrix-warehouses">
+      <details class="stock-matrix-bulk-rule" *ngFor="let id of selectedWarehouses">
+        <summary>
+          <span class="stock-matrix-bulk-id">
+            <span>{{ getWarehouseName(id) }} · {{ getWarehouseType(id) }}</span>
+            <button class="stock-matrix-remove-warehouse" (click)="removeWarehouse(id)">
+              Удалить
+            </button>
+          </span>
+          <span class="stock-matrix-bulk-summary">
+            По физическому остатку 1С · 100% · без округления
+          </span>
+        </summary>
+        <div class="stock-matrix-bulk-editor">
+          <div class="fld-grp mode-field">
+            <label class="fld-label">Режим</label>
+            <select
+              class="fld"
+              [value]="settings.find(s => s.warehouse_id === id)?.mode || 'share'"
+            >
+              <option value="share">По физическому остатку 1С</option>
+              <option value="target">Фиксированное количество</option>
+            </select>
+          </div>
+          <div class="fld-grp">
+            <label class="fld-label">Доля, %</label>
+            <input
+              class="fld"
+              type="number"
+              min="0"
+              step="1"
+              [value]="settings.find(s => s.warehouse_id === id)?.value || 100"
+            />
+          </div>
+          <div class="fld-grp">
+            <label class="fld-label">Округлять до, шт.</label>
+            <input
+              class="fld"
+              type="number"
+              min="1"
+              step="1"
+              [value]="settings.find(s => s.warehouse_id === id)?.quantum || 1"
+            />
+          </div>
+          <button class="btn btn-ghost" (click)="applyToSelectedWarehouse(id)">
+            Применить к выбранным товарам
+          </button>
+        </div>
+      </details>
+    </div>
+  </details>
+</div>

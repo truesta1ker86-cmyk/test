@@ -1,0 +1,66 @@
+export interface Product {
+  sku: number;
+  offer_id: string;
+  name: string;
+  main_image: string | null;
+  rating: number | null;
+  reviews_count: number | null;
+  state: string;
+  brand: string | null;
+  category: string | null;
+  category_name: string;
+  type_name: string;
+  category_label: string;
+  type_label: string;
+  description_category_id: number;
+  type_id: number;
+  report_category: string | null;
+  report_type: string | null;
+  report_category_source: string;
+  report_type_source: string;
+  filter_group: string | null;
+  filter_brand: string | null;
+  filter_series: string | null;
+  filter_length_mm: number | null;
+  filter_color: string | null;
+  filter_package_qty: number | null;
+  fixed_margin: number | null;
+  calculated_price: number;
+  calculated_min_price: number;
+  calculated_old_price: number;
+  last_attempt_ok: boolean;
+  last_attempt_at: string;
+  sku_1c: string | null;
+  onec_code: string | null;
+  onec_article: string | null;
+  onec_name: string | null;
+  onec_ref: string | null;
+  units_per_item: number;
+  unit_cost: number;
+  package_cost: number;
+  cost_source: string;
+  cost_mode: 'auto' | 'manual';
+  automatic_unit_cost: number;
+  automatic_package_cost: number;
+  automatic_cost_source: string;
+  marketplace_package_cost: number;
+  marketplace_unit_cost: number;
+  onec_package_cost: number;
+  onec_unit_cost: number;
+  onec_cost_source: string;
+  manual_package_cost: number | null;
+  manual_unit_cost: number | null;
+  images_count: number;
+  price: number;
+  cost_price: number;
+  units_sold: number;
+  revenue: number;
+  profit: number;
+}
+
+export interface ProductsResponse {
+  items: Product[];
+  total: number;
+  sales_basis: string;
+  sales_date_field: string;
+}

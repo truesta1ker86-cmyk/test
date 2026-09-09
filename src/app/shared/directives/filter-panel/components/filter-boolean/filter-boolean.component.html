@@ -1,0 +1,25 @@
+<!-- components/filter-boolean/filter-boolean.component.html -->
+<div class="filter-control" [class.has-error]="!!error" [class.disabled]="disabled">
+  <label *ngIf="showLabel" class="filter-label">
+    {{ getDisplayLabel() }}
+  </label>
+
+  <div class="toggle-wrapper">
+    <p-toggle-button
+      [(ngModel)]="value"
+      (ngModelChange)="updateValue($event)"
+      [disabled]="disabled"
+      [onLabel]="onLabel"
+      [offLabel]="offLabel"
+      [onIcon]="onIcon"
+      [offIcon]="offIcon"
+      [class.ng-invalid]="!!error"
+    ></p-toggle-button>
+
+    <span class="status-text" [class.active]="value">
+      {{ value ? 'Активно' : 'Неактивно' }}
+    </span>
+  </div>
+
+  <small *ngIf="error" class="p-error">{{ error }}</small>
+</div>

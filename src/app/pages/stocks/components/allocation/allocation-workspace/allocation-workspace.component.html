@@ -1,0 +1,97 @@
+<div class="allocation-workspace">
+  <div class="workspace-header">
+    <h2>Разделить остаток между складами</h2>
+    <p>
+      Доля распределяется из единого пула базовых единиц SKU 1С между всеми упаковками и складами.
+    </p>
+  </div>
+
+  <app-inventory-filter
+    [filter]="filter"
+    [categories]="categories"
+    [types]="types"
+    [brands]="brands"
+    [groups]="groups"
+    [series]="series"
+    [lengths]="lengths"
+    [colors]="colors"
+    [packages]="packages"
+    (filterChange)="onFilterChange($event)"
+  ></app-inventory-filter>
+
+  <!-- Настройки складов (выбор + массовые настройки) -->
+  <app-allocation-settings
+    [warehouses]="warehouses"
+    [selectedWarehouses]="selectedWarehouseIds"
+    (warehousesChange)="onWarehousesChange($event)"
+  ></app-allocation-settings>
+
+  <!-- Матрица распределения -->
+  <div class="matrix-section">
+    <h3>Таблица распределения</h3>
+    <app-allocation-matrix
+      [products]="matrixData"
+      [warehouses]="warehouses"
+      [selectedWarehouses]="selectedWarehouseIds"
+      [rows]="rows"
+    ></app-allocation-matrix>
+  </div>
+
+  <app-allocation-warehouse-settings
+    [warehouses]="warehouses"
+    [selectedWarehouses]="selectedWarehouseIds"
+    [settings]="warehouseSettings"
+    (warehousesChange)="onWarehousesChange($event)"
+    (settingsChange)="onWarehouseSettingsChange($event)"
+    (globalShareApply)="onGlobalShareApply($event)"
+    (applyToSelected)="onApplyToSelected($event)"
+  ></app-allocation-warehouse-settings>
+
+  <!-- Действия -->
+  <div class="actions-bar">
+    <button class="btn btn-ghost" (click)="previewChanges()" [disabled]="loading">
+      Проверить изменения
+    </button>
+    <button class="btn btn-primary" (click)="applyChanges()" [disabled]="!showPreview || loading">
+      Сохранить правила
+    </button>
+    <button class="btn btn-dark" (click)="pushChanges()" [disabled]="!showPreview || loading">
+      Отправить в маркетплейс
+    </button>
+    <button class="btn btn-ghost" (click)="cancelChanges()" [disabled]="!hasChanges">
+      Отменить
+    </button>
+  </div>
+
+  <!-- Результат проверки -->
+  <div *ngIf="showPreview" class="preview-result">
+    <div class="warn-pill" [class.success]="previewResult?.success">
+      {{ previewResult?.message || 'Проверка выполнена. Можно сохранить или отправить.' }}
+    </div>
+    <div *ngIf="previewResult?.items" class="preview-details">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th>Артикул</th>
+            <th>Склад</th>
+            <th>Было</th>
+            <th>Станет</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of previewResult.items | slice: 0 : 10">
+            <td>{{ item.offer_id }}</td>
+            <td>{{ item.warehouse_id }}</td>
+            <td>{{ item.before }}</td>
+            <td>
+              <b>{{ item.after }}</b>
+            </td>
+          </tr>
+          <tr *ngIf="previewResult.items.length > 10">
+            <td colspan="4">И ещё {{ previewResult.items.length - 10 }}...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+<details class="stock-source-details" [open]="true">
+    <summary>Детализация по складам и источникам</summary>
+    <div class="table-scroll workspace-table-scroll stocks-table-scroll">
+        <app-data-table
+        [columns]="detailColumns"
+        [data]="stocks"
+        [loading]="loading"
+        [rows]="50"
+        [selectionMode]="'none'"
+        [scrollHeight]="'360px'"
+      ></app-data-table>
+    </div>
+  </details>

@@ -1,0 +1,49 @@
+.bulk-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 46px;
+  padding: 7px 12px;
+  border-top: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
+  background: var(--surface-2);
+
+  .bulk-action-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-2);
+    font-size: 11px;
+    strong {
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    small { color: var(--muted); }
+    .bulk-action-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--brand);
+    }
+  }
+
+  .bulk-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    .btn {
+      min-height: 32px;
+      padding: 5px 10px;
+      font-size: 11px;
+    }
+  }
+
+  &.is-dirty {
+    background: var(--brand-soft);
+    .bulk-action-dot { background: var(--amber); }
+  }
+}

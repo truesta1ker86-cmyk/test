@@ -1,0 +1,88 @@
+<p-table
+  [value]="data"
+  [lazy]="lazy"
+  [totalRecords]="totalRecords"
+  [loading]="loading"
+  [rows]="rows"
+  [first]="first"
+  (onLazyLoad)="onPage($event)"
+  [(selection)]="selection"
+  (selectionChange)="onSelectionChange($event)"
+  dataKey="id"
+  [sortField]="sortField"
+  [sortOrder]="sortOrder"
+  (onSort)="onSort($event)"
+  [scrollable]="scrollable"
+  [scrollHeight]="scrollHeight"
+  [tableStyle]="tableStyle"
+  [showCurrentPageReport]="showCurrentPageReport"
+  [currentPageReportTemplate]="currentPageReportTemplate"
+  tableStyleClass="operation-table"
+>
+  <ng-template #header>
+    <ng-container *ngIf="headerTemplate; else defaultHeader">
+      <ng-template
+        [ngTemplateOutlet]="headerTemplate"
+        [ngTemplateOutletContext]="{
+          $implicit: columns,
+          columns: columns,
+        }"
+      ></ng-template>
+    </ng-container>
+    <ng-template #defaultHeader>
+      <tr>
+        <th *ngIf="selectionMode === 'multiple'" style="width: 3rem">
+          <p-table-header-checkbox></p-table-header-checkbox>
+        </th>
+        <th
+          *ngFor="let col of columns"
+          [pSortableColumn]="col.sortable ? col.field : undefined"
+          [style.width]="col.width || 'auto'"
+          [class]="col.styleClass || ''"
+        >
+          {{ col.header }}
+          <p-sort-icon *ngIf="col.sortable" [field]="col.field"></p-sort-icon>
+        </th>
+      </tr>
+    </ng-template>
+  </ng-template>
+
+  <ng-template #body let-rowData let-rowIndex="rowIndex">
+    <tr [pSelectableRow]="rowData" [class.clickable]="rowClickable" (click)="onRowClick(rowData)">
+      <!-- Чекбокс для множественного выбора -->
+      <td *ngIf="selectionMode === 'multiple'">
+        <p-table-checkbox [value]="rowData"></p-table-checkbox>
+      </td>
+
+      <!-- Ячейки -->
+      <td
+        *ngFor="let col of columns; let i = index"
+        [style.width]="col.width || 'auto'"
+        [class]="col.styleClass || ''"
+      >
+        <!-- Если есть кастомный шаблон для этой колонки -->
+        <ng-container *ngIf="hasCellTemplate(col); else defaultCell">
+          <ng-template
+            [ngTemplateOutlet]="cellTemplate"
+            [ngTemplateOutletContext]="{
+              $implicit: rowData,
+              column: col,
+              value: getValue(rowData, col.field),
+            }"
+          ></ng-template>
+        </ng-container>
+        <ng-template #defaultCell>
+          {{ getValue(rowData, col.field) }}
+        </ng-template>
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template #emptymessage>
+    <tr>
+      <td [attr.colspan]="columns.length + (selectionMode === 'multiple' ? 1 : 0)">
+        <div class="empty-message">{{ emptyMessage }}</div>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

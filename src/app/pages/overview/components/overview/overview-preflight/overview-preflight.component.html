@@ -1,0 +1,40 @@
+<div id="preflightResult" aria-live="polite">
+    <section class="preflight-panel" aria-label="Результат проверки готовности">
+      
+      <!-- Шапка результатов (Сводка и глобальные бейджи) -->
+      <div class="preflight-summary">
+        <div class="summary-text">
+          <h3>Кабинет готов к работе</h3>
+          <p>Кабинет готов. Боевой режим включён; каждая запись требует отдельного подтверждения.</p>
+        </div>
+        <div class="summary-badges">
+          <span class="badge red">боевой режим · с подтверждением</span>
+          <span class="badge blue">AI настроен</span>
+          <span class="badge red">все записи разрешены</span>
+        </div>
+      </div>
+      
+      <!-- Детальный список системных проверок -->
+      <div class="preflight-checks">
+        @for (check of checks(); track check.name) {
+          <div class="preflight-check">
+            <div class="preflight-check-name">
+              <span>{{ check.name }}</span>
+              <span class="badge" [ngClass]="{
+                'green': check.status === 'готово',
+                'red': check.status === 'ошибка',
+                'amber': check.status === 'ожидание'
+              }">{{ check.status }}</span>
+            </div>
+            <div class="preflight-check-meta">
+              {{ check.duration }} мс · пример: {{ check.sample }}
+            </div>
+          </div>
+        } @empty {
+          <div class="preflight-empty">Данные проверки отсутствуют</div>
+        }
+      </div>
+  
+    </section>
+  </div>
+  

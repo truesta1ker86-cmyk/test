@@ -1,0 +1,52 @@
+<div class="filter-control" 
+     [class.has-error]="!!error" 
+     [class.disabled]="disabled">
+  
+  <label *ngIf="showLabel" class="filter-label" [for]="key">
+    {{ getDisplayLabel() }}
+    <span class="required" *ngIf="filterConfig?.validation">*</span>
+  </label>
+  
+  <p-select
+    [id]="key"
+    [options]="filterConfig?.options || []"
+    optionLabel="label"
+    optionValue="value"
+    [(ngModel)]="value"
+    (ngModelChange)="updateValue($event)"
+    [placeholder]="getPlaceholder() || 'Выберите...'"
+    [disabled]="disabled"
+    [multiple]="true"
+    [showClear]="true"
+    [style]="{ width: '100%' }"
+    [class.ng-invalid]="!!error"
+    [filter]="true"
+    [filterBy]="'label'"
+  >
+    <!-- Кастомный шаблон для выбранных элементов -->
+    <ng-template pTemplate="selectedItems" let-selectedItems>
+      <span *ngIf="selectedItems.length === 0" class="placeholder-text">
+        {{ getPlaceholder() || 'Выберите...' }}
+      </span>
+      <span *ngIf="selectedItems.length > 0">
+        Выбрано: {{ selectedItems.length }}
+      </span>
+    </ng-template>
+    
+    <!-- Кастомный шаблон для элементов в выпадающем списке -->
+    <ng-template let-option pTemplate="item">
+      <div class="multiselect-item">
+        <span>{{ option.label }}</span>
+        <span *ngIf="option.disabled" class="disabled-tag">(недоступно)</span>
+      </div>
+    </ng-template>
+  </p-select>
+  
+  <!-- Информация о выбранных элементах -->
+  <div class="selected-count" *ngIf="value?.length > 0">
+    Выбрано: {{ value.length }}
+  </div>
+  
+  <!-- Ошибка -->
+  <small *ngIf="error" class="p-error">{{ error }}</small>
+</div>

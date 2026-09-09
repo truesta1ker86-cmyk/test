@@ -1,0 +1,45 @@
+<div class="allocation-settings">
+    <div class="settings-head">
+      <span class="step-badge">1</span>
+      <h3>Выберите склады для распределения</h3>
+    </div>
+  
+    <div class="warehouse-picker">
+      <div class="fld-grp">
+        <label class="fld-label">Добавить склад</label>
+        <div class="warehouse-select-wrapper">
+          <select class="fld" #warehouseSelect (change)="addWarehouse(warehouseSelect.value)">
+            <option value="">Выберите склад</option>
+            <option *ngFor="let w of warehouses" [value]="w.warehouse_id"
+                    [disabled]="selectedWarehouses.includes(w.warehouse_id)">
+              {{ w.warehouse_name }} ({{ w.is_rfbs ? 'rFBS' : 'FBS' }})
+            </option>
+          </select>
+          <button class="btn btn-ghost" (click)="addWarehouse(warehouseSelect.value)" [disabled]="!warehouseSelect.value">
+            <svg class="icon-sm"><use href="#i-plus"/></svg> Добавить
+          </button>
+        </div>
+        <small class="hint">Можно добавить до 12 складов</small>
+      </div>
+    </div>
+  
+    <div class="selected-warehouses" *ngIf="selectedWarehouses.length">
+      <div class="warehouse-chips">
+        <div class="chip" *ngFor="let id of selectedWarehouses">
+          <span>{{ getWarehouseName(id) }}</span>
+          <button type="button" class="remove-chip" (click)="removeWarehouse(id)">×</button>
+        </div>
+      </div>
+  
+      <div class="global-share">
+        <div class="fld-grp">
+          <label class="fld-label">Глобальная доля, %</label>
+          <div class="share-controls">
+            <input class="fld" type="number" [(ngModel)]="globalShare" min="0" step="1">
+            <button class="btn btn-ghost" (click)="applyGlobalShare()">Применить ко всем складам</button>
+          </div>
+          <small class="hint">Применяется ко всем выбранным товарам на всех складах</small>
+        </div>
+      </div>
+    </div>
+  </div>

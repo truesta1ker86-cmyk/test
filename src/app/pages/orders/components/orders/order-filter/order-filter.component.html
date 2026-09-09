@@ -1,0 +1,51 @@
+<div class="filter-bar">
+    <!-- Жизненный цикл -->
+    <div class="fld-grp">
+      <label class="fld-label">Жизненный цикл</label>
+      <select class="fld" [(ngModel)]="lifecycle" (change)="applyFilter()">
+        <option value="current">Текущие</option>
+        <option value="completed">Завершённые</option>
+      </select>
+    </div>
+  
+    <!-- Статус -->
+    <div class="fld-grp">
+      <label class="fld-label" for="ordStatus">Статус</label>
+      <select id="ordStatus" class="fld" [(ngModel)]="status" (change)="applyFilter()">
+        <option value="">Все статусы</option>
+        <option *ngFor="let s of statuses" [value]="s.value">{{ s.label }}</option>
+      </select>
+    </div>
+  
+    <!-- Схема -->
+    <div class="fld-grp">
+      <label class="fld-label" for="ordScheme">Схема</label>
+      <select id="ordScheme" class="fld" [(ngModel)]="scheme" (change)="applyFilter()">
+        <option value="">Все</option>
+        <option *ngFor="let s of schemes" [value]="s.value">{{ s.label }}</option>
+      </select>
+    </div>
+  
+    <!-- Поиск -->
+    <div class="fld-grp">
+      <label class="fld-label" for="ordSearch">Поиск</label>
+      <input id="ordSearch" class="fld" type="text" [(ngModel)]="search" placeholder="номер, артикул…" (keyup.enter)="applyFilter()" style="min-width:200px">
+    </div>
+  
+    <!-- Сортировка -->
+    <div class="fld-grp">
+      <label class="fld-label" for="ordSort">Порядок</label>
+      <select id="ordSort" class="fld" [(ngModel)]="sort" (change)="applyFilter()">
+        <option value="date_desc">Сначала новые</option>
+        <option value="date_asc">Сначала старые</option>
+        <option value="number_asc">По номеру ↑</option>
+        <option value="number_desc">По номеру ↓</option>
+      </select>
+    </div>
+  
+    <!-- Кнопки -->
+    <div class="fld-grp" style="justify-content:flex-end;">
+      <button class="btn btn-primary" (click)="applyFilter()">Применить</button>
+      <button class="btn btn-ghost" (click)="resetFilter()">Сбросить</button>
+    </div>
+  </div>

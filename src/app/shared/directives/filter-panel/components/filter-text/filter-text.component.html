@@ -1,0 +1,23 @@
+<div class="filter-control" 
+     [class.has-error]="!!error" 
+     [class.disabled]="disabled">
+  
+  <label *ngIf="showLabel" class="filter-label" [for]="key">
+    {{ getDisplayLabel() }}
+    <span class="required" *ngIf="filterConfig?.validation">*</span>
+  </label>
+  
+  <input 
+    pInputText
+    [id]="key"
+    [placeholder]="getPlaceholder()"
+    [(ngModel)]="value"
+    (ngModelChange)="updateValue($event)"
+    [disabled]="disabled"
+    [class.ng-invalid]="!!error"
+    [class.ng-dirty]="!!error"
+    [style]="{ width: '100%' }"
+  />
+  
+  <small *ngIf="error" class="p-error">{{ error }}</small>
+</div>

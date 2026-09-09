@@ -1,0 +1,25 @@
+<app-inventory-filter
+  [filter]="filter"
+  [categories]="categories"
+  [types]="types"
+  [brands]="brands"
+  [groups]="groups"
+  [series]="series"
+  [lengths]="lengths"
+  [colors]="colors"
+  [packages]="packages"
+  (filterChange)="onFilterChange($event)"
+></app-inventory-filter>
+
+<div class="card operation-table-shell stock-list-card">
+  <app-inventory-reconciliation
+    [items]="filteredReconciliation"
+    [loading]="loading"
+    (openProduct)="onOpenProduct($event)"
+  ></app-inventory-reconciliation>
+
+  <app-inventory-detail
+    [stocks]="filteredStocks"
+    [loading]="loading"
+  ></app-inventory-detail>
+</div>

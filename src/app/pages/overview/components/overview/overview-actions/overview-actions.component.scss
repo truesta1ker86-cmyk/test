@@ -1,0 +1,82 @@
+.overview-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: var(--control-height);
+    padding: 0 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    transition: background var(--motion-fast) var(--ease),
+                border-color var(--motion-fast) var(--ease),
+                opacity var(--motion-fast) var(--ease);
+  
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  
+    app-icon {
+      display: inline-flex;
+      align-items: center;
+    }
+  
+    &-ghost {
+      background: var(--surface-2);
+      border-color: var(--hair-2);
+      color: var(--text-2);
+  
+      &:hover:not(:disabled) {
+        background: var(--surface-3);
+        color: var(--text);
+      }
+    }
+  
+    &-dark {
+      background: var(--text);
+      color: var(--surface);
+  
+      &:hover:not(:disabled) {
+        background: #1f293d;
+      }
+    }
+  }
+  
+  .spinning {
+    animation: spin-animation 1s linear infinite;
+  }
+  
+  @keyframes spin-animation {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .overview-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+  
+      .btn {
+        width: 100%;
+      }
+    }
+  }
+  

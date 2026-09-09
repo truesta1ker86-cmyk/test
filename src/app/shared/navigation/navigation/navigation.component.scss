@@ -1,0 +1,198 @@
+$motion-fast: var(--motion-fast, 160ms);
+$ease: var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+$ease-out: var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+$control-radius: var(--control-radius, 10px);
+
+svg.icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+
+  &-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--faint, #98A2B3);
+    padding: 16px 12px 6px;
+    user-select: none;
+  }
+
+  &-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 38px;
+    padding: 0 12px;
+    background: transparent;
+    border: 0;
+    border-radius: $control-radius;
+    color: var(--text-2, #475467);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    gap: 10px;
+    position: relative;
+    transition: 
+      background $motion-fast $ease, 
+      color $motion-fast $ease, 
+      transform $motion-fast $ease;
+
+    &:hover {
+      background: var(--surface-2, #F4F5F7);
+      color: var(--text, #101828);
+    }
+
+    &:active {
+      transform: scale(0.985);
+    }
+
+    &.active {
+      background: var(--brand-soft, #EFF4FF);
+      color: var(--brand, #005BFF);
+      font-weight: 600;
+
+      svg {
+        color: var(--brand, #005BFF);
+      }
+    }
+
+    &-label {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &-stock-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .nav-stock-chevron {
+      display: grid;
+      place-items: center;
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+      line-height: 1;
+      color: var(--faint, #98A2B3);
+      margin-left: auto;
+      transition: transform 220ms $ease-out;
+    }
+
+    &.open {
+      .nav-stock-chevron {
+        transform: rotate(90deg);
+      }
+      .nav-stock-children {
+        grid-template-rows: 1fr;
+      }
+    }
+  }
+
+  &-stock-children {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 220ms $ease-out;
+
+    &-inner {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding-left: 20px;
+      margin: 2px 0;
+
+      & > :first-child {
+        margin-top: 4px;
+      }
+    }
+  }
+
+  &-stock-child {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 36px;
+    padding: 7px 9px 7px 14px;
+    border: 0;
+    border-radius: var(--r-xs, 8px);
+    background: transparent;
+    color: var(--muted, #667085);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.25;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s $ease, color 0.15s $ease;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--hair-2);
+    }
+
+    &:hover {
+      background: var(--surface-2, #F4F5F7);
+      color: var(--text, #101828);
+    }
+
+    &.active {
+      background: var(--brand-soft, #EFF4FF);
+      color: var(--brand, #005BFF);
+      font-weight: 750;
+      box-shadow: inset 3px 0 0 var(--brand, #005BFF);
+
+      .nav-stock-child-count {
+        color: var(--brand, #005BFF);
+        font-weight: 750;
+      }
+    }
+
+    &-count {
+      margin-left: auto;
+      color: var(--faint, #98A2B3);
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: var(--r-pill, 999px);
+    background: var(--surface-3, #ECEEF1);
+    color: var(--text-2, #475467);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    margin-left: auto;
+    transition: background $motion-fast $ease, color $motion-fast $ease;
+
+    .nav-item.active & {
+      background: var(--brand, #005BFF);
+      color: #ffffff;
+    }
+  }
+}

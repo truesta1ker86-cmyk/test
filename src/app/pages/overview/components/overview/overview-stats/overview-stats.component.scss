@@ -1,0 +1,48 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--hair, rgba(16, 24, 40, 0.07));
+  border-radius: var(--control-radius, 10px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted, #667085);
+  }
+
+  &-body {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  &-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text, #101828);
+    letter-spacing: -0.01em;
+  }
+
+  &-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--green-soft, #ecfdf3);
+    color: var(--green, #067647);
+
+    &.negative {
+      background: var(--red-soft, #fef3f2);
+      color: var(--red, #d92d20);
+    }
+  }
+}

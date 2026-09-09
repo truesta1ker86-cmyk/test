@@ -1,0 +1,43 @@
+<div class="filter-control" 
+     [class.has-error]="!!error" 
+     [class.disabled]="disabled">
+  
+  <label *ngIf="showLabel" class="filter-label">
+    {{ getDisplayLabel() }}
+    <span class="required" *ngIf="filterConfig?.validation">*</span>
+  </label>
+  
+  <div class="date-range">
+    <div class="date-input">
+      <label class="date-label">С</label>
+      <p-datepicker
+        [(ngModel)]="valueFrom"
+        (ngModelChange)="updateDateRange()"
+        [placeholder]="'От...'"
+        [disabled]="disabled"
+        [dateFormat]="dateFormat"
+        [showIcon]="true"
+        [style]="{ width: '100%' }"
+        [class.ng-invalid]="!!error"
+      ></p-datepicker>
+    </div>
+    
+    <span class="separator">—</span>
+    
+    <div class="date-input">
+      <label class="date-label">По</label>
+      <p-datepicker 
+        [(ngModel)]="valueTo"
+        (ngModelChange)="updateDateRange()"
+        [placeholder]="'До...'"
+        [disabled]="disabled"
+        [dateFormat]="dateFormat"
+        [showIcon]="true"
+        [style]="{ width: '100%' }"
+        [class.ng-invalid]="!!error"
+      ></p-datepicker>
+    </div>
+  </div>
+  
+  <small *ngIf="error" class="p-error">{{ error }}</small>
+</div>

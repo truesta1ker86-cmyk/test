@@ -1,0 +1,351 @@
+.stock-matrix-warehouse-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .stock-matrix-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-2);
+
+    b {
+      display: grid;
+      place-items: center;
+      width: 16px;
+      height: 16px;
+      flex: 0 0 16px;
+      border-radius: 50%;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: 9px;
+    }
+  }
+
+  .stock-matrix-warehouse-add {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+
+    .stock-matrix-warehouse-menu {
+      position: relative;
+      min-width: 0;
+    }
+
+    .stock-matrix-warehouse-trigger {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      min-width: 0;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--hair-2);
+      border-radius: var(--control-radius);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition:
+        border-color var(--motion-fast) var(--ease),
+        background var(--motion-fast) var(--ease);
+
+      &:hover:not(:disabled) {
+        border-color: var(--brand);
+        background: var(--brand-soft);
+      }
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      > svg {
+        width: 15px;
+        height: 15px;
+        color: var(--brand);
+        flex-shrink: 0;
+      }
+
+      .stock-matrix-warehouse-trigger-copy {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+        min-width: 0;
+
+        strong {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 10px;
+          font-weight: 650;
+        }
+        small {
+          flex: none;
+          color: var(--muted);
+          font-size: 9px;
+          font-weight: 550;
+        }
+      }
+
+      .stock-matrix-warehouse-caret {
+        width: 7px;
+        height: 7px;
+        margin: -3px 2px 0 4px;
+        border-right: 1.5px solid currentColor;
+        border-bottom: 1.5px solid currentColor;
+        color: var(--muted);
+        transform: rotate(45deg);
+        transition: transform var(--motion-fast) var(--ease-out);
+        flex-shrink: 0;
+      }
+
+      &[aria-expanded='true'] .stock-matrix-warehouse-caret {
+        transform: translateY(3px) rotate(225deg);
+      }
+    }
+
+    .stock-matrix-warehouse-popover {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      z-index: 45;
+      width: min(420px, calc(100vw - 40px));
+      border: 1px solid var(--hair-2);
+      border-radius: var(--panel-radius);
+      background: var(--surface);
+      box-shadow: 0 18px 44px rgba(16, 24, 40, 0.17);
+      animation: stock-warehouse-popover-in 190ms var(--ease-out) both;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 18px;
+        width: 9px;
+        height: 9px;
+        border-left: 1px solid var(--hair-2);
+        border-top: 1px solid var(--hair-2);
+        background: var(--surface);
+        transform: rotate(45deg);
+      }
+
+      .stock-matrix-warehouse-popover-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 12px 10px;
+        border-bottom: 1px solid var(--hair);
+        background: var(--surface);
+
+        strong {
+          display: block;
+          font-size: 11px;
+          line-height: 1.3;
+        }
+        small {
+          display: block;
+          margin-top: 2px;
+          color: var(--muted);
+          font-size: 9px;
+          line-height: 1.35;
+        }
+      }
+
+      .stock-matrix-warehouse-close {
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        flex: none;
+        padding: 0;
+        border: 0;
+        border-radius: var(--control-radius);
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+
+        &:hover {
+          background: var(--surface-3);
+          color: var(--text);
+        }
+        svg {
+          width: 14px;
+          height: 14px;
+        }
+      }
+
+      .stock-matrix-warehouse-options {
+        display: grid;
+        gap: 4px;
+        max-height: min(320px, calc(100dvh - 220px));
+        padding: 8px;
+        overflow: auto;
+      }
+
+      .stock-matrix-warehouse-option {
+        display: grid;
+        grid-template-columns: 18px minmax(0, 1fr);
+        align-items: center;
+        gap: 9px;
+        min-height: 46px;
+        padding: 7px 9px;
+        border: 1px solid transparent;
+        border-radius: var(--control-radius);
+        color: var(--text-2);
+        cursor: pointer;
+        transition:
+          border-color var(--motion-fast) var(--ease),
+          background var(--motion-fast) var(--ease);
+
+        &:hover:not(.is-added):not(.is-limited) {
+          border-color: var(--hair-2);
+          background: var(--surface-2);
+        }
+
+        &.is-added {
+          border-color: color-mix(in srgb, var(--green) 14%, var(--hair));
+          background: var(--green-soft);
+          cursor: default;
+        }
+        &.is-limited {
+          color: var(--muted);
+          cursor: not-allowed;
+        }
+
+        input[type='checkbox'] {
+          width: 16px;
+          height: 16px;
+          margin: 0;
+          accent-color: var(--brand);
+          cursor: pointer;
+          &:disabled {
+            cursor: default;
+          }
+        }
+
+        .stock-matrix-warehouse-option-copy {
+          min-width: 0;
+
+          > strong {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: inherit;
+            font-size: 10px;
+            font-weight: 650;
+            line-height: 1.35;
+          }
+
+          .stock-matrix-warehouse-option-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 3px;
+
+            .stock-matrix-warehouse-scheme {
+              display: inline-flex;
+              align-items: center;
+              min-height: 18px;
+              padding: 2px 6px;
+              border-radius: 999px;
+              background: var(--surface-3);
+              color: var(--muted);
+              font-size: 8px;
+              font-weight: 700;
+            }
+
+            .stock-matrix-warehouse-added {
+              display: inline-flex;
+              align-items: center;
+              gap: 3px;
+              min-height: 18px;
+              padding: 2px 6px;
+              border-radius: 999px;
+              background: var(--surface);
+              color: var(--green);
+              font-size: 8px;
+              font-weight: 700;
+              svg {
+                width: 10px;
+                height: 10px;
+              }
+            }
+
+            .stock-matrix-warehouse-limited {
+              display: inline-flex;
+              align-items: center;
+              min-height: 18px;
+              padding: 2px 6px;
+              border-radius: 999px;
+              background: var(--surface-3);
+              color: var(--muted);
+              font-size: 8px;
+              font-weight: 700;
+            }
+          }
+        }
+      }
+
+      .stock-matrix-warehouse-empty {
+        padding: 20px 14px;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .stock-matrix-warehouse-popover-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 38px;
+        padding: 8px 12px;
+        border-top: 1px solid var(--hair);
+        background: var(--surface-2);
+        color: var(--muted);
+        font-size: 9px;
+      }
+    }
+
+    .btn {
+      min-height: 34px;
+      padding: 5px 10px;
+      font-size: 10px;
+      white-space: nowrap;
+      justify-content: center;
+
+      svg.icon-sm {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+@keyframes stock-warehouse-popover-in {
+  from {
+    opacity: 0.2;
+    transform: translateY(-6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stock-matrix-warehouse-popover {
+    animation: none;
+  }
+  .stock-matrix-warehouse-caret {
+    transition: none;
+  }
+}

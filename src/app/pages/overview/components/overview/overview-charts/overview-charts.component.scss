@@ -1,0 +1,117 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  overflow: hidden;
+  transition: box-shadow var(--motion-fast) var(--ease), opacity var(--motion-fast) var(--ease);
+
+  &:hover {
+    box-shadow: var(--shadow);
+  }
+
+  &.is-loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .card-pad {
+    padding: 16px;
+  }
+}
+
+.chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.chart-hint {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+  max-width: 450px;
+}
+
+.chart-summary {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-left: auto;
+  font-weight: 600;
+  background: var(--surface-2);
+  padding: 4px 10px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--hair);
+  letter-spacing: -0.01em;
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  transition: height 220ms var(--ease-out);
+}
+
+/* КАСТОМИЗАЦИЯ ТЕМЫ PRIME NG 18+ */
+::v-deep .p-select {
+  background: var(--control-bg);
+  border: 1px solid var(--control-border);
+  border-radius: var(--r-sm);
+  height: var(--control-height-compact);
+  display: inline-flex;
+  align-items: center;
+  min-width: 115px;
+  font-family: inherit;
+
+  &:not(.p-disabled):hover {
+    border-color: var(--control-border-hover);
+    background-color: var(--surface-2);
+  }
+
+  &.p-focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 2px var(--control-focus-ring);
+  }
+  
+  .p-select-label {
+    color: var(--text);
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+}
+
+::v-deep .p-select-overlay {
+  background: var(--surface);
+  border: 1px solid var(--hair-2);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--r-xs);
+
+  .p-select-option {
+    color: var(--text-2);
+    padding: 6px 12px;
+    font-size: 13px;
+
+    &.p-highlight {
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+
+    &:not(.p-highlight):not(.p-disabled):hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    ::v-deep .p-select { width: 100%; }
+  }
+  .chart-summary { margin-left: 0; width: 100%; text-align: center; }
+}
