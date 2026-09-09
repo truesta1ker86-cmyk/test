@@ -94,4 +94,4 @@ import { FilterService } from './infrastructure/services/filter.service';
     FilterService
   ]
 })
-export class FilterModule { }
+export class FilterPanelModule { }

@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
+} from '@angular/core';
 import { Observable, forkJoin, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { OzonWarehouse } from '../../infrastructure/models/ozon-warehouse.model';
@@ -8,6 +15,10 @@ import { ProductService } from '../../infrastructure/services/product.service';
 import { AllocationService } from '../../infrastructure/services/allocation.service';
 import { PreviewResult } from '../../infrastructure/models/preview.interface';
 import { Stock } from '../../infrastructure/models/stock.model';
+import { FilterConfig } from '../../../../shared/directives/filter-panel/infrastructure/models/filter.model';
+import { FilterService } from '../../../../shared/directives/filter-panel/infrastructure/services/filter.service';
+import { AllocationFilterOptions, buildAllocationFilterConfig } from '../../infrastructure/config/filter.config';
+
 
 const FACET_ORDER = ['category', 'type', 'group', 'brand', 'series', 'length', 'color', 'package'];
 
@@ -31,7 +42,7 @@ export class AllocationComponent implements OnInit, OnDestroy {
   // Настройки складов
   warehouseSettings: WarehouseSettings[] = [];
 
-  // Фильтры
+  // Фильтры (состояние для матрицы)
   filter: StockFilter = {
     search: '',
     source: '',
@@ -44,7 +55,8 @@ export class AllocationComponent implements OnInit, OnDestroy {
     color: '',
     package: '',
   };
-  
+
+  // Опции для фильтров (берутся из продуктов и фацетов)
   categories: { value: string; label: string }[] = [];
   types: { value: string; label: string }[] = [];
   brands: string[] = [];
@@ -53,6 +65,9 @@ export class AllocationComponent implements OnInit, OnDestroy {
   lengths: string[] = [];
   colors: string[] = [];
   packages: string[] = [];
+
+  // Конфигурация панели фильтров (для FilterPanelDirective)
+  filterConfigs: FilterConfig[] = [];
 
   // Матрица данных
   matrixData: any[] = [];
@@ -81,9 +96,12 @@ export class AllocationComponent implements OnInit, OnDestroy {
   // Карта остатков 1С
   availableByOffer = new Map<string, number>();
 
-
+  // RxJS Subject для debounce поиска по названию
   private nameSearchSubject = new Subject<{ query: string; filter: StockFilter }>();
   private nameSearchSubscription: any;
+
+  // Сервис фильтров (для подписки на изменения)
+  private filterService = inject(FilterService);
 
   constructor(
     private stockService: StockService,
@@ -101,6 +119,8 @@ export class AllocationComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.nameSearchSubscription?.unsubscribe();
+    // Отписываемся от изменений фильтров, если подписывались
+    // this.filterService.changesSubscription?.unsubscribe();
   }
 
   // ==================== ЗАГРУЗКА ДАННЫХ ====================
@@ -120,6 +140,7 @@ export class AllocationComponent implements OnInit, OnDestroy {
         this.availableByOffer = this.buildAvailableByOffer(this.stocks);
         this.buildFilterOptions(this.products);
         this.loadFacetOptions(facets);
+        this.buildFilterConfigs(); // ← строим конфиг для панели
 
         this.stockService.getFilteredOzonWarehouses().subscribe((warehouses) => {
           if (warehouses.length && !this.selectedWarehouseIds.length) {
@@ -195,7 +216,9 @@ export class AllocationComponent implements OnInit, OnDestroy {
   private loadFacetOptions(facets: any): void {
     const extractValues = (items: any[]): string[] => {
       if (!items) return [];
-      return items.map((item: any) => typeof item === 'string' ? item : item.value).filter(Boolean);
+      return items
+        .map((item: any) => (typeof item === 'string' ? item : item.value))
+        .filter(Boolean);
     };
     this.groups = extractValues(facets?.groups);
     this.brands = extractValues(facets?.brands);
@@ -223,30 +246,56 @@ export class AllocationComponent implements OnInit, OnDestroy {
       .sort((a, b) => a.label.localeCompare(b.label, 'ru'));
 
     // Локальные подсказки для начального состояния (пока не загрузились с сервера)
-    this.nameSuggestions = products.map((p) => p.name).filter(Boolean).sort();
+    this.nameSuggestions = products
+      .map((p) => p.name)
+      .filter(Boolean)
+      .sort();
+  }
+
+  // ==================== КОНФИГУРАЦИЯ ПАНЕЛИ ФИЛЬТРОВ ====================
+  private buildFilterConfigs(): void {
+    const options: AllocationFilterOptions = {
+      categories: this.categories,
+      types: this.types,
+      brands: this.brands,
+      groups: this.groups,
+      series: this.series,
+      lengths: this.lengths,
+      colors: this.colors,
+      packages: this.packages,
+    };
+    this.filterConfigs = buildAllocationFilterConfig(options);
   }
 
   // ==================== DEBOUNCE ПОИСКА ПО НАЗВАНИЮ ====================
   private initNameSearch(): void {
-    this.nameSearchSubscription = this.nameSearchSubject.pipe(
-      debounceTime(250),
-      distinctUntilChanged((prev, curr) => prev.query === curr.query && prev.filter === curr.filter),
-      switchMap(({ query, filter }) => {
-        return this.productService.getNameSuggestions(query, filter, 20);
-      })
-    ).subscribe({
-      next: (data) => {
-        this.nameSuggestions = data.items?.map((item: any) => item.name) || [];
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.nameSuggestions = [];
-        this.cdr.markForCheck();
-      },
-    });
+    this.nameSearchSubscription = this.nameSearchSubject
+      .pipe(
+        debounceTime(250),
+        distinctUntilChanged(
+          (prev, curr) =>
+            prev.query === curr.query &&
+            JSON.stringify(prev.filter) === JSON.stringify(curr.filter),
+        ),
+        switchMap(({ query, filter }) => {
+          if (!query || query.length < 2) {
+            return Promise.resolve({ items: [] });
+          }
+          return this.productService.getNameSuggestions(query, filter, 20);
+        }),
+      )
+      .subscribe({
+        next: (data) => {
+          this.nameSuggestions = data.items?.map((item: any) => item.name) || [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.nameSuggestions = [];
+          this.cdr.markForCheck();
+        },
+      });
   }
 
-  // Вызывается при вводе в поле поиска
   onNameSearchInput(value: string): void {
     this.searchName = value;
     if (value.length === 1) {
@@ -254,12 +303,10 @@ export class AllocationComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
       return;
     }
-    // Передаём объект с query и filter
     this.nameSearchSubject.next({ query: value, filter: { ...this.filter } });
     this.updateMatrix();
   }
 
-  // Вызывается при фокусе на поле (immediate-режим)
   onNameSearchFocus(): void {
     if (this.searchName.length >= 2) {
       this.nameSearchSubject.next({ query: this.searchName, filter: { ...this.filter } });
@@ -329,41 +376,35 @@ export class AllocationComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // ==================== КАСКАДНОЕ ИЗМЕНЕНИЕ ФИЛЬТРОВ ====================
-  onFacetChange(field: string, value: string): void {
-    // Сброс последующих полей
-    const fieldIndex = FACET_ORDER.indexOf(field);
-    if (fieldIndex !== -1) {
-      const subsequentFields = FACET_ORDER.slice(fieldIndex + 1);
-      subsequentFields.forEach((subField) => {
-        (this.filter as any)[subField] = '';
-      });
-    }
-  
-    // Обновление изменённого поля
-    (this.filter as any)[field] = value;
-  
-    this.nameSearchSubject.next({ query: this.searchName, filter: { ...this.filter } });
+  // ==================== ОБРАБОТКА ПРИМЕНЕНИЯ ФИЛЬТРОВ ИЗ ПАНЕЛИ ====================
+  onApplyFilters(ctx: any): void {
+    const values = ctx.getValues();
 
-    // Если изменилась категория – перезагружаем фацеты
-    if (field === 'category') {
-      this.productService.getFilterFacets().subscribe({
-        next: (facets) => {
-          this.loadFacetOptions(facets);
-          this.cdr.markForCheck();
-        },
-      });
+    // Обновляем объект filter
+    this.filter = {
+      ...this.filter,
+      category: values['category'] || '',
+      type: values['type'] || '',
+      brand: values['brand'] || '',
+      group: values['group'] || '',
+      series: values['series'] || '',
+      length: values['length'] || '',
+      color: values['color'] || '',
+      package: values['package'] || '',
+    };
+
+    // Обновляем подсказки названий (если есть текст поиска)
+    if (this.searchName && this.searchName.length >= 2) {
+      this.nameSearchSubject.next({ query: this.searchName, filter: { ...this.filter } });
     }
-  
+
+    // Перестраиваем матрицу
     this.updateMatrix();
+
+    // Закрываем попап
+    this.closeFilterPopover();
   }
 
-  onFilterChange(newFilter: StockFilter): void {
-    this.filter = { ...this.filter, ...newFilter };
-    this.nameSearchSubject.next({ query: this.searchName, filter: { ...this.filter } });
-
-    this.updateMatrix();
-  }
   // ==================== ПОПАП ФИЛЬТРОВ ====================
   toggleFilterPopover(): void {
     this.filterPopoverVisible = !this.filterPopoverVisible;
@@ -432,9 +473,15 @@ export class AllocationComponent implements OnInit, OnDestroy {
   }
 
   // ==================== ДЕЙСТВИЯ ====================
-  previewChanges(): void { /* TODO */ }
-  applyChanges(): void { /* TODO */ }
-  pushChanges(): void { /* TODO */ }
+  previewChanges(): void {
+    /* TODO */
+  }
+  applyChanges(): void {
+    /* TODO */
+  }
+  pushChanges(): void {
+    /* TODO */
+  }
 
   cancelChanges(): void {
     this.buildMatrix();

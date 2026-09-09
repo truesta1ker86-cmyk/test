@@ -68,32 +68,41 @@
           <svg><use href="#i-filter" /></svg>
           <span class="stock-filter-caret"></span>
         </button>
-        <!-- ПОПАП ФИЛЬТРОВ -->
+
+        <!-- ===== НОВАЯ ПАНЕЛЬ ФИЛЬТРОВ (вместо старого AllocationFilterComponent) ===== -->
         <div class="stock-filter-popover" [hidden]="!filterPopoverVisible">
           <div class="stock-filter-popover-head">
             <span>Фильтры товаров</span>
             <small>категория · тип · подгруппа · бренд · серия · длина · цвет · упаковка</small>
           </div>
-          <app-allocation-filter
-            [filter]="filter"
-            [categories]="categories"
-            [types]="types"
-            [brands]="brands"
-            [groups]="groups"
-            [series]="series"
-            [lengths]="lengths"
-            [colors]="colors"
-            [packages]="packages"
-            (facetChange)="onFacetChange($event.field, $event.value)"
-            (filterChange)="onFilterChange($event)"
-          ></app-allocation-filter>
-          <div class="stock-matrix-filter-actions">
-            <button class="btn btn-ghost" (click)="clearSelection(); closeFilterPopover()">
-              Снять выбор
-            </button>
-            <button class="btn btn-primary" (click)="selectAllFiltered(); closeFilterPopover()">
-              Выбрать найденные
-            </button>
+
+          <!-- Панель фильтров с директивой -->
+          <div *appFilterPanel="filterConfigs; let ctx" class="allocation-filter-panel">
+            <div class="fld-grp" *ngFor="let filter of ctx.filters">
+              <label class="fld-label">{{ filter.label }}</label>
+              <ng-container *appFilterControl="filter.key; let control">
+                <select
+                  class="fld"
+                  [value]="control.value"
+                  (change)="control.updateValue($any($event.target).value)"
+                  [disabled]="control.isDisabled"
+                >
+                  <option value="">Все</option>
+                  <option
+                    *ngFor="let opt of filter.options"
+                    [value]="opt.value"
+                    [selected]="opt.value === control.value"
+                  >
+                    {{ opt.label }}
+                  </option>
+                </select>
+              </ng-container>
+            </div>
+
+            <div class="filter-actions">
+              <button class="btn btn-ghost" (click)="ctx.resetAllFilters()">Сбросить</button>
+              <button class="btn btn-primary" (click)="onApplyFilters(ctx)">Применить</button>
+            </div>
           </div>
         </div>
       </div>
@@ -152,11 +161,9 @@
       [selectedWarehouses]="selectedWarehouseIds"
       [stocks]="stocks"
       [rows]="rows"
-      [categories]="categories"
-      [selectedCategory]="filter.category"
+      [filter]="filter"
       [searchOffer]="searchOffer"
       [searchName]="searchName"
-      (categoryChange)="onCategoryChange($event)"
       (selectionChange)="onSelectionChange($event)"
       (dataChange)="onMatrixDataChange()"
     ></app-allocation-matrix>

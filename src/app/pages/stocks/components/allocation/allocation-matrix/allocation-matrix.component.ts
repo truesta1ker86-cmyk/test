@@ -28,7 +28,7 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
   @Input() stocks: Stock[] = [];
   @Input() rows = 50;
 
-  // ✅ Полный объект фильтра из родителя
+  // Полный объект фильтра из родителя
   @Input() filter: StockFilter = {
     search: '',
     source: '',
@@ -42,14 +42,13 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
     package: '',
   };
 
-  // ✅ Отдельные поля для поиска (для удобства, чтобы не разбирать filter каждый раз)
+  // Отдельные поля для поиска (для удобства)
   @Input() searchOffer: string = '';
   @Input() searchName: string = '';
 
   // ==================== ВЫХОДНЫЕ СОБЫТИЯ ====================
   @Output() selectionChange = new EventEmitter<any[]>();
   @Output() dataChange = new EventEmitter<void>();
-  @Output() categoryChange = new EventEmitter<string>();
 
   // ==================== КАРТЫ ОСТАТКОВ ====================
   private ozonStockMap = new Map<string, number>();
@@ -101,14 +100,24 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
       this.columns = [
         { field: 'product', header: 'Товар / артикул', width: '260px', cellTemplate: true },
         { field: 'category', header: 'Категория / тип', width: '180px', cellTemplate: true },
-        { field: 'available_1c', header: 'Физический остаток 1С', width: '120px', cellTemplate: true },
+        {
+          field: 'available_1c',
+          header: 'Физический остаток 1С',
+          width: '120px',
+          cellTemplate: true,
+        },
       ];
       return;
     }
     this.columns = [
       { field: 'product', header: 'Товар / артикул', width: '260px', cellTemplate: true },
       { field: 'category', header: 'Категория / тип', width: '180px', cellTemplate: true },
-      { field: 'available_1c', header: 'Физический остаток 1С', width: '120px', cellTemplate: true },
+      {
+        field: 'available_1c',
+        header: 'Физический остаток 1С',
+        width: '120px',
+        cellTemplate: true,
+      },
       ...this.selectedWarehouses.map((id) => {
         const warehouse = this.warehouses.find((w) => w.warehouse_id === id);
         return {
@@ -280,80 +289,50 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
     this.cdr.markForCheck();
   }
 
-  // ==================== ФИЛЬТРАЦИЯ (ПОЛНАЯ АДАПТАЦИЯ stockMatrixFilteredProducts) ====================
+  // ==================== ФИЛЬТРАЦИЯ (с использованием фильтра) ====================
   applyFilter(): void {
     let filtered = (this.products || []).filter((p) => p != null);
-
     const f = this.filter;
 
-    // 1. Фильтр по категории
     if (f.category) {
       filtered = filtered.filter((p) => p.category_label === f.category);
     }
-
-    // 2. Фильтр по типу
     if (f.type) {
       filtered = filtered.filter((p) => p.type_label === f.type);
     }
-
-    // 3. Фильтр по бренду
     if (f.brand) {
       filtered = filtered.filter((p) => p.brand === f.brand);
     }
-
-    // 4. Фильтр по подгруппе
     if (f.group) {
       filtered = filtered.filter((p) => p.filter_group === f.group);
     }
-
-    // 5. Фильтр по серии
     if (f.series) {
       filtered = filtered.filter((p) => p.filter_series === f.series);
     }
-
-    // 6. Фильтр по длине
     if (f.length) {
       filtered = filtered.filter((p) => p.filter_length_mm?.toString() === f.length);
     }
-
-    // 7. Фильтр по цвету
     if (f.color) {
       filtered = filtered.filter((p) => p.filter_color === f.color);
     }
-
-    // 8. Фильтр по упаковке
     if (f.package) {
       filtered = filtered.filter((p) => p.filter_package_qty?.toString() === f.package);
     }
 
-    // 9. Поиск по артикулу
     if (this.searchOffer) {
       const q = this.searchOffer.toLowerCase();
       filtered = filtered.filter((p) => p.offer_id?.toLowerCase().includes(q));
     }
-
-    // 10. Поиск по названию (с проверкой offer_id как fallback)
     if (this.searchName) {
       const q = this.searchName.toLowerCase();
       filtered = filtered.filter((p) => {
         const nameMatch = (p.name || '').toLowerCase().includes(q);
-        // Если имя не совпало, проверяем offer_id
         return nameMatch || p.offer_id?.toLowerCase().includes(q);
       });
     }
 
-    // 11. (Опционально) Проверка на верификацию 1С, если нужна
-    // В нашей реализации мы не используем _stockMappingStatus, поэтому пропускаем
-
     this.filteredData = filtered;
     this.cdr.markForCheck();
-  }
-
-  // ==================== ИЗМЕНЕНИЕ КАТЕГОРИИ (если нужно отдельное событие) ====================
-  changeCategory(category: string): void {
-    this.filter = { ...this.filter, category };
-    this.categoryChange.emit(category);
-    this.applyFilter();
   }
 
   // ==================== ВЫБОР ВСЕХ СТРОК ====================
@@ -367,7 +346,7 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
     this.cdr.markForCheck();
   }
 
-  // ==================== СОХРАНЕНИЕ / ОТМЕНА ЧЕРНОВИКОВ ====================
+  // ==================== СОХРАНЕНИЕ / ОТМЕНА ====================
   saveDrafts(): void {
     // TODO: отправить drafts на сервер
   }

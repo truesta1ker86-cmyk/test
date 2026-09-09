@@ -1,4 +1,3 @@
-// filter-panel.directive.ts
 import {
   Directive,
   Input,
@@ -24,15 +23,14 @@ interface FilterPanelContext {
     activeCount: number;
     hasChanges: boolean;
     isResetting: boolean;
-    // Методы - все с префиксом, чтобы избежать конфликтов
     getValue: (key: string) => any;
     getError: (key: string) => string | null;
     isDisabled: (config: FilterConfig) => boolean;
     updateFilter: (key: string, value: any) => void;
     updateFilters: (updates: Partial<FilterValues>) => void;
-    resetAllFilters: () => void; // Переименовано
+    resetAllFilters: () => void;
     resetFilter: (key: string) => void;
-    applyFiltersAction: () => void; // Переименовано
+    applyFiltersAction: () => void;
   };
 }
 
@@ -46,7 +44,6 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
   @Input('appFilterPanelDebounce') debounceTime: number = 300;
   @Input('appFilterPanelAutoApply') autoApply: boolean = true;
 
-  // Переименованы Output'ы чтобы избежать конфликтов
   @Output() filtersChanged = new EventEmitter<ValidFilterValues>();
   @Output() applyFiltersClicked = new EventEmitter<void>();
   @Output() resetFiltersClicked = new EventEmitter<void>();
@@ -59,7 +56,6 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
   private viewRef: any;
   private updateEffect: any;
 
-  // Контекст для шаблона
   private context: FilterPanelContext = {
     $implicit: {
       filters: [],
@@ -74,17 +70,13 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
       isDisabled: this.isDisabled.bind(this),
       updateFilter: this.updateFilter.bind(this),
       updateFilters: this.updateFilters.bind(this),
-      resetAllFilters: this.resetAllFilters.bind(this), // Переименован метод
+      resetAllFilters: this.resetAllFilters.bind(this),
       resetFilter: this.resetFilter.bind(this),
-      applyFiltersAction: this.applyFiltersAction.bind(this), // Переименован метод
+      applyFiltersAction: this.applyFiltersAction.bind(this),
     },
   };
 
-  ngOnInit() {
-    // Устанавливаем конфиги
-    this.filterService.setConfigs(this.configs);
-
-    // Создаем эффект для обновления контекста
+  constructor() {
     this.updateEffect = effect(() => {
       const filters = this.filterService.sortedConfigs();
       const groupedFilters = this.filterService.groupedConfigs();
@@ -95,7 +87,6 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
       const isResetting = this.filterService.isResetting();
 
       untracked(() => {
-        // Обновляем контекст
         this.context.$implicit.filters = filters;
         this.context.$implicit.groupedFilters = groupedFilters;
         this.context.$implicit.values = values;
@@ -103,13 +94,16 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
         this.context.$implicit.activeCount = activeCount;
         this.context.$implicit.hasChanges = hasChanges;
         this.context.$implicit.isResetting = isResetting;
-
-        // Рендерим шаблон
         this.render();
       });
     });
+  }
 
-    // Подписываемся на изменения для эмита
+  ngOnInit() {
+    // Устанавливаем конфиги после инициализации
+    this.filterService.setConfigs(this.configs);
+
+    // Подписываемся на изменения для эмита (если включён авто-применение)
     if (this.autoApply) {
       const sub = this.filterService.changes$.subscribe((validFilters) => {
         this.filtersChanged.emit(validFilters);
@@ -163,7 +157,6 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
   }
 
   resetAllFilters(): void {
-    // Переименовано
     this.filterService.resetAll();
     this.resetFiltersClicked.emit();
   }
@@ -173,14 +166,13 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
   }
 
   applyFiltersAction(): void {
-    // Переименовано
     const validFilters = this.filterService.validValues();
     this.filtersChanged.emit(validFilters);
     this.applyFiltersClicked.emit();
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach((sub: any) => {
+    this.subscriptions.forEach(sub => {
       if (sub && typeof sub.unsubscribe === 'function') {
         sub.unsubscribe();
       }

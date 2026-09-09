@@ -8,11 +8,9 @@
     [(selection)]="selectedProducts"
     (selectionChange)="onSelectionChange($event)"
     [rowClickable]="false"
-    [headerTemplate]="headerTemplate"
   >
-    <!-- Кастомный шаблон ячеек -->
     <ng-template #cellTemplate let-row let-column="column" let-value="value">
-      <!-- Колонка "Товар / артикул" -->
+      <!-- Колонка "Товар" -->
       <div *ngIf="column.field === 'product'" class="stock-matrix-product">
         <b>{{ row?.name || 'Без названия' }}</b>
         <small class="mono">{{ row?.offer_id || '—' }}</small>
@@ -24,7 +22,7 @@
         </small>
       </div>
 
-      <!-- Колонка "Категория / тип" (отображение данных) -->
+      <!-- Колонка "Категория / тип" -->
       <div *ngIf="column.field === 'category'" class="stock-matrix-category">
         <span>{{ row?.category_label || 'Без категории' }}</span>
         <small class="muted" style="display: block; margin-top: 3px">
@@ -56,42 +54,6 @@
           (draftChange)="onDraftChange(row, column.warehouseId, $event)"
         ></app-allocation-matrix-cell>
       </div>
-    </ng-template>
-
-
-    <ng-template #headerTemplate let-columns>
-      <tr>
-        <!-- Чекбокс для множественного выбора -->
-        <th *ngIf="'multiple'" style="width: 3rem">
-          <p-table-header-checkbox></p-table-header-checkbox>
-        </th>
-  
-        <th *ngIf="'multiple'" style="width: 3rem">
-          <input type="checkbox"
-                 [checked]="selectedProducts.length === filteredData.length && filteredData.length > 0"
-                 (change)="selectAll($any($event.target).checked)">
-        </th>
-
-        <!-- Все колонки -->
-        <th *ngFor="let col of columns" [style.width]="col.width || 'auto'">
-          <!-- Для колонки "Категория / тип" добавляем фильтр -->
-          <ng-container *ngIf="col.field === 'category'; else defaultHeader">
-            <label class="stock-matrix-category-filter-wrap">
-              <span class="stock-matrix-category-filter-label">{{ col.header }}</span>
-              <select class="stock-matrix-category-filter" (change)="changeCategory($any($event.target).value)">
-                <option value="">Все категории из 1С</option>
-                <option *ngFor="let cat of categories" [value]="cat.value" [selected]="cat.value === selectedCategory">
-                  {{ cat.label }}
-                </option>
-              </select>
-            </label>
-          </ng-container>
-          <!-- Для всех остальных колонок просто выводим заголовок -->
-          <ng-template #defaultHeader>
-            {{ col.header }}
-          </ng-template>
-        </th>
-      </tr>
     </ng-template>
   </app-data-table>
 

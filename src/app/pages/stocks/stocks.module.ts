@@ -27,6 +27,8 @@ import { FilterVisiblePipe } from './infrastructure/pipes/filter-visible.pipe';
 import { FilterPipe } from './infrastructure/pipes/filter.pipe';
 import { WarehousePickerComponent } from './components/allocation/warehouse-picker/warehouse-picker.component';
 import { AllocationMatrixCellComponent } from './components/allocation/allocation-matrix/allocation-matrix-cell/allocation-matrix-cell.component';
+import { FilterPanelModule } from '../../shared/directives/filter-panel/filter-panel.module';
+
 
 
 const routes: Routes = [
@@ -67,8 +69,9 @@ const routes: Routes = [
     TooltipModule,  
     FormsModule,
     DataTableModule,
-    DialogModule,    
-    RouterModule.forChild(routes)
+    DialogModule,
+    RouterModule.forChild(routes),
+    FilterPanelModule
   ]
 })
 export class StocksModule { }
