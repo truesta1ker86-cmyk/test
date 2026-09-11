@@ -1,0 +1,136 @@
+@use '../tokens' as *;
+@use '../mixins' as mx;
+
+:host {
+  display: block;
+  min-width: 0;
+}
+.select {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.select__label {
+  @include mx.control-label;
+}
+.select__required {
+  margin-left: 3px;
+  color: var(--red);
+}
+
+:host ::ng-deep .select__field.p-select {
+  @include mx.control-base;
+  .p-select-label {
+    padding: 0 10px;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+  }
+  .p-select-label.p-placeholder {
+    color: var(--faint);
+    opacity: 0.82;
+  }
+  .p-select-dropdown {
+    width: 32px;
+    color: var(--muted);
+  }
+  &:hover:not(.p-disabled) {
+    @include mx.control-hover;
+  }
+  &:focus-within,
+  &.p-focus {
+    @include mx.control-focus;
+  }
+  &.p-disabled {
+    @include mx.control-disabled;
+  }
+}
+
+:host ::ng-deep .p-select-panel {
+  margin-top: 4px;
+  border: 1px solid var(--hair-2);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  .p-select-header {
+    padding: 8px;
+    border-bottom: 1px solid var(--hair);
+  }
+  .p-select-filter {
+    width: 100%;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid var(--control-border);
+    border-radius: 8px;
+    background: var(--control-bg);
+    color: var(--text);
+    font-size: 12px;
+    outline: none;
+    &:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px var(--control-focus-ring);
+    }
+  }
+  .p-select-option {
+    min-height: 34px;
+    padding: 8px 12px;
+    color: var(--text-2);
+    font-size: 13px;
+    &:hover,
+    &.p-focus {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+    &.p-select-option-selected {
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-weight: 650;
+    }
+    &.p-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  .p-select-empty-message {
+    padding: 14px 12px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+  }
+}
+
+:host(.app-select--compact) ::ng-deep .select__field.p-select {
+  height: var(--control-height-compact);
+  min-height: var(--control-height-compact);
+}
+:host(.app-select--large) ::ng-deep .select__field.p-select {
+  height: var(--control-height-large);
+  min-height: var(--control-height-large);
+}
+:host([data-appearance='filled']) ::ng-deep .select__field.p-select {
+  background: var(--surface-2);
+  border-color: transparent;
+  box-shadow: none;
+}
+:host(.app-select--invalid) ::ng-deep .select__field.p-select {
+  @include mx.control-invalid;
+}
+
+.select__hint {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.select__error {
+  display: block;
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+}

@@ -89,7 +89,7 @@ export class FilterService {
       }
     }
     this.valuesSignal.set(defaults);
-    this.emitChanges(); // ✅ эмитим после установки
+    this.emitChanges();
   }
 
   updateFilter(key: string, value: any): void {
@@ -119,7 +119,7 @@ export class FilterService {
       ...values,
       [key]: value,
     }));
-    this.emitChanges(); // ✅ эмитим после обновления
+    this.emitChanges();
   }
 
   updateFilters(updates: Partial<FilterValues>): void {
@@ -127,7 +127,7 @@ export class FilterService {
       ...values,
       ...updates,
     }));
-    this.emitChanges(); // ✅ эмитим после массового обновления
+    this.emitChanges();
   }
 
   resetAll(): void {
@@ -140,7 +140,7 @@ export class FilterService {
       }
     }
     this.valuesSignal.set(defaults);
-    this.emitChanges(); // ✅ эмитим после сброса
+    this.emitChanges();
     setTimeout(() => {
       this.isResettingSignal.set(false);
     }, 100);

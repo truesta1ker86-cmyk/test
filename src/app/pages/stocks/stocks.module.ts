@@ -29,6 +29,7 @@ import { WarehousePickerComponent } from './components/allocation/warehouse-pick
 import { AllocationMatrixCellComponent } from './components/allocation/allocation-matrix/allocation-matrix-cell/allocation-matrix-cell.component';
 import { FilterPanelModule } from '../../shared/directives/filter-panel/filter-panel.module';
 import { PopupButtonModule } from '../../shared/popup-button/popup-button.module';
+import { InputModule } from '../../shared/ui/input/input.module';
 
 
 
@@ -73,7 +74,8 @@ const routes: Routes = [
     DialogModule,
     PopupButtonModule,
     RouterModule.forChild(routes),
-    FilterPanelModule
+    FilterPanelModule,
+    InputModule
   ]
 })
 export class StocksModule { }

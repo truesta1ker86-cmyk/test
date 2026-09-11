@@ -1,0 +1,191 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.input {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ─── Label ────────────────────────────────────────────────────
+     Оригинал: .fld-label
+     display:block; margin-bottom:6px; color:var(--text-2);
+     font-size:12px; font-weight:650;                          */
+.input__label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.input__required {
+  margin-left: 3px;
+  color: var(--red);
+}
+
+/* ─── Базовый input ────────────────────────────────────────────
+     Оригинал: .fld
+     border:1px solid var(--control-border);
+     border-radius:var(--control-radius);
+     background:var(--control-bg);
+     color:var(--text);
+     box-shadow:0 1px 2px rgba(16,24,40,0.06);
+     transition: border-color .15s var(--ease),
+                 background .15s var(--ease),
+                 box-shadow .15s var(--ease);                  */
+:host ::ng-deep .input__field.p-inputtext {
+  width: 100%;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 10px;
+
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-bg);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+
+  transition:
+    border-color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
+}
+
+/* Placeholder — оригинал: color:var(--muted); opacity:.82 */
+:host ::ng-deep .input__field.p-inputtext::placeholder {
+  color: var(--muted);
+  opacity: 0.82;
+}
+
+/* Hover — оригинал: border-color:var(--control-border-hover);
+                         background:var(--surface) */
+:host ::ng-deep .input__field.p-inputtext:hover:not(:disabled):not(:read-only) {
+  border-color: var(--control-border-hover);
+  background: var(--surface);
+}
+
+/* Focus — оригинал: outline:none; border-color:var(--brand);
+                       background:var(--surface);
+                       box-shadow:0 0 0 4px var(--control-focus-ring) */
+:host ::ng-deep .input__field.p-inputtext:focus,
+:host ::ng-deep .input__field.p-inputtext:focus-visible {
+  outline: none;
+  border-color: var(--brand);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px var(--control-focus-ring);
+}
+
+/* Disabled — оригинал: border-color:var(--control-disabled-border);
+                          background:var(--control-disabled-bg);
+                          color:var(--faint);
+                          box-shadow:none;
+                          cursor:not-allowed */
+:host ::ng-deep .input__field.p-inputtext:disabled {
+  border-color: var(--control-disabled-border);
+  background: var(--control-disabled-bg);
+  color: var(--faint);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Readonly — оригинал: border-color:var(--control-disabled-border);
+                          background:var(--surface-2) */
+:host ::ng-deep .input__field.p-inputtext:read-only:not(:disabled) {
+  border-color: var(--control-disabled-border);
+  background: var(--surface-2);
+}
+
+/* Invalid — оригинал: border-color:var(--red);
+                         box-shadow:0 0 0 4px rgba(217,45,32,0.12) */
+:host(.app-input--invalid) ::ng-deep .input__field.p-inputtext {
+  border-color: var(--red);
+  box-shadow: 0 0 0 4px rgba(217, 45, 32, 0.12);
+}
+
+/* Нативный крестик поиска — приглушённый */
+:host ::ng-deep .input__field.p-inputtext::-webkit-search-cancel-button {
+  filter: grayscale(1);
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+/* ─── Размеры ─────────────────────────────────────────────── */
+:host(.app-input--compact) ::ng-deep .input__field.p-inputtext {
+  height: 32px;
+  min-height: 32px;
+  font-size: 12px;
+}
+
+:host(.app-input--large) ::ng-deep .input__field.p-inputtext {
+  height: 38px;
+  min-height: 38px;
+  font-size: 14px;
+}
+
+/* ─── Модификатор "command" ─────────────────────────────────
+     Точное соответствие оригинальному .stock-matrix-command-input:
+  
+     background: var(--surface);
+     border-color: var(--hair-2);
+     box-shadow: none;
+  
+     ::placeholder { color: var(--faint); opacity: .72; }
+     :hover { border-color: var(--control-border-hover); }
+     :focus {
+       border-color: var(--brand);
+       background: var(--surface);
+       box-shadow: 0 0 0 3px var(--control-focus-ring);
+     }                                                          */
+:host([data-appearance='command']) ::ng-deep .input__field.p-inputtext {
+  background: var(--surface);
+  border-color: var(--hair-2);
+  box-shadow: none;
+}
+
+:host([data-appearance='command']) ::ng-deep .input__field.p-inputtext::placeholder {
+  color: var(--faint);
+  opacity: 0.72;
+}
+
+:host([data-appearance='command'])
+  ::ng-deep
+  .input__field.p-inputtext:hover:not(:disabled):not(:read-only) {
+  border-color: var(--control-border-hover);
+}
+
+:host([data-appearance='command']) ::ng-deep .input__field.p-inputtext:focus,
+:host([data-appearance='command']) ::ng-deep .input__field.p-inputtext:focus-visible {
+  border-color: var(--brand);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--control-focus-ring);
+}
+
+
+.input__hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.input__error {
+  display: block;
+  margin-top: 4px;
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  :host ::ng-deep .input__field.p-inputtext {
+    transition: none;
+  }
+}

@@ -40,32 +40,26 @@
     <!-- ===== СТРОКА ПОИСКА И ФИЛЬТР ===== -->
     <div class="stock-matrix-primarybar">
       <!-- Поиск по артикулу -->
-      <div class="fld-grp stock-matrix-search">
-        <label class="fld-label">Артикул или SKU</label>
-        <input
-          class="fld"
-          type="search"
-          [(ngModel)]="searchOffer"
-          placeholder="Артикул маркетплейса или 1С"
-        />
-      </div>
 
-      <!-- Поиск по названию с автодополнением -->
-      <div class="fld-grp stock-matrix-search">
-        <label class="fld-label">Наименование</label>
-        <input
-          class="fld"
-          type="search"
-          list="nameSuggestions"
-          [(ngModel)]="searchName"
-          (input)="onNameSearchInput($any($event.target).value)"
-          (focus)="onNameSearchFocus()"
-          placeholder="Начните вводить название…"
-        />
-        <datalist id="nameSuggestions">
-          <option *ngFor="let name of nameSuggestions" [value]="name"></option>
-        </datalist>
-      </div>
+      <app-input
+        inputId="stockMatrixSearch"
+        label="Артикул или SKU"
+        type="search"
+        placeholder="Артикул маркетплейса или 1С"
+        [value]="filterServiceAdditional.values().searchOffer"
+        (inputChanged)="onSearchOfferChange($event)"
+      />
+
+      <app-input
+        inputId="stockMatrixNameSearch"
+        label="Наименование"
+        type="search"
+        placeholder="Начните вводить название…"
+        listId="stockMatrixNameSearch-datalist"
+        [datalistOptions]="nameSuggestions"
+        [value]="filterServiceAdditional.values().searchName"
+        (inputChanged)="onSearchNameChange($event)"
+      />
 
       <!-- ===== КНОПКА С ПОПАПОМ ФИЛЬТРОВ ===== -->
       <app-popup-button
@@ -167,8 +161,6 @@
       [selectedWarehouses]="selectedWarehouseIds"
       [stocks]="stocks"
       [rows]="rows"
-      [searchOffer]="searchOffer"
-      [searchName]="searchName"
       (selectionChange)="onSelectionChange($event)"
       (dataChange)="onMatrixDataChange()"
     ></app-allocation-matrix>

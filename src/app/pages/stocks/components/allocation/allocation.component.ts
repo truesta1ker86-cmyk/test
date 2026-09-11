@@ -11,12 +11,16 @@ import { Stock } from '../../infrastructure/models/stock.model';
 import { FilterService } from '../../../../shared/directives/filter-panel/infrastructure/services/filter.service';
 import { FilterConfig } from '../../../../shared/directives/filter-panel/infrastructure/models/filter.model';
 import { AllocationFilterOptions, buildAllocationFilterConfig } from '../../infrastructure/config/filter.config';
+import { AdditionalFiltersService } from './infrastructure/services/additional-filters.service';
 
 @Component({
   selector: 'app-allocation',
   standalone: false,
   templateUrl: './allocation.component.html',
   styleUrls: ['./allocation.component.scss'],
+  providers: [
+    AdditionalFiltersService
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AllocationComponent implements OnInit, OnDestroy {
@@ -55,9 +59,6 @@ export class AllocationComponent implements OnInit, OnDestroy {
   operationId: string | null = null;
   rows = 50;
 
-  // Поиск
-  searchOffer = '';
-  searchName = '';
   nameSuggestions: string[] = [];
 
   // Попап фильтров
@@ -72,12 +73,8 @@ export class AllocationComponent implements OnInit, OnDestroy {
   // Карта остатков 1С
   availableByOffer = new Map<string, number>();
 
-  // Сервис фильтров (публичный для доступа из шаблона)
   public filterService = inject(FilterService);
-
-  // Subject для поиска по названию (с debounce)
-  private nameSearchSubject = new Subject<{ query: string; filter: any }>();
-  private nameSearchSubscription: Subscription | null = null;
+  readonly filterServiceAdditional = inject(AdditionalFiltersService);
 
   // Подписка на изменения фильтров
   private filterChangesSubscription: Subscription | null = null;
@@ -95,17 +92,9 @@ export class AllocationComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadData();
-    this.initNameSearch();
-
-    // Подписываемся на изменения фильтров для обновления подсказок
-    this.filterChangesSubscription = this.filterService.changes$.subscribe(() => {
-      this.refreshNameSuggestions();
-    });
   }
 
-  ngOnDestroy(): void {
-    this.nameSearchSubscription?.unsubscribe();
-    this.filterChangesSubscription?.unsubscribe();
+  ngOnDestroy() {
   }
 
   // ==================== ЗАГРУЗКА ДАННЫХ ====================
@@ -143,6 +132,15 @@ export class AllocationComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
+  }
+
+
+  onSearchOfferChange(value: string): void {
+    this.filterServiceAdditional.updateFilter('searchOffer', value);
+  }
+
+  onSearchNameChange(value: string): void {
+    this.filterServiceAdditional.updateFilter('searchName', value);
   }
 
   // ==================== КАРТА ОСТАТКОВ 1С ====================
@@ -244,56 +242,6 @@ export class AllocationComponent implements OnInit, OnDestroy {
       packages: this.packages,
     };
     this.filterConfigs = buildAllocationFilterConfig(options);
-  }
-
-  // ==================== DEBOUNCE ПОИСКА ПО НАЗВАНИЮ ====================
-  private initNameSearch(): void {
-    this.nameSearchSubscription = this.nameSearchSubject.pipe(
-      debounceTime(250),
-      distinctUntilChanged((prev, curr) =>
-        prev.query === curr.query && JSON.stringify(prev.filter) === JSON.stringify(curr.filter)
-      ),
-      switchMap(({ query, filter }) => {
-        if (!query || query.length < 2) {
-          return Promise.resolve({ items: [] });
-        }
-        return this.productService.getNameSuggestions(query, filter, 20);
-      })
-    ).subscribe({
-      next: (data) => {
-        this.nameSuggestions = data.items?.map((item: any) => item.name) || [];
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.nameSuggestions = [];
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  private refreshNameSuggestions(): void {
-    if (this.searchName && this.searchName.length >= 2) {
-      const filterValues = this.filterService.values();
-      this.nameSearchSubject.next({ query: this.searchName, filter: filterValues });
-    }
-  }
-
-  onNameSearchInput(value: string): void {
-    this.searchName = value;
-    if (value.length === 1) {
-      this.nameSuggestions = [];
-      this.cdr.markForCheck();
-      return;
-    }
-    const filterValues = this.filterService.values();
-    this.nameSearchSubject.next({ query: value, filter: filterValues });
-  }
-
-  onNameSearchFocus(): void {
-    if (this.searchName.length >= 2) {
-      const filterValues = this.filterService.values();
-      this.nameSearchSubject.next({ query: this.searchName, filter: filterValues });
-    }
   }
 
   // ==================== НАСТРОЙКИ СКЛАДОВ ====================

@@ -1,0 +1,49 @@
+<div class="input">
+  @if (label() || showEmptyLabel()) {
+    <label class="input__label" [attr.for]="inputId()">
+      {{ label() }}
+      @if (required()) {
+        <span class="input__required" aria-hidden="true">*</span>
+      }
+    </label>
+  }
+
+  <input
+    pInputText
+    class="fld input__field"
+    [id]="inputId()"
+    [attr.list]="resolvedListId()"
+    [type]="type()"
+    [attr.placeholder]="placeholder() || null"
+    [attr.autocomplete]="autocomplete() || 'off'"
+    [attr.disabled]="isDisabled() ? '' : null"
+    [attr.readonly]="readonly() ? '' : null"
+    [attr.required]="required() ? '' : null"
+    [attr.aria-label]="label() || null"
+    [attr.aria-invalid]="invalid() ? 'true' : null"
+    [ngModel]="value()"
+    (ngModelChange)="onModelChange($event)"
+    (keyup.enter)="onEnter()"
+    (focus)="onFocus($event)"
+    (blur)="onBlur($event)"
+  />
+
+  <!-- Встроенный datalist: рендерится, только если заданы listId и datalistOptions -->
+  @if (hasDatalist() && resolvedListId(); as id) {
+    <datalist [id]="id">
+      @for (name of datalistOptions(); track $index) {
+        <option [attr.value]="name"></option>
+      }
+    </datalist>
+  }
+
+  @if (errorMessage()) {
+    <small class="input__error" [id]="inputId() + '-desc'" role="alert">
+      {{ errorMessage() }}
+    </small>
+  } @else if (hint()) {
+    <small class="input__hint" [id]="inputId() + '-desc'">
+      {{ hint() }}
+    </small>
+  }
+</div>

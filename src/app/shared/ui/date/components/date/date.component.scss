@@ -1,0 +1,130 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.date {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.date__label {
+  @include mx.control-label;
+}
+.date__required {
+  margin-left: 3px;
+  color: var(--red);
+}
+
+:host ::ng-deep .date__field.p-datepicker {
+  @include mx.control-base;
+  .p-datepicker-input {
+    padding: 0 10px;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    line-height: 1;
+    background: transparent;
+    border: 0;
+    outline: none;
+    &::placeholder {
+      color: var(--faint);
+    }
+  }
+  .p-datepicker-dropdown {
+    width: 32px;
+    color: var(--muted);
+    border: 0;
+    background: transparent;
+  }
+  &:hover:not(.p-disabled) {
+    @include mx.control-hover;
+  }
+  &:focus-within,
+  &.p-focus {
+    @include mx.control-focus;
+  }
+  &.p-disabled {
+    @include mx.control-disabled;
+  }
+}
+
+:host ::ng-deep .p-datepicker-panel {
+  margin-top: 4px;
+  border: 1px solid var(--hair-2);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  padding: 10px;
+  overflow: hidden;
+
+  .p-datepicker-header {
+    padding: 4px 2px 10px;
+    border-bottom: 1px solid var(--hair);
+  }
+  .p-datepicker-weekday {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 650;
+    text-transform: uppercase;
+  }
+  .p-datepicker-day {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin: 1px;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    &:hover {
+      background: var(--surface-2);
+    }
+    &.p-datepicker-day-selected,
+    &.p-highlight {
+      background: var(--brand);
+      color: #fff;
+    }
+    &.p-datepicker-today {
+      box-shadow: inset 0 0 0 2px var(--brand-soft);
+      color: var(--brand);
+    }
+    &.p-disabled {
+      color: var(--faint);
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+  }
+}
+
+:host(.app-date--compact) ::ng-deep .date__field.p-datepicker {
+  height: var(--control-height-compact);
+  min-height: var(--control-height-compact);
+}
+:host(.app-date--large) ::ng-deep .date__field.p-datepicker {
+  height: var(--control-height-large);
+  min-height: var(--control-height-large);
+}
+:host([data-appearance='filled']) ::ng-deep .date__field.p-datepicker {
+  background: var(--surface-2);
+  border-color: transparent;
+  box-shadow: none;
+}
+:host(.app-date--invalid) ::ng-deep .date__field.p-datepicker {
+  @include mx.control-invalid;
+}
+
+.date__hint {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.date__error {
+  display: block;
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+}

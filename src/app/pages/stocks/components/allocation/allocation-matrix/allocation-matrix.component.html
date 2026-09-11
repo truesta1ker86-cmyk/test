@@ -1,9 +1,9 @@
 <div class="allocation-matrix">
   <app-data-table
-    [columns]="columns"
-    [data]="filteredData"
+    [columns]="columns()"
+    [data]="filteredData()"
     [loading]="false"
-    [rows]="rows"
+    [rows]="rows()"
     [selectionMode]="'multiple'"
     [(selection)]="selectedProducts"
     (selectionChange)="onSelectionChange($event)"
@@ -47,10 +47,7 @@
           [quantum]="getRuleState(row, column.warehouseId).quantum"
           [isDirty]="getRuleState(row, column.warehouseId).dirty"
           [isEnabled]="getRuleState(row, column.warehouseId).enabled"
-          [isSaved]="
-            !getRuleState(row, column.warehouseId).dirty &&
-            rulesMap.has(row?.offer_id + '|' + column.warehouseId)
-          "
+          [isSaved]="isRuleSaved(row, column.warehouseId)"
           (draftChange)="onDraftChange(row, column.warehouseId, $event)"
         ></app-allocation-matrix-cell>
       </div>
@@ -58,7 +55,7 @@
   </app-data-table>
 
   <!-- Индикатор изменений -->
-  <div *ngIf="hasChanges" class="matrix-changes-indicator">
+  <div *ngIf="hasChanges()" class="matrix-changes-indicator">
     <span class="badge amber">Есть несохранённые изменения</span>
   </div>
 </div>

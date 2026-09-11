@@ -1,0 +1,50 @@
+<div class="date">
+  @if (label()) {
+    <label class="date__label" [attr.for]="inputId()">
+      {{ label() }}
+      @if (required()) {
+        <span class="date__required" aria-hidden="true">*</span>
+      }
+    </label>
+  }
+
+  <p-date-picker
+    styleClass="fld date__field"
+    [inputId]="inputId()"
+    [selectionMode]="selectionMode()"
+    [view]="view()"
+    [dateFormat]="dateFormat()"
+    [placeholder]="placeholder()"
+    [showTime]="showTime()"
+    [hourFormat]="hourFormat()"
+    [showIcon]="showIcon()"
+    [showButtonBar]="showButtonBar()"
+    [showClear]="showClear()"
+    [showWeek]="showWeek()"
+    [firstDayOfWeek]="firstDayOfWeek()"
+    [minDate]="minDate() ?? undefined"
+    [maxDate]="maxDate() ?? undefined"
+    [numberOfMonths]="numberOfMonths()"
+    [inline]="inline()"
+    [touchUI]="touchUI()"
+    [panelStyleClass]="panelStyleClass()"
+    [disabled]="isDisabled()"
+    [readonlyInput]="readonly()"
+    [required]="required()"
+    [ngModel]="value()"
+    (ngModelChange)="onModelChange($event)"
+    (onFocus)="onFocus($event)"
+    (onBlur)="onBlur($event)"
+    (onShow)="opened.emit()"
+    (onHide)="closed.emit()"
+    (onClear)="onClear()"
+    [attr.aria-label]="label() || null"
+    [attr.aria-invalid]="invalid() ? 'true' : null"
+  />
+
+  @if (errorMessage()) {
+    <small class="date__error" [id]="inputId() + '-desc'" role="alert">{{ errorMessage() }}</small>
+  } @else if (hint()) {
+    <small class="date__hint" [id]="inputId() + '-desc'">{{ hint() }}</small>
+  }
+</div>
