@@ -1,20 +1,18 @@
-// filter-control.directive.ts
-import { 
-  Directive, 
-  Input, 
-  Output, 
-  EventEmitter, 
-  OnInit, 
+import {
+  Directive,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
   OnDestroy,
+  OnChanges,
+  SimpleChanges,
   TemplateRef,
   ViewContainerRef,
   inject,
-  effect,
-  untracked
 } from '@angular/core';
 import { FilterConfig } from './infrastructure/models/filter.model';
 import { FilterService } from './infrastructure/services/filter.service';
-
 
 interface FilterControlContext {
   $implicit: {
@@ -30,9 +28,9 @@ interface FilterControlContext {
 @Directive({
   selector: '[appFilterControl]',
   standalone: false,
-  exportAs: 'filterControl'
+  exportAs: 'filterControl',
 })
-export class FilterControlDirective implements OnInit, OnDestroy {
+export class FilterControlDirective implements OnInit, OnDestroy, OnChanges {
   @Input('appFilterControl') key!: string;
   @Input('appFilterControlConfig') customConfig?: FilterConfig;
   @Input('appFilterControlValue') initialValue?: any;
@@ -50,51 +48,54 @@ export class FilterControlDirective implements OnInit, OnDestroy {
       error: null,
       disabled: false,
       updateValue: this.updateValue.bind(this),
-      getValue: this.getValue.bind(this)
-    }
+      getValue: this.getValue.bind(this),
+    },
   };
 
   private viewRef: any;
-  private destroyEffect: any;
+  private subscriptions: any[] = [];
 
-  ngOnInit() {
+  ngOnInit(): void {
+    // Если пришёл initialValue, устанавливаем его в сервис
+    if (this.initialValue !== undefined) {
+      this.filterService.updateFilter(this.key, this.initialValue);
+    }
+
+    // Обновляем контекст при изменении валидных фильтров
+    const sub = this.filterService.changes$.subscribe(() => {
+      this.updateContext();
+      this.render();
+    });
+    this.subscriptions.push(sub);
+
+    // Эмитим изменения значения и ошибки при их обновлении
+    // Можно также подписаться на отдельные изменения, если нужно,
+    // но пока достаточно общего обновления контекста
+
+    // Первоначальный рендеринг
+    this.updateContext();
+    this.render();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Если изменился ключ, обновляем контекст
+    if (changes['key'] && !changes['key'].firstChange) {
+      this.updateContext();
+      this.render();
+    }
+    // Если изменился customConfig, тоже обновляем
+    if (changes['customConfig']) {
+      this.updateContext();
+      this.render();
+    }
+  }
+
+  private updateContext(): void {
     const config = this.customConfig || this.filterService.getConfig(this.key);
     if (!config) {
       console.error(`Фильтр с ключом "${this.key}" не найден`);
       return;
     }
-
-    // Устанавливаем начальное значение
-    if (this.initialValue !== undefined) {
-      this.filterService.updateFilter(this.key, this.initialValue);
-    }
-
-    // Обновляем контекст
-    this.updateContext();
-
-    // Подписываемся на изменения
-    this.destroyEffect = effect(() => {
-      const value = this.filterService.getValue(this.key);
-      const error = this.filterService.getError(this.key);
-      const isDisabled = this.isDisabled(config);
-      const currentConfig = this.filterService.getConfig(this.key);
-
-      untracked(() => {
-        this.context.$implicit.config = currentConfig || config;
-        this.context.$implicit.value = value;
-        this.context.$implicit.error = error;
-        this.context.$implicit.disabled = isDisabled;
-        
-        this.render();
-        this.valueChange.emit(value);
-        this.errorChange.emit(error);
-      });
-    });
-  }
-
-  private updateContext(): void {
-    const config = this.customConfig || this.filterService.getConfig(this.key);
-    if (!config) return;
 
     const value = this.filterService.getValue(this.key);
     const error = this.filterService.getError(this.key);
@@ -104,6 +105,10 @@ export class FilterControlDirective implements OnInit, OnDestroy {
     this.context.$implicit.value = value;
     this.context.$implicit.error = error;
     this.context.$implicit.disabled = isDisabled;
+
+    // Эмитим события
+    this.valueChange.emit(value);
+    this.errorChange.emit(error);
   }
 
   private render(): void {
@@ -113,9 +118,11 @@ export class FilterControlDirective implements OnInit, OnDestroy {
 
   private isDisabled(config: FilterConfig): boolean {
     if (config.disabled) return true;
-    
+
     if (config.dependsOn) {
-      const dependsOnArray = Array.isArray(config.dependsOn) ? config.dependsOn : [config.dependsOn];
+      const dependsOnArray = Array.isArray(config.dependsOn)
+        ? config.dependsOn
+        : [config.dependsOn];
       for (const dependKey of dependsOnArray) {
         const dependValue = this.filterService.getValue(dependKey);
         if (!dependValue && dependValue !== false && dependValue !== 0) {
@@ -134,10 +141,12 @@ export class FilterControlDirective implements OnInit, OnDestroy {
     return this.filterService.getValue(this.key);
   }
 
-  ngOnDestroy() {
-    if (this.destroyEffect) {
-      this.destroyEffect.destroy();
-    }
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((sub) => {
+      if (sub && typeof sub.unsubscribe === 'function') {
+        sub.unsubscribe();
+      }
+    });
     if (this.viewRef) {
       this.viewRef.destroy();
     }

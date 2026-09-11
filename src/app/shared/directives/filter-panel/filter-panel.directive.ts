@@ -5,13 +5,17 @@ import {
   EventEmitter,
   OnInit,
   OnDestroy,
+  OnChanges,
+  SimpleChanges,
   TemplateRef,
   ViewContainerRef,
   inject,
-  effect,
-  untracked,
 } from '@angular/core';
-import { FilterConfig, FilterValues, ValidFilterValues } from './infrastructure/models/filter.model';
+import {
+  FilterConfig,
+  FilterValues,
+  ValidFilterValues,
+} from './infrastructure/models/filter.model';
 import { FilterService } from './infrastructure/services/filter.service';
 
 interface FilterPanelContext {
@@ -39,8 +43,8 @@ interface FilterPanelContext {
   standalone: false,
   exportAs: 'filterPanel',
 })
-export class FilterPanelDirective implements OnInit, OnDestroy {
-  @Input('appFilterPanelConfig') configs: FilterConfig[] = [];
+export class FilterPanelDirective implements OnInit, OnDestroy, OnChanges {
+  @Input('appFilterPanel') configs: FilterConfig[] = [];
   @Input('appFilterPanelDebounce') debounceTime: number = 300;
   @Input('appFilterPanelAutoApply') autoApply: boolean = true;
 
@@ -54,7 +58,6 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
 
   private subscriptions: any[] = [];
   private viewRef: any;
-  private updateEffect: any;
 
   private context: FilterPanelContext = {
     $implicit: {
@@ -76,40 +79,46 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
     },
   };
 
-  constructor() {
-    this.updateEffect = effect(() => {
-      const filters = this.filterService.sortedConfigs();
-      const groupedFilters = this.filterService.groupedConfigs();
-      const values = this.filterService.values();
-      const validValues = this.filterService.validValues();
-      const activeCount = this.filterService.activeFiltersCount();
-      const hasChanges = this.filterService.hasChanges();
-      const isResetting = this.filterService.isResetting();
-
-      untracked(() => {
-        this.context.$implicit.filters = filters;
-        this.context.$implicit.groupedFilters = groupedFilters;
-        this.context.$implicit.values = values;
-        this.context.$implicit.validValues = validValues;
-        this.context.$implicit.activeCount = activeCount;
-        this.context.$implicit.hasChanges = hasChanges;
-        this.context.$implicit.isResetting = isResetting;
-        this.render();
-      });
-    });
-  }
-
-  ngOnInit() {
-    // Устанавливаем конфиги после инициализации
+  ngOnInit(): void {
+    // Устанавливаем конфиги в сервис
     this.filterService.setConfigs(this.configs);
 
-    // Подписываемся на изменения для эмита (если включён авто-применение)
+    // Подписываемся на изменения валидных фильтров для обновления контекста
+    const sub = this.filterService.changes$.subscribe(() => {
+      this.updateContext();
+    });
+    this.subscriptions.push(sub);
+
+    // Если autoApply включён, эмитим изменения наружу
     if (this.autoApply) {
-      const sub = this.filterService.changes$.subscribe((validFilters) => {
+      const autoSub = this.filterService.changes$.subscribe((validFilters) => {
         this.filtersChanged.emit(validFilters);
       });
-      this.subscriptions.push(sub);
+      this.subscriptions.push(autoSub);
     }
+
+    // Первоначальный рендеринг
+    this.updateContext();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Если изменилась конфигурация, обновляем сервис и контекст
+    if (changes['configs']) {
+      this.filterService.setConfigs(this.configs);
+      this.updateContext();
+    }
+  }
+
+  private updateContext(): void {
+    this.context.$implicit.filters = this.filterService.sortedConfigs();
+    this.context.$implicit.groupedFilters = this.filterService.groupedConfigs();
+    this.context.$implicit.values = this.filterService.values();
+    this.context.$implicit.validValues = this.filterService.validValues();
+    this.context.$implicit.activeCount = this.filterService.activeFiltersCount();
+    this.context.$implicit.hasChanges = this.filterService.hasChanges();
+    this.context.$implicit.isResetting = this.filterService.isResetting();
+
+    this.render();
   }
 
   private render(): void {
@@ -117,7 +126,8 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
     this.viewRef = this.viewContainer.createEmbeddedView(this.templateRef, this.context);
   }
 
-  // Публичные методы (доступны через контекст)
+  // ========== Публичные методы (доступны через контекст) ==========
+
   getValue(key: string): any {
     return this.filterService.getValue(key);
   }
@@ -171,16 +181,12 @@ export class FilterPanelDirective implements OnInit, OnDestroy {
     this.applyFiltersClicked.emit();
   }
 
-  ngOnDestroy() {
-    this.subscriptions.forEach(sub => {
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((sub) => {
       if (sub && typeof sub.unsubscribe === 'function') {
         sub.unsubscribe();
       }
     });
-
-    if (this.updateEffect) {
-      this.updateEffect.destroy();
-    }
 
     if (this.viewRef) {
       this.viewRef.destroy();

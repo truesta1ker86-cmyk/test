@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { InventoryComponent } from './components/inventory/inventory.component';
@@ -28,6 +28,7 @@ import { FilterPipe } from './infrastructure/pipes/filter.pipe';
 import { WarehousePickerComponent } from './components/allocation/warehouse-picker/warehouse-picker.component';
 import { AllocationMatrixCellComponent } from './components/allocation/allocation-matrix/allocation-matrix-cell/allocation-matrix-cell.component';
 import { FilterPanelModule } from '../../shared/directives/filter-panel/filter-panel.module';
+import { PopupButtonModule } from '../../shared/popup-button/popup-button.module';
 
 
 
@@ -70,6 +71,7 @@ const routes: Routes = [
     FormsModule,
     DataTableModule,
     DialogModule,
+    PopupButtonModule,
     RouterModule.forChild(routes),
     FilterPanelModule
   ]

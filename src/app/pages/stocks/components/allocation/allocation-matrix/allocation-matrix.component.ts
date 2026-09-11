@@ -4,14 +4,17 @@ import {
   Output,
   EventEmitter,
   OnInit,
+  OnDestroy,
   OnChanges,
   SimpleChanges,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  inject,
 } from '@angular/core';
 import { Stock } from '../../../infrastructure/models/stock.model';
-import { StockFilter } from '../../../infrastructure/models/stock.model';
 import { DataTableColumn } from '../../../../../shared/data-table/components/data-table/models/data-table-config.model';
+import { FilterService } from '../../../../../shared/directives/filter-panel/infrastructure/services/filter.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-allocation-matrix',
@@ -20,7 +23,7 @@ import { DataTableColumn } from '../../../../../shared/data-table/components/dat
   styleUrls: ['./allocation-matrix.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AllocationMatrixComponent implements OnInit, OnChanges {
+export class AllocationMatrixComponent implements OnInit, OnDestroy, OnChanges {
   // ==================== ВХОДНЫЕ СВОЙСТВА ====================
   @Input() products: any[] = [];
   @Input() warehouses: any[] = [];
@@ -28,21 +31,7 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
   @Input() stocks: Stock[] = [];
   @Input() rows = 50;
 
-  // Полный объект фильтра из родителя
-  @Input() filter: StockFilter = {
-    search: '',
-    source: '',
-    category: '',
-    type: '',
-    brand: '',
-    group: '',
-    series: '',
-    length: '',
-    color: '',
-    package: '',
-  };
-
-  // Отдельные поля для поиска (для удобства)
+  // Отдельные поля для поиска (приходят из родителя)
   @Input() searchOffer: string = '';
   @Input() searchName: string = '';
 
@@ -68,12 +57,21 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
   sortKey = 'offer_id';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  // ==================== ПОДПИСКА НА ИЗМЕНЕНИЯ ФИЛЬТРОВ ====================
+  private filterService = inject(FilterService);
+  private filterSubscription: Subscription | null = null;
+
   constructor(private cdr: ChangeDetectorRef) {}
 
   // ==================== ЖИЗНЕННЫЙ ЦИКЛ ====================
   ngOnInit(): void {
     this.buildColumns();
     this.buildStockMaps();
+
+    this.filterSubscription = this.filterService.changes$.subscribe(() => {
+      this.applyFilter();
+    });
+
     this.applyFilter();
   }
 
@@ -83,7 +81,6 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
       changes['warehouses'] ||
       changes['products'] ||
       changes['stocks'] ||
-      changes['filter'] ||
       changes['searchOffer'] ||
       changes['searchName']
     ) {
@@ -94,30 +91,25 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    this.filterSubscription?.unsubscribe();
+  }
+
+  
   // ==================== ПОСТРОЕНИЕ КОЛОНОК ====================
   buildColumns(): void {
     if (!this.selectedWarehouses.length) {
       this.columns = [
         { field: 'product', header: 'Товар / артикул', width: '260px', cellTemplate: true },
         { field: 'category', header: 'Категория / тип', width: '180px', cellTemplate: true },
-        {
-          field: 'available_1c',
-          header: 'Физический остаток 1С',
-          width: '120px',
-          cellTemplate: true,
-        },
+        { field: 'available_1c', header: 'Физический остаток 1С', width: '120px', cellTemplate: true },
       ];
       return;
     }
     this.columns = [
       { field: 'product', header: 'Товар / артикул', width: '260px', cellTemplate: true },
       { field: 'category', header: 'Категория / тип', width: '180px', cellTemplate: true },
-      {
-        field: 'available_1c',
-        header: 'Физический остаток 1С',
-        width: '120px',
-        cellTemplate: true,
-      },
+      { field: 'available_1c', header: 'Физический остаток 1С', width: '120px', cellTemplate: true },
       ...this.selectedWarehouses.map((id) => {
         const warehouse = this.warehouses.find((w) => w.warehouse_id === id);
         return {
@@ -289,40 +281,45 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
     this.cdr.markForCheck();
   }
 
-  // ==================== ФИЛЬТРАЦИЯ (с использованием фильтра) ====================
+  // ==================== ФИЛЬТРАЦИЯ (ЧЕРЕЗ FilterService) ====================
   applyFilter(): void {
     let filtered = (this.products || []).filter((p) => p != null);
-    const f = this.filter;
 
-    if (f.category) {
-      filtered = filtered.filter((p) => p.category_label === f.category);
+    // Получаем значения фильтров из сервиса
+    const values = this.filterService.values();
+
+    if (values['category']) {
+      filtered = filtered.filter((p) => p.category_label === values['category']);
     }
-    if (f.type) {
-      filtered = filtered.filter((p) => p.type_label === f.type);
+    if (values['type']) {
+      filtered = filtered.filter((p) => p.type_label === values['type']);
     }
-    if (f.brand) {
-      filtered = filtered.filter((p) => p.brand === f.brand);
+    if (values['brand']) {
+      filtered = filtered.filter((p) => p.brand === values['brand']);
     }
-    if (f.group) {
-      filtered = filtered.filter((p) => p.filter_group === f.group);
+    if (values['group']) {
+      filtered = filtered.filter((p) => p.filter_group === values['group']);
     }
-    if (f.series) {
-      filtered = filtered.filter((p) => p.filter_series === f.series);
+    if (values['series']) {
+      filtered = filtered.filter((p) => p.filter_series === values['series']);
     }
-    if (f.length) {
-      filtered = filtered.filter((p) => p.filter_length_mm?.toString() === f.length);
+    if (values['length']) {
+      filtered = filtered.filter((p) => p.filter_length_mm?.toString() === values['length']);
     }
-    if (f.color) {
-      filtered = filtered.filter((p) => p.filter_color === f.color);
+    if (values['color']) {
+      filtered = filtered.filter((p) => p.filter_color === values['color']);
     }
-    if (f.package) {
-      filtered = filtered.filter((p) => p.filter_package_qty?.toString() === f.package);
+    if (values['package']) {
+      filtered = filtered.filter((p) => p.filter_package_qty?.toString() === values['package']);
     }
 
+    // Поиск по артикулу
     if (this.searchOffer) {
       const q = this.searchOffer.toLowerCase();
       filtered = filtered.filter((p) => p.offer_id?.toLowerCase().includes(q));
     }
+
+    // Поиск по названию
     if (this.searchName) {
       const q = this.searchName.toLowerCase();
       filtered = filtered.filter((p) => {
@@ -330,7 +327,7 @@ export class AllocationMatrixComponent implements OnInit, OnChanges {
         return nameMatch || p.offer_id?.toLowerCase().includes(q);
       });
     }
-
+    console.log(this.filteredData);
     this.filteredData = filtered;
     this.cdr.markForCheck();
   }

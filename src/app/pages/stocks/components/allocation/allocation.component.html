@@ -39,6 +39,7 @@
 
     <!-- ===== СТРОКА ПОИСКА И ФИЛЬТР ===== -->
     <div class="stock-matrix-primarybar">
+      <!-- Поиск по артикулу -->
       <div class="fld-grp stock-matrix-search">
         <label class="fld-label">Артикул или SKU</label>
         <input
@@ -48,6 +49,8 @@
           placeholder="Артикул маркетплейса или 1С"
         />
       </div>
+
+      <!-- Поиск по названию с автодополнением -->
       <div class="fld-grp stock-matrix-search">
         <label class="fld-label">Наименование</label>
         <input
@@ -63,49 +66,52 @@
           <option *ngFor="let name of nameSuggestions" [value]="name"></option>
         </datalist>
       </div>
-      <div class="stock-matrix-filter-menu">
-        <button type="button" class="stock-filter-trigger" (click)="toggleFilterPopover()">
-          <svg><use href="#i-filter" /></svg>
-          <span class="stock-filter-caret"></span>
-        </button>
 
-        <!-- ===== НОВАЯ ПАНЕЛЬ ФИЛЬТРОВ (вместо старого AllocationFilterComponent) ===== -->
-        <div class="stock-filter-popover" [hidden]="!filterPopoverVisible">
-          <div class="stock-filter-popover-head">
-            <span>Фильтры товаров</span>
-            <small>категория · тип · подгруппа · бренд · серия · длина · цвет · упаковка</small>
+      <!-- ===== КНОПКА С ПОПАПОМ ФИЛЬТРОВ ===== -->
+      <app-popup-button
+        icon="i-filter"
+        ariaLabel="Фильтры товаров"
+        [count]="filterService.activeFiltersCount()"
+        position="bottom-right"
+        [(open)]="filterPopoverVisible"
+        popupWidth="min(720px, calc(100vw - 64px))"
+      >
+        <!-- Заголовок попапа -->
+        <div class="stock-filter-popover-head">
+          <span>Фильтры товаров</span>
+          <small>категория · тип · подгруппа · бренд · серия · длина · цвет · упаковка</small>
+        </div>
+
+        <!-- Панель фильтров -->
+        <div *appFilterPanel="filterConfigs; let ctx" class="allocation-filter-panel">
+          <div class="fld-grp" *ngFor="let filter of ctx.filters">
+            <label class="fld-label">{{ filter.label }}</label>
+            <ng-container *appFilterControl="filter.key; let control">
+              <select
+                class="fld"
+                [value]="control.value"
+                (change)="control.updateValue($any($event.target).value)"
+                [disabled]="control.isDisabled"
+              >
+                <option value="">Все</option>
+                <option
+                  *ngFor="let opt of filter.options"
+                  [value]="opt.value"
+                  [selected]="opt.value === control.value"
+                >
+                  {{ opt.label }}
+                </option>
+              </select>
+            </ng-container>
           </div>
 
-          <!-- Панель фильтров с директивой -->
-          <div *appFilterPanel="filterConfigs; let ctx" class="allocation-filter-panel">
-            <div class="fld-grp" *ngFor="let filter of ctx.filters">
-              <label class="fld-label">{{ filter.label }}</label>
-              <ng-container *appFilterControl="filter.key; let control">
-                <select
-                  class="fld"
-                  [value]="control.value"
-                  (change)="control.updateValue($any($event.target).value)"
-                  [disabled]="control.isDisabled"
-                >
-                  <option value="">Все</option>
-                  <option
-                    *ngFor="let opt of filter.options"
-                    [value]="opt.value"
-                    [selected]="opt.value === control.value"
-                  >
-                    {{ opt.label }}
-                  </option>
-                </select>
-              </ng-container>
-            </div>
-
-            <div class="filter-actions">
-              <button class="btn btn-ghost" (click)="ctx.resetAllFilters()">Сбросить</button>
-              <button class="btn btn-primary" (click)="onApplyFilters(ctx)">Применить</button>
-            </div>
+          <!-- Действия -->
+          <div class="filter-actions">
+            <button class="btn btn-ghost" (click)="ctx.resetAllFilters()">Сбросить</button>
+            <button class="btn btn-primary" (click)="onApplyFilters()">Применить</button>
           </div>
         </div>
-      </div>
+      </app-popup-button>
     </div>
 
     <!-- ===== ВЫБОР СКЛАДОВ И НАСТРОЙКИ ===== -->
@@ -161,7 +167,6 @@
       [selectedWarehouses]="selectedWarehouseIds"
       [stocks]="stocks"
       [rows]="rows"
-      [filter]="filter"
       [searchOffer]="searchOffer"
       [searchName]="searchName"
       (selectionChange)="onSelectionChange($event)"
