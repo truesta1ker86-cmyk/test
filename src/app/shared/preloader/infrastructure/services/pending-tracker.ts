@@ -1,7 +1,7 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { distinctUntilChanged, map, shareReplay } from 'rxjs/operators';
-import { withCounter } from '../../../rxjs/with-counter.operator';
 
+import { withCounter } from '../operators/with-counter.operator';
 
 export interface TrackedError {
   message: string;
@@ -11,18 +11,19 @@ export interface TrackedError {
 }
 
 export class PendingTracker {
+  /** Счётчик активных запросов. */
   readonly pending$ = new BehaviorSubject<number>(0);
 
+  /** Поток «идёт ли загрузка». */
   readonly loading$: Observable<boolean> = this.pending$.pipe(
     map((n) => n > 0),
     distinctUntilChanged(),
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
-  /** Текущая (последняя) ошибка. */
+  /** Последняя ошибка. */
   readonly lastError$ = new BehaviorSubject<TrackedError | null>(null);
 
-  /** Поток всех ошибок. */
   private readonly _errors$ = new Subject<TrackedError>();
 
   get count(): number {
@@ -61,7 +62,6 @@ export class PendingTracker {
     this.lastError$.next(tracked);
   }
 
-  /** Оборачивает Observable в счётчик. */
   wrap<T>(source: Observable<T>): Observable<T> {
     return source.pipe(withCounter(this.pending$));
   }

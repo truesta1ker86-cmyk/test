@@ -1,8 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PreloaderService } from './infrastructure/services/preloader.service';
-import { preloaderInterceptor } from './infrastructure/services/preloader.interceptor';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { PreloaderComponent } from './components/preloader/preloader.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -41,14 +39,6 @@ const SKELETONS = [
     FormsModule,
     ProgressSpinnerModule,
     SkeletonModule
-  ],
-  providers: [
-    PreloaderService,
-    provideHttpClient(
-        withInterceptors([
-          preloaderInterceptor,
-        ]),
-      ),
   ],
   exports: [
     PreloaderComponent,

@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 
 import { PendingTracker, type TrackedError } from './pending-tracker';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class PreloaderService {
   private readonly tracker = new PendingTracker();
   private readonly _pendingSignal = signal(0);
@@ -32,19 +32,18 @@ export class PreloaderService {
     this.tracker.release();
   }
 
-  track(): void {
-    this.show();
-  }
-  release(): void {
-    this.hide();
-  }
+  track(): void { this.show(); }
+  release(): void { this.hide(); }
 
   resetAll(): void {
     this._pendingSignal.set(0);
     this.tracker.reset();
   }
 
-  reportError(message: string, options: { source?: string; error?: unknown } = {}): void {
+  reportError(
+    message: string,
+    options: { source?: string; error?: unknown } = {},
+  ): void {
     this.tracker.reportError(message, options);
   }
 

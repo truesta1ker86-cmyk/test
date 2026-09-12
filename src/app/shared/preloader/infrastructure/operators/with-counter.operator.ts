@@ -1,21 +1,19 @@
-import { Observable, OperatorFunction, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-
-export interface FallbackOptions<T> {
-  fallback: T;
-  onError?: (error: unknown) => void;
-}
-
-
-export function catchToFallback<T>({
-  fallback,
-  onError,
-}: FallbackOptions<T>): OperatorFunction<T, T> {
-  return (source: Observable<T>) =>
-    source.pipe(
-      catchError((error: unknown) => {
-        onError?.(error);
-        return of(fallback);
-      }),
-    );
-}
+import {
+    BehaviorSubject,
+    Observable,
+    OperatorFunction,
+    defer,
+    finalize,
+  } from 'rxjs';
+  
+  export function withCounter<T>(
+    counter: BehaviorSubject<number>,
+  ): OperatorFunction<T, T> {
+    return (source: Observable<T>) =>
+      defer(() => {
+        counter.next(counter.value + 1);
+        return source.pipe(
+          finalize(() => counter.next(Math.max(0, counter.value - 1))),
+        );
+      });
+  }

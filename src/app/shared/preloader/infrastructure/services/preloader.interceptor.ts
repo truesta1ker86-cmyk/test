@@ -9,7 +9,6 @@ export const preloaderInterceptor: HttpInterceptorFn = (req, next) => {
   const preloader = inject(PreloaderService);
   const config = inject(PRELOADER_CONFIG);
 
-  // Пропускаем запросы с заголовком X-Skip-Preloader
   if (
     config.respectSkipHeader &&
     req.headers.has(config.skipHeaderName)
@@ -21,11 +20,12 @@ export const preloaderInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Логируем глобально, но не глотаем — компонент сам решит
-      console.error(
-        `[HTTP] ${req.method} ${req.url} → ${error.status} ${error.statusText}`,
-        error.message,
-      );
+      if (config.logHttpErrors) {
+        console.error(
+          `[HTTP] ${req.method} ${req.url} → ${error.status} ${error.statusText}`,
+          error.message,
+        );
+      }
 
       preloader.reportError(
         `Ошибка запроса ${req.method} ${req.url}`,
