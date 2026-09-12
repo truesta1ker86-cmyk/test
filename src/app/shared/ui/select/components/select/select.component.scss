@@ -1,136 +1,285 @@
-@use '../tokens' as *;
-@use '../mixins' as mx;
-
 :host {
   display: block;
   min-width: 0;
 }
+
 .select {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
 }
+
 .select__label {
-  @include mx.control-label;
-}
-.select__required {
-  margin-left: 3px;
-  color: var(--red);
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-2, #475467);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  user-select: none;
 }
 
+.select__required {
+  margin-left: 3px;
+  color: var(--red, #d92d20);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+     Поле селекта
+     ═══════════════════════════════════════════════════════════════ */
 :host ::ng-deep .select__field.p-select {
-  @include mx.control-base;
+  width: 100%;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 10px;
+
+  border: 1px solid var(--control-border, #98a2b3);
+  border-radius: var(--control-radius, 10px);
+  background: var(--control-bg, #f8fafc);
+  color: var(--text, #101828);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+
+  transition:
+    border-color var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+    background var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+    box-shadow var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+
   .p-select-label {
     padding: 0 10px;
-    color: var(--text);
+    color: var(--text, #101828);
     font: inherit;
     font-size: 13px;
     line-height: 1;
     display: flex;
     align-items: center;
   }
+
   .p-select-label.p-placeholder {
-    color: var(--faint);
+    color: var(--faint, #98a2b3);
     opacity: 0.82;
   }
+
   .p-select-dropdown {
     width: 32px;
-    color: var(--muted);
+    color: var(--muted, #667085);
   }
+
+  .p-select-clear-icon {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    color: var(--muted, #667085);
+    cursor: pointer;
+    transition: color var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+
+    &:hover {
+      color: var(--red, #d92d20);
+    }
+  }
+
   &:hover:not(.p-disabled) {
-    @include mx.control-hover;
+    border-color: var(--control-border-hover, #667085);
+    background: var(--surface, #ffffff);
   }
+
   &:focus-within,
   &.p-focus {
-    @include mx.control-focus;
+    outline: none;
+    border-color: var(--brand, #005bff);
+    background: var(--surface, #ffffff);
+    box-shadow: 0 0 0 4px var(--control-focus-ring, rgba(0, 91, 255, 0.18));
   }
+
   &.p-disabled {
-    @include mx.control-disabled;
+    border-color: var(--control-disabled-border, #d0d5dd);
+    background: var(--control-disabled-bg, #eaecf0);
+    color: var(--faint, #98a2b3);
+    box-shadow: none;
+    cursor: not-allowed;
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+     Панель опций
+     ═══════════════════════════════════════════════════════════════ */
 :host ::ng-deep .p-select-panel {
   margin-top: 4px;
-  border: 1px solid var(--hair-2);
-  border-radius: var(--control-radius);
-  background: var(--surface);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--hair-2, rgba(16, 24, 40, 0.11));
+  border-radius: var(--control-radius, 10px);
+  background: var(--surface, #ffffff);
+  box-shadow:
+    0 12px 32px -8px rgba(16, 24, 40, 0.18),
+    0 4px 12px -2px rgba(16, 24, 40, 0.08);
   overflow: hidden;
+
+  .p-select-items-wrapper {
+    max-height: 280px;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
   .p-select-header {
     padding: 8px;
-    border-bottom: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair, rgba(16, 24, 40, 0.07));
   }
+
   .p-select-filter {
     width: 100%;
     height: 32px;
     padding: 0 10px;
-    border: 1px solid var(--control-border);
+    border: 1px solid var(--control-border, #98a2b3);
     border-radius: 8px;
-    background: var(--control-bg);
-    color: var(--text);
+    background: var(--control-bg, #f8fafc);
+    color: var(--text, #101828);
     font-size: 12px;
     outline: none;
+
+    transition:
+      border-color var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      box-shadow var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+
     &:focus {
-      border-color: var(--brand);
-      box-shadow: 0 0 0 3px var(--control-focus-ring);
+      border-color: var(--brand, #005bff);
+      box-shadow: 0 0 0 3px var(--control-focus-ring, rgba(0, 91, 255, 0.18));
     }
   }
+
   .p-select-option {
     min-height: 34px;
     padding: 8px 12px;
-    color: var(--text-2);
+    color: var(--text-2, #475467);
     font-size: 13px;
+
+    transition:
+      background var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      color var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+
     &:hover,
     &.p-focus {
-      background: var(--surface-2);
-      color: var(--text);
+      background: var(--surface-2, #f4f5f7);
+      color: var(--text, #101828);
     }
+
     &.p-select-option-selected {
-      background: var(--brand-soft);
-      color: var(--brand);
+      background: var(--brand-soft, #eff4ff);
+      color: var(--brand, #005bff);
       font-weight: 650;
     }
+
     &.p-disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   }
+
   .p-select-empty-message {
     padding: 14px 12px;
-    color: var(--muted);
+    color: var(--muted, #667085);
     font-size: 12px;
     text-align: center;
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+     Размеры
+     ═══════════════════════════════════════════════════════════════ */
 :host(.app-select--compact) ::ng-deep .select__field.p-select {
-  height: var(--control-height-compact);
-  min-height: var(--control-height-compact);
-}
-:host(.app-select--large) ::ng-deep .select__field.p-select {
-  height: var(--control-height-large);
-  min-height: var(--control-height-large);
-}
-:host([data-appearance='filled']) ::ng-deep .select__field.p-select {
-  background: var(--surface-2);
-  border-color: transparent;
-  box-shadow: none;
-}
-:host(.app-select--invalid) ::ng-deep .select__field.p-select {
-  @include mx.control-invalid;
+  height: var(--control-height-compact, 32px);
+  min-height: var(--control-height-compact, 32px);
+
+  .p-select-label {
+    font-size: 12px;
+  }
 }
 
+:host(.app-select--large) ::ng-deep .select__field.p-select {
+  height: var(--control-height-large, 40px);
+  min-height: var(--control-height-large, 40px);
+
+  .p-select-label {
+    font-size: 14px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+     Виды (appearance)
+     ═══════════════════════════════════════════════════════════════ */
+
+/* filled */
+:host([data-appearance='filled']) ::ng-deep .select__field.p-select {
+  background: var(--surface-2, #f4f5f7);
+  border-color: transparent;
+  box-shadow: none;
+
+  &:hover:not(.p-disabled) {
+    background: var(--surface-3, #eceef1);
+  }
+
+  &:focus-within,
+  &.p-focus {
+    background: var(--surface, #ffffff);
+    border-color: var(--brand, #005bff);
+    box-shadow: 0 0 0 4px var(--control-focus-ring, rgba(0, 91, 255, 0.18));
+  }
+}
+
+/* outline */
+:host([data-appearance='outline']) ::ng-deep .select__field.p-select {
+  background: transparent;
+  box-shadow: none;
+
+  &:hover:not(.p-disabled) {
+    background: var(--surface, #ffffff);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+     Ошибка
+     ═══════════════════════════════════════════════════════════════ */
+:host(.app-select--invalid) ::ng-deep .select__field.p-select {
+  border-color: var(--red, #d92d20);
+  background: var(--red-soft, #fef3f2);
+
+  &:focus,
+  &:focus-within,
+  &.p-focus {
+    box-shadow: 0 0 0 4px rgba(217, 45, 32, 0.12);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+     Подсказка и ошибка
+     ═══════════════════════════════════════════════════════════════ */
 .select__hint {
   display: block;
-  color: var(--muted);
+  color: var(--muted, #667085);
   font-size: 11px;
   line-height: 1.35;
 }
+
 .select__error {
   display: block;
-  color: var(--red);
+  color: var(--red, #d92d20);
   font-size: 11px;
   font-weight: 600;
   line-height: 1.35;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+     Reduced motion
+     ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  :host ::ng-deep .select__field.p-select,
+  :host ::ng-deep .p-select-option,
+  :host ::ng-deep .p-select-filter,
+  :host ::ng-deep .p-select-clear-icon {
+    transition: none;
+  }
 }

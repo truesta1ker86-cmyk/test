@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 @Component({
   selector: 'app-skeleton-text',
@@ -11,9 +11,6 @@ export class SkeletonTextComponent {
   /** Количество строк. */
   readonly lines = input<number>(4);
 
-  /** Высота строки. */
-  readonly lineHeight = input<number>(12);
-
   /** Ширина последней строки (для естественности). */
   readonly lastLineWidth = input<string>('60%');
 
@@ -21,4 +18,7 @@ export class SkeletonTextComponent {
   readonly withTitle = input<boolean>(false);
 
   protected readonly array = Array;
+
+  readonly lineHeight = input<number>(12);
+  readonly lineHeightPx = computed(() => `${this.lineHeight()}px`);
 }

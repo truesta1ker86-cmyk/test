@@ -9,10 +9,13 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SkeletonModule } from 'primeng/skeleton';
 import { SkeletonCardsComponent } from './components/sceletons/skeleton-cards/skeleton-cards.component';
 import { SkeletonDashboardComponent } from './components/sceletons/skeleton-dashboard/skeleton-dashboard.component';
+import { SkeletonDataTableComponent } from './components/sceletons/skeleton-data-table/skeleton-data-table.component';
 import { SkeletonFormComponent } from './components/sceletons/skeleton-form/skeleton-form.component';
 import { SkeletonListComponent } from './components/sceletons/skeleton-list/skeleton-list.component';
 import { SkeletonTableComponent } from './components/sceletons/skeleton-table/skeleton-table.component';
 import { SkeletonTextComponent } from './components/sceletons/skeleton-text/skeleton-text.component';
+import { ErrorStateComponent } from './components/error-state/error-state.component';
+
 
 
 const SKELETONS = [
@@ -22,6 +25,7 @@ const SKELETONS = [
     SkeletonFormComponent,
     SkeletonDashboardComponent,
     SkeletonTextComponent,
+    SkeletonDataTableComponent
   ];
 
 
@@ -30,6 +34,7 @@ const SKELETONS = [
   declarations: [
     PreloaderComponent,
     ...SKELETONS,
+    ErrorStateComponent
   ],
   imports: [
     CommonModule,
@@ -47,7 +52,8 @@ const SKELETONS = [
   ],
   exports: [
     PreloaderComponent,
-    ...SKELETONS
+    ...SKELETONS,
+    ErrorStateComponent
   ],
 })
 export class PreloaderModule {}

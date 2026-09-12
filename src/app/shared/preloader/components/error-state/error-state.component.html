@@ -1,0 +1,23 @@
+<div
+  class="error-state"
+  [class.error-state--compact]="compact()"
+  role="alert"
+  aria-live="assertive"
+>
+  <div class="error-state__icon" aria-hidden="true">
+    <svg class="icon"><use [attr.href]="'#' + icon()"></use></svg>
+  </div>
+
+  <div class="error-state__body">
+    <h3 class="error-state__title">{{ title() }}</h3>
+    @if (message()) {
+      <p class="error-state__message">{{ message() }}</p>
+    }
+  </div>
+
+  @if (retryLabel()) {
+    <button type="button" class="btn btn-ghost error-state__action" (click)="retry.emit()">
+      {{ retryLabel() }}
+    </button>
+  }
+</div>

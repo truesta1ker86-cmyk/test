@@ -1,31 +1,67 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
+import { Observable } from 'rxjs';
 
-@Injectable({ providedIn: 'root' })
+import { PendingTracker, type TrackedError } from './pending-tracker';
+
+@Injectable()
 export class PreloaderService {
-  private readonly _pending = signal(0);
+  private readonly tracker = new PendingTracker();
+  private readonly _pendingSignal = signal(0);
 
-  readonly visible = computed(() => this._pending() > 0);
+  // ─── Потоки ───────────────────────────────────────────────
+  readonly pending$ = this.tracker.pending$;
+  readonly loading$ = this.tracker.loading$;
+  readonly lastError$ = this.tracker.lastError$;
 
-  readonly count = computed(() => this._pending());
+  get errors$(): Observable<TrackedError> {
+    return this.tracker.errors$;
+  }
 
+  // ─── Сигналы ──────────────────────────────────────────────
+  readonly visible = computed(() => this._pendingSignal() > 0);
+  readonly count = computed(() => this._pendingSignal());
+
+  // ─── Управление ───────────────────────────────────────────
   show(): void {
-    this._pending.update((n) => n + 1);
+    this._pendingSignal.update((n) => n + 1);
+    this.tracker.track();
   }
 
   hide(): void {
-    this._pending.update((n) => Math.max(0, n - 1));
+    this._pendingSignal.update((n) => Math.max(0, n - 1));
+    this.tracker.release();
   }
 
-  reset(): void {
-    this._pending.set(0);
+  track(): void {
+    this.show();
+  }
+  release(): void {
+    this.hide();
   }
 
-  async wrap<T>(task: Promise<T>): Promise<T> {
+  resetAll(): void {
+    this._pendingSignal.set(0);
+    this.tracker.reset();
+  }
+
+  reportError(message: string, options: { source?: string; error?: unknown } = {}): void {
+    this.tracker.reportError(message, options);
+  }
+
+  wrap<T>(source: Observable<T>): Observable<T> {
+    return this.tracker.wrap(source);
+  }
+
+  async wrapPromise<T>(task: Promise<T>): Promise<T> {
     this.show();
     try {
       return await task;
     } finally {
       this.hide();
     }
+  }
+
+  dispose(): void {
+    this.tracker.dispose();
   }
 }

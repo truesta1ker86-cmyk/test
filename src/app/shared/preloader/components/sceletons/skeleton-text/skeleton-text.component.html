@@ -6,7 +6,7 @@
   @for (line of array(lines()); track $index) {
     <p-skeleton
       [width]="$last ? lastLineWidth() : '100%'"
-      [height]="lineHeight() + 'px'"
+      [height]="lineHeightPx()"
       borderRadius="4px"
     />
   }
