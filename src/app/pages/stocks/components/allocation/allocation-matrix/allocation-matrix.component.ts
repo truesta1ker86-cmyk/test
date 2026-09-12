@@ -15,19 +15,20 @@ import { DataTableColumn } from '../../../../../shared/data-table/components/dat
 import { FilterService } from '../../../../../shared/directives/filter-panel/infrastructure/services/filter.service';
 import { CombinedFilters } from '../../../infrastructure/models/filter.interface';
 import { AdditionalFiltersService } from '../infrastructure/services/additional-filters.service';
+import { applyFilter } from '../../../../../shared/filtering/filter.engine';
+import { sortData } from '../../../../../shared/utils/sort-data';
 
-const EMPTY_FILTERS: CombinedFilters = {
-  category: '',
-  type: '',
-  brand: '',
-  group: '',
-  series: '',
-  length: '',
-  color: '',
-  package: '',
-  searchOffer: '',
-  searchName: '',
-};
+
+import {
+  cellKey,
+  EMPTY_FILTERS,
+  PRODUCT_FILTER_SCHEMA,
+  type DraftCell,
+  type DraftChangeEvent,
+  type ProductEntity,
+  type RuleState,
+  type Warehouse,
+} from '../../../infrastructure/models/allocation-matrix.types';
 
 @Component({
   selector: 'app-allocation-matrix',
@@ -46,67 +47,90 @@ export class AllocationMatrixComponent {
   // ═══════════════════════════════════════════════════════════
   // ВХОДЫ
   // ═══════════════════════════════════════════════════════════
-  readonly products = input<any[]>([]);
-  readonly warehouses = input<any[]>([]);
+  readonly products = input<ProductEntity[]>([]);
+  readonly warehouses = input<Warehouse[]>([]);
   readonly selectedWarehouses = input<string[]>([]);
   readonly stocks = input<Stock[]>([]);
   readonly rows = input<number>(50);
 
+  /**
+   * Сохранённые правила с бэкенда.
+   * Каждое должно содержать `offer_id` и `warehouse_id`.
+   */
+  readonly rules = input<
+    Array<{ offer_id: string; warehouse_id: string } & Record<string, unknown>>
+  >([]);
+
   // ═══════════════════════════════════════════════════════════
   // ВЫХОДЫ
   // ═══════════════════════════════════════════════════════════
-  readonly selectionChange = output<any[]>();
+  readonly selectionChange = output<ProductEntity[]>();
   readonly dataChange = output<void>();
 
   // ═══════════════════════════════════════════════════════════
   // ВНУТРЕННЕЕ СОСТОЯНИЕ
   // ═══════════════════════════════════════════════════════════
-  readonly drafts = signal<
-    Map<
-      string,
-      {
-        mode: 'share' | 'target';
-        value: number;
-        quantum: number;
-      }
-    >
-  >(new Map());
-
-  readonly rulesMap = signal<Map<string, any>>(new Map());
-
-  readonly selectedProducts = signal<any[]>([]);
+  readonly drafts = signal<Map<string, DraftCell>>(new Map());
+  readonly selectedProducts = signal<ProductEntity[]>([]);
   readonly sortKey = signal<string>('offer_id');
   readonly sortDirection = signal<'asc' | 'desc'>('asc');
 
+  /** Дефолтное состояние ячейки — общая константа. */
+  private static readonly DEFAULT_RULE_STATE: RuleState = {
+    mode: 'share',
+    value: 100,
+    quantum: 1,
+    enabled: true,
+    dirty: false,
+  };
+
   // ═══════════════════════════════════════════════════════════
-  // ФИЛЬТРЫ — из Observable в сигнал (field initializer, без конструктора)
+  // ФИЛЬТРЫ
   // ═══════════════════════════════════════════════════════════
   readonly filters = toSignal(
-    combineLatest([this.filterService.changes$, this.filterServiceAdditional.changes$]).pipe(
+    combineLatest([
+      this.filterService.changes$,
+      this.filterServiceAdditional.changes$,
+    ]).pipe(
       debounceTime(250),
       distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-      map(
-        ([global, additional]): CombinedFilters => ({
-          category: global['category'] ?? '',
-          type: global['type'] ?? '',
-          brand: global['brand'] ?? '',
-          group: global['group'] ?? '',
-          series: global['series'] ?? '',
-          length: global['length'] ?? '',
-          color: global['color'] ?? '',
-          package: global['package'] ?? '',
-          searchOffer: additional.searchOffer ?? '',
-          searchName: additional.searchName ?? '',
-        }),
-      ),
+      map(([global, additional]): CombinedFilters => ({
+        category: global['category'] ?? '',
+        type:     global['type'] ?? '',
+        brand:    global['brand'] ?? '',
+        group:    global['group'] ?? '',
+        series:   global['series'] ?? '',
+        length:   global['length'] ?? '',
+        color:    global['color'] ?? '',
+        package:  global['package'] ?? '',
+        searchOffer: additional.searchOffer ?? '',
+        searchName:  additional.searchName ?? '',
+      })),
     ),
     { initialValue: { ...EMPTY_FILTERS } },
   );
 
   // ═══════════════════════════════════════════════════════════
-  // ПРОИЗВОДНЫЕ — заменяют ngOnChanges / ngOnInit
+  // ПРОИЗВОДНЫЕ
   // ═══════════════════════════════════════════════════════════
 
+  /** Быстрый доступ к складам по id. */
+  private readonly warehouseById = computed(
+    () => new Map(this.warehouses().map((w) => [w.warehouse_id, w])),
+  );
+
+  /** Сохранённые правила: ключ `offer|warehouse` → правило. */
+  private readonly rulesMap = computed(() => {
+    const map = new Map<string, { offer_id: string; warehouse_id: string }>();
+    for (const rule of this.rules()) {
+      if (rule?.offer_id && rule?.warehouse_id) {
+        map.set(cellKey(rule.offer_id, rule.warehouse_id), rule);
+      }
+    }
+    return map;
+  });
+
+  /** Остатки Ozon: ключ `offer|warehouse`. */
   private readonly ozonStockMap = computed(() => {
     const map = new Map<string, number>();
     for (const s of this.stocks()) {
@@ -116,20 +140,22 @@ export class AllocationMatrixComponent {
       if (!offerId || !warehouseId || s.available == null) continue;
       const available = Number(s.available);
       if (!Number.isFinite(available)) continue;
-      const key = `${offerId}|${warehouseId}`;
+      const key = cellKey(offerId, warehouseId);
       map.set(key, (map.get(key) ?? 0) + Math.max(0, available));
     }
     return map;
   });
 
+  /** Остатки 1С: ключ `offer_id`. */
   private readonly oneCStockMap = computed(() => {
     const availableBaseBySku = new Map<string, number>();
     const directAvailableByOffer = new Map<string, number>();
-
+  
     for (const s of this.stocks()) {
       if (s.source !== '1c') continue;
       const sku1c = String(s.sku_1c || '').trim();
       const availableBase = Number(s.available || 0);
+  
       if (sku1c) {
         availableBaseBySku.set(sku1c, (availableBaseBySku.get(sku1c) ?? 0) + availableBase);
       }
@@ -140,16 +166,20 @@ export class AllocationMatrixComponent {
         );
       }
     }
+  
 
-    const products = this.products();
-    const byOffer = new Map(products.map((p) => [p.offer_id, p]));
+    const products = this.products().filter(
+      (p): p is ProductEntity & { offer_id: string } => Boolean(p.offer_id),
+    );
+  
+    const byOffer = new Map(products.map(p => [p.offer_id, p]));
     const result = new Map<string, number>();
-
+  
     directAvailableByOffer.forEach((baseQty, offerId) => {
       const units = byOffer.get(offerId)?.units_per_item || 1;
       result.set(offerId, Math.floor(baseQty / units));
     });
-
+  
     for (const product of products) {
       const sku1c = product.sku_1c || '';
       if (sku1c && availableBaseBySku.has(sku1c) && !result.has(product.offer_id)) {
@@ -158,30 +188,28 @@ export class AllocationMatrixComponent {
         result.set(product.offer_id, Math.floor(baseQty / units));
       }
     }
-
+  
     for (const product of products) {
-      if (!result.has(product.offer_id)) result.set(product.offer_id, 0);
+      if (!result.has(product.offer_id)) {
+        result.set(product.offer_id, 0);
+      }
     }
-
+  
     return result;
   });
 
+  /** Колонки таблицы. */
   readonly columns = computed<DataTableColumn[]>(() => {
     const base: DataTableColumn[] = [
-      { field: 'product', header: 'Товар / артикул', width: '260px', cellTemplate: true },
-      { field: 'category', header: 'Категория / тип', width: '180px', cellTemplate: true },
-      {
-        field: 'available_1c',
-        header: 'Физический остаток 1С',
-        width: '120px',
-        cellTemplate: true,
-      },
+      { field: 'product',      header: 'Товар / артикул',       width: '260px', cellTemplate: true },
+      { field: 'category',     header: 'Категория / тип',       width: '180px', cellTemplate: true },
+      { field: 'available_1c', header: 'Физический остаток 1С', width: '120px', cellTemplate: true },
     ];
 
     const selected = this.selectedWarehouses();
     if (!selected.length) return base;
 
-    const byId = new Map(this.warehouses().map((w) => [w.warehouse_id, w]));
+    const byId = this.warehouseById();
     return [
       ...base,
       ...selected.map(
@@ -197,53 +225,26 @@ export class AllocationMatrixComponent {
     ];
   });
 
-  readonly filteredData = computed<any[]>(() => {
-    const f = this.filters();
+  /** Отфильтрованные + отсортированные + порезанные по `rows`. */
+  readonly filteredData = computed<ProductEntity[]>(() => {
     const products = this.products().filter((p) => p != null);
-    const matched = products.filter((p) => this.matchesFilters(p, f));
-    const sorted = this.sortData(matched);
+    const filters = this.filters();
+
+    const matched = applyFilter(
+      products,
+      PRODUCT_FILTER_SCHEMA,
+      filters as Record<string, string | undefined>,
+    );
+
+    const sorted = sortData(matched, this.sortKey(), this.sortDirection());
     return sorted.slice(0, this.rows());
   });
 
-  readonly changedCount = computed(() => this.drafts().size);
   readonly hasChanges = computed(() => this.drafts().size > 0);
 
-
-  private matchesFilters(product: any, f: CombinedFilters): boolean {
-    if (f.category && product.category_label !== f.category) return false;
-    if (f.type && product.type_label !== f.type) return false;
-    if (f.brand && product.brand !== f.brand) return false;
-    if (f.group && product.filter_group !== f.group) return false;
-    if (f.series && product.filter_series !== f.series) return false;
-    if (f.length && product.filter_length_mm?.toString() !== f.length) return false;
-    if (f.color && product.filter_color !== f.color) return false;
-    if (f.package && product.filter_package_qty?.toString() !== f.package) return false;
-
-    const id = (product.offer_id ?? '').toLowerCase();
-    const name = (product.name ?? '').toLowerCase();
-    const searchOffer = (f.searchOffer ?? '').trim().toLowerCase();
-    const searchName = (f.searchName ?? '').trim().toLowerCase();
-
-    if (searchOffer && !id.includes(searchOffer)) return false;
-    if (searchName && !name.includes(searchName) && !id.includes(searchName)) return false;
-
-    return true;
-  }
-
-  private sortData(data: any[]): any[] {
-    const key = this.sortKey();
-    const factor = this.sortDirection() === 'asc' ? 1 : -1;
-    return [...data].sort((a, b) => {
-      const av = a?.[key];
-      const bv = b?.[key];
-      if (av == null && bv == null) return 0;
-      if (av == null) return 1;
-      if (bv == null) return -1;
-      return String(av).localeCompare(String(bv), 'ru', { numeric: true }) * factor;
-    });
-  }
-
-
+  // ═══════════════════════════════════════════════════════════
+  // СОРТИРОВКА
+  // ═══════════════════════════════════════════════════════════
   sort(key: string): void {
     if (this.sortKey() === key) {
       this.sortDirection.update((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -253,39 +254,40 @@ export class AllocationMatrixComponent {
     }
   }
 
-  getRuleState(
-    row: any,
-    warehouseId: string,
-  ): {
-    mode: 'share' | 'target';
-    value: number;
-    quantum: number;
-    enabled: boolean;
-    dirty: boolean;
-  } {
-    if (!row) return { mode: 'share', value: 100, quantum: 1, enabled: true, dirty: false };
+  // ═══════════════════════════════════════════════════════════
+  // ПРАВИЛА И ЧЕРНОВИКИ
+  // ═══════════════════════════════════════════════════════════
+  getRuleState(row: ProductEntity | null, warehouseId: string): RuleState {
+    if (!row?.offer_id) return AllocationMatrixComponent.DEFAULT_RULE_STATE;
 
-    const key = `${row.offer_id}|${warehouseId}`;
-    const draft = this.drafts().get(key);
-    if (draft) {
-      return {
-        mode: draft.mode,
-        value: draft.value,
-        quantum: draft.quantum,
-        enabled: draft.value > 0,
-        dirty: true,
-      };
-    }
-    return { mode: 'share', value: 100, quantum: 1, enabled: true, dirty: false };
+    const draft = this.drafts().get(cellKey(row.offer_id, warehouseId));
+    if (!draft) return AllocationMatrixComponent.DEFAULT_RULE_STATE;
+
+    return {
+      mode: draft.mode,
+      value: draft.value,
+      quantum: draft.quantum,
+      enabled: draft.value > 0,
+      dirty: true,
+    };
+  }
+
+  /** Есть ли сохранённое правило и нет несохранённых правок. */
+  isRuleSaved(row: ProductEntity | null, warehouseId: string): boolean {
+    if (!row?.offer_id) return false;
+    const dirty = this.getRuleState(row, warehouseId).dirty;
+    const hasRule = this.rulesMap().has(cellKey(row.offer_id, warehouseId));
+    return !dirty && hasRule;
   }
 
   onDraftChange(
-    row: any,
+    row: ProductEntity | null,
     warehouseId: string,
-    event: { field: 'mode' | 'value' | 'quantum'; newValue: any },
+    event: DraftChangeEvent,
   ): void {
-    if (!row) return;
-    const key = `${row.offer_id}|${warehouseId}`;
+    if (!row?.offer_id) return;
+
+    const key = cellKey(row.offer_id, warehouseId);
     const current = this.getRuleState(row, warehouseId);
 
     this.drafts.update((map) => {
@@ -295,14 +297,16 @@ export class AllocationMatrixComponent {
         value: current.value,
         quantum: current.quantum,
       };
+
       if (event.field === 'mode') {
-        draft.mode = event.newValue;
+        draft.mode = event.newValue as 'share' | 'target';
         if (draft.mode === 'share' && draft.value > 100) draft.value = 100;
       } else if (event.field === 'value') {
         draft.value = Number(event.newValue);
       } else if (event.field === 'quantum') {
         draft.quantum = Number(event.newValue) || 1;
       }
+
       next.set(key, { ...draft });
       return next;
     });
@@ -310,67 +314,68 @@ export class AllocationMatrixComponent {
     this.dataChange.emit();
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // ВЫБОР СТРОК
+  // ═══════════════════════════════════════════════════════════
   selectAll(checked: boolean): void {
     const next = checked ? [...this.filteredData()] : [];
     this.selectedProducts.set(next);
     this.selectionChange.emit(next);
   }
 
-  onSelectionChange(selected: any[]): void {
+  onSelectionChange(selected: ProductEntity[]): void {
     this.selectedProducts.set(selected);
     this.selectionChange.emit(selected);
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // СОХРАНЕНИЕ / ОТМЕНА
+  // ═══════════════════════════════════════════════════════════
   cancelDrafts(): void {
     this.drafts.set(new Map());
     this.dataChange.emit();
   }
 
   resetRow(offerId: string): void {
+    const prefix = `${offerId}|`;
     this.drafts.update((map) => {
       const next = new Map(map);
       for (const key of next.keys()) {
-        if (key.startsWith(`${offerId}|`)) next.delete(key);
+        if (key.startsWith(prefix)) next.delete(key);
       }
       return next;
     });
     this.dataChange.emit();
   }
 
-  getPhysicalQty(row: any): number | null {
-    if (!row) return null;
-    return this.oneCStockMap().get(row.offer_id) ?? null;
+  // ═══════════════════════════════════════════════════════════
+  // ОСТАТКИ
+  // ═══════════════════════════════════════════════════════════
+  getPhysicalQty(row: ProductEntity | null): number | null {
+    return row?.offer_id ? this.oneCStockMap().get(row.offer_id) ?? null : null;
   }
 
-  getCurrentOzonQty(row: any, warehouseId: string): number | null {
-    if (!row) return null;
-    return this.ozonStockMap().get(`${row.offer_id}|${warehouseId}`) ?? null;
+  getCurrentOzonQty(row: ProductEntity | null, warehouseId: string): number | null {
+    if (!row?.offer_id) return null;
+    return this.ozonStockMap().get(cellKey(row.offer_id, warehouseId)) ?? null;
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // ВСПОМОГАТЕЛЬНЫЕ
+  // ═══════════════════════════════════════════════════════════
   getWarehouseName(id: string): string {
-    return this.warehouses().find((w) => w.warehouse_id === id)?.warehouse_name || id;
+    return this.warehouseById().get(id)?.warehouse_name ?? id;
   }
 
   getWarehouseScheme(id: string): string {
-    return this.warehouses().find((w) => w.warehouse_id === id)?.is_rfbs ? 'rFBS' : 'FBS';
+    return this.warehouseById().get(id)?.is_rfbs ? 'rFBS' : 'FBS';
   }
 
-  trackByOfferId(index: number, item: any): string {
+  trackByOfferId(index: number, item: ProductEntity): string {
     return item?.offer_id || String(index);
   }
 
   trackByWarehouseId(index: number, item: string): string {
     return item || String(index);
-  }
-
-  hasSavedRule(row: any, warehouseId: string): boolean {
-    if (!row?.offer_id) return false;
-    return this.rulesMap().has(`${row.offer_id}|${warehouseId}`);
-  }
-  
-  isRuleSaved(row: any, warehouseId: string): boolean {
-    if (!row?.offer_id) return false;
-    const dirty = this.getRuleState(row, warehouseId).dirty;
-    return !dirty && this.hasSavedRule(row, warehouseId);
   }
 }

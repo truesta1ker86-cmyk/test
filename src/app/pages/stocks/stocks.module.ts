@@ -30,6 +30,7 @@ import { AllocationMatrixCellComponent } from './components/allocation/allocatio
 import { FilterPanelModule } from '../../shared/directives/filter-panel/filter-panel.module';
 import { PopupButtonModule } from '../../shared/popup-button/popup-button.module';
 import { InputModule } from '../../shared/ui/input/input.module';
+import { PreloaderModule } from '../../shared/preloader/preloader.module';
 
 
 
@@ -75,7 +76,8 @@ const routes: Routes = [
     PopupButtonModule,
     RouterModule.forChild(routes),
     FilterPanelModule,
-    InputModule
+    InputModule,
+    PreloaderModule
   ]
 })
 export class StocksModule { }

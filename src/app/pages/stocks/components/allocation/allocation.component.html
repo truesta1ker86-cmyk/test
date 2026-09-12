@@ -1,39 +1,61 @@
 <section class="card stock-matrix" id="stockAllocationMatrix">
-  <div class="stock-matrix-controls">
-    <!-- ===== ПАНЕЛЬ АВТОМАТИЗАЦИИ ===== -->
-    <details class="stock-automation-panel">
-      <summary>
-        Фоновое удержание · ничего не нужно отдельно включать
-        <span class="stock-automation-state">Ожидает разрешения сервера</span>
-      </summary>
-      <div class="stock-automation-body">
-        <div class="stock-automation-toggle">
-          <span
-            ><b>Без дополнительных переключателей</b
-            ><small>Сохранённые правила поддерживаются автоматически.</small></span
-          >
-        </div>
-        <div class="stock-automation-actions">
-          <button type="button" class="btn btn-primary" hidden>Возобновить</button>
-          <button type="button" class="btn btn-danger" (click)="stopAutomation()">
-            Остановить сейчас
-          </button>
-        </div>
-        <div class="stock-automation-freshness">
-          <span>Интервал: 30 сек.</span>
-          <span>Цикл: {{ currentTimestamp | date: 'dd.MM.yyyy, HH:mm:ss' }}</span>
+  @if (loading()) {
+    <app-skeleton-form [fields]="6" [columns]="2" [withActions]="true" />
+  } @else {
+    <div class="stock-matrix-controls">
+      <!-- ===== ЗАГОЛОВОК ===== -->
+      <div class="stock-matrix-head">
+        <div>
+          <h3>Разделить остаток между складами</h3>
+          <p>
+            Доля распределяется из единого пула базовых единиц SKU 1С между всеми упаковками и
+            складами. К показу идут только полные упаковки.
+          </p>
         </div>
       </div>
-    </details>
 
-    <!-- ===== ЗАГОЛОВОК ===== -->
-    <div class="stock-matrix-head">
-      <div>
-        <h3>Разделить остаток между складами</h3>
-        <p>
-          Доля распределяется из единого пула базовых единиц SKU 1С между всеми упаковками и
-          складами. К показу идут только полные упаковки.
-        </p>
+      <!-- ===== ВЫБОР СКЛАДОВ И НАСТРОЙКИ ===== -->
+      <div class="stock-matrix-warehouse-bar">
+        <app-warehouse-picker
+          [warehouses]="(warehouses$ | async) || []"
+          [selectedWarehouseIds]="selectedWarehouseIds"
+          (warehousesChange)="onWarehousesChange($event)"
+        ></app-warehouse-picker>
+
+        <app-allocation-warehouse-settings
+          [warehouses]="(warehouses$ | async) || []"
+          [selectedWarehouses]="selectedWarehouseIds"
+          [settings]="warehouseSettings"
+          (warehousesChange)="onWarehousesChange($event)"
+          (settingsChange)="onWarehouseSettingsChange($event)"
+          (globalShareApply)="onGlobalShareApply($event)"
+          (applyToSelected)="onApplyToSelected($event)"
+        ></app-allocation-warehouse-settings>
+      </div>
+    </div>
+  }
+
+  @if (loading() && !matrixData.length) {
+    <app-skeleton-table [rows]="10" [columns]="4" [withCheckbox]="true" />
+  } @else {
+
+    <!-- ===== МАССОВЫЕ ДЕЙСТВИЯ ===== -->
+    <div class="stock-matrix-actions bulk-action-bar">
+      <div class="bulk-action-status">
+        <span class="bulk-action-dot"></span>
+        <span>Всего товаров: {{ matrixData.length }}</span>        
+        <strong>Выбрано: {{ selectedCount }}</strong>
+        <small>Изменений: {{ changedCount }}</small>
+      </div>
+      <div class="bulk-action-buttons">
+        <button class="btn btn-ghost" (click)="openExpectedStock()">Ожидаемая поставка</button>
+        <button class="btn btn-ghost" (click)="cancelChanges()">Отменить</button>
+        <button class="btn btn-primary" (click)="previewChanges()" [disabled]="!hasChanges">
+          Проверить
+        </button>
+        <button class="btn btn-dark" (click)="applyChanges()" [disabled]="!hasChanges">
+          Сохранить и отправить
+        </button>
       </div>
     </div>
 
@@ -108,63 +130,19 @@
       </app-popup-button>
     </div>
 
-    <!-- ===== ВЫБОР СКЛАДОВ И НАСТРОЙКИ ===== -->
-    <div class="stock-matrix-warehouse-bar">
-      <app-warehouse-picker
-        [warehouses]="(warehouses$ | async) || []"
-        [selectedWarehouseIds]="selectedWarehouseIds"
-        (warehousesChange)="onWarehousesChange($event)"
-      ></app-warehouse-picker>
-
-      <app-allocation-warehouse-settings
+    <!-- ===== МАТРИЦА ===== -->
+    <div class="stock-matrix-scroll">
+      <app-allocation-matrix
+        [products]="matrixData"
         [warehouses]="(warehouses$ | async) || []"
         [selectedWarehouses]="selectedWarehouseIds"
-        [settings]="warehouseSettings"
-        (warehousesChange)="onWarehousesChange($event)"
-        (settingsChange)="onWarehouseSettingsChange($event)"
-        (globalShareApply)="onGlobalShareApply($event)"
-        (applyToSelected)="onApplyToSelected($event)"
-      ></app-allocation-warehouse-settings>
+        [stocks]="stocks"
+        [rows]="rows"
+        (selectionChange)="onSelectionChange($event)"
+        (dataChange)="onMatrixDataChange()"
+      ></app-allocation-matrix>
     </div>
-
-    <!-- ===== СТРОКА ИТОГОВ ===== -->
-    <div class="stock-matrix-summary">
-      <span>Товаров: {{ matrixData.length }}</span>
-      <span class="stock-matrix-source-state" [class.is-ready]="isOneCReady">{{ oneCStatus }}</span>
-    </div>
-  </div>
-
-  <!-- ===== МАССОВЫЕ ДЕЙСТВИЯ ===== -->
-  <div class="stock-matrix-actions bulk-action-bar">
-    <div class="bulk-action-status">
-      <span class="bulk-action-dot"></span>
-      <strong>Выбрано: {{ selectedCount }}</strong>
-      <small>Изменений: {{ changedCount }}</small>
-    </div>
-    <div class="bulk-action-buttons">
-      <button class="btn btn-ghost" (click)="openExpectedStock()">Ожидаемая поставка</button>
-      <button class="btn btn-ghost" (click)="cancelChanges()">Отменить</button>
-      <button class="btn btn-primary" (click)="previewChanges()" [disabled]="!hasChanges">
-        Проверить
-      </button>
-      <button class="btn btn-dark" (click)="applyChanges()" [disabled]="!hasChanges">
-        Сохранить и отправить
-      </button>
-    </div>
-  </div>
-
-  <!-- ===== МАТРИЦА ===== -->
-  <div class="stock-matrix-scroll">
-    <app-allocation-matrix
-      [products]="matrixData"
-      [warehouses]="(warehouses$ | async) || []"
-      [selectedWarehouses]="selectedWarehouseIds"
-      [stocks]="stocks"
-      [rows]="rows"
-      (selectionChange)="onSelectionChange($event)"
-      (dataChange)="onMatrixDataChange()"
-    ></app-allocation-matrix>
-  </div>
+  }
 
   <!-- ===== РЕЗУЛЬТАТ ПРЕДПРОСМОТРА ===== -->
   <div class="stock-matrix-output">

@@ -1,0 +1,13 @@
+<div class="skeleton-text" role="status" aria-live="polite" aria-label="Загрузка текста">
+  @if (withTitle()) {
+    <p-skeleton width="45%" height="18px" borderRadius="6px" />
+  }
+
+  @for (line of array(lines()); track $index) {
+    <p-skeleton
+      [width]="$last ? lastLineWidth() : '100%'"
+      [height]="lineHeight() + 'px'"
+      borderRadius="4px"
+    />
+  }
+</div>

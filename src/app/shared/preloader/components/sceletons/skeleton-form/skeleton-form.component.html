@@ -1,0 +1,21 @@
+<div
+  class="skeleton-form"
+  role="status"
+  aria-live="polite"
+  aria-label="Загрузка формы"
+  [style.--cols]="columns()"
+>
+  @for (field of array(fields()); track $index) {
+    <div class="skeleton-form__field">
+      <p-skeleton width="120px" height="11px" borderRadius="4px" />
+      <p-skeleton width="100%" height="38px" borderRadius="10px" />
+    </div>
+  }
+
+  @if (withActions()) {
+    <div class="skeleton-form__actions">
+      <p-skeleton width="110px" height="38px" borderRadius="10px" />
+      <p-skeleton width="150px" height="38px" borderRadius="10px" />
+    </div>
+  }
+</div>

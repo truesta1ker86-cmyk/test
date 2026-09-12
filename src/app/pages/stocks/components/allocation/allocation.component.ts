@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
+  computed,
+} from '@angular/core';
 import { Observable, forkJoin, Subject, Subscription } from 'rxjs';
 import { shareReplay, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { OzonWarehouse } from '../../infrastructure/models/ozon-warehouse.model';
@@ -10,17 +18,21 @@ import { PreviewResult } from '../../infrastructure/models/preview.interface';
 import { Stock } from '../../infrastructure/models/stock.model';
 import { FilterService } from '../../../../shared/directives/filter-panel/infrastructure/services/filter.service';
 import { FilterConfig } from '../../../../shared/directives/filter-panel/infrastructure/models/filter.model';
-import { AllocationFilterOptions, buildAllocationFilterConfig } from '../../infrastructure/config/filter.config';
+import {
+  AllocationFilterOptions,
+  buildAllocationFilterConfig,
+} from '../../infrastructure/config/filter.config';
 import { AdditionalFiltersService } from './infrastructure/services/additional-filters.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { PendingTracker } from '../../../../shared/rxjs/pending-tracker';
+import { withCounter } from '../../../../shared/rxjs/with-counter.operator';
 
 @Component({
   selector: 'app-allocation',
   standalone: false,
   templateUrl: './allocation.component.html',
   styleUrls: ['./allocation.component.scss'],
-  providers: [
-    AdditionalFiltersService
-  ],
+  providers: [AdditionalFiltersService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AllocationComponent implements OnInit, OnDestroy {
@@ -30,7 +42,6 @@ export class AllocationComponent implements OnInit, OnDestroy {
   stocks: Stock[] = [];
   rules: any[] = [];
   selectedWarehouseIds: string[] = [];
-  loading = false;
   currentTimestamp = new Date();
 
   // Настройки складов
@@ -68,7 +79,6 @@ export class AllocationComponent implements OnInit, OnDestroy {
   selectedCount = 0;
   changedCount = 0;
   isOneCReady = false;
-  oneCStatus = '1С: проверка данных…';
 
   // Карта остатков 1С
   availableByOffer = new Map<string, number>();
@@ -76,8 +86,9 @@ export class AllocationComponent implements OnInit, OnDestroy {
   public filterService = inject(FilterService);
   readonly filterServiceAdditional = inject(AdditionalFiltersService);
 
-  // Подписка на изменения фильтров
-  private filterChangesSubscription: Subscription | null = null;
+  private readonly tracker = new PendingTracker();
+  readonly loading = toSignal(this.tracker.loading$, { initialValue: false });
+  readonly pendingCount = toSignal(this.tracker.pending$, { initialValue: 0 });
 
   constructor(
     private stockService: StockService,
@@ -85,26 +96,22 @@ export class AllocationComponent implements OnInit, OnDestroy {
     private allocationService: AllocationService,
     private cdr: ChangeDetectorRef,
   ) {
-    this.warehouses$ = this.stockService.getFilteredOzonWarehouses().pipe(
-      shareReplay(1)
-    );
+    this.warehouses$ = this.stockService.getFilteredOzonWarehouses().pipe(shareReplay(1));
   }
 
   ngOnInit(): void {
     this.loadData();
   }
 
-  ngOnDestroy() {
-  }
+  ngOnDestroy() {}
 
   // ==================== ЗАГРУЗКА ДАННЫХ ====================
   loadData(): void {
-    this.loading = true;
     forkJoin({
-      products: this.productService.getProducts(30),
-      rules: this.allocationService.getRules(),
-      stocks: this.stockService.getStocks(),
-      facets: this.productService.getFilterFacets(),
+      products: this.productService.getProducts(30).pipe(withCounter(this.tracker.pending$)),
+      rules: this.allocationService.getRules().pipe(withCounter(this.tracker.pending$)),
+      stocks: this.stockService.getStocks().pipe(withCounter(this.tracker.pending$)),
+      facets: this.productService.getFilterFacets().pipe(withCounter(this.tracker.pending$)),
     }).subscribe({
       next: ({ products, rules, stocks, facets }) => {
         this.products = products.items || [];
@@ -122,18 +129,17 @@ export class AllocationComponent implements OnInit, OnDestroy {
             this.initWarehouseSettings();
           }
           this.buildMatrix();
-          this.loading = false;
           this.cdr.markForCheck();
         });
       },
       error: (err) => {
         console.error(err);
-        this.loading = false;
         this.cdr.markForCheck();
       },
     });
   }
 
+  readonly showSkeleton = computed(() => this.loading());
 
   onSearchOfferChange(value: string): void {
     this.filterServiceAdditional.updateFilter('searchOffer', value);
@@ -199,7 +205,9 @@ export class AllocationComponent implements OnInit, OnDestroy {
   private loadFacetOptions(facets: any): void {
     const extractValues = (items: any[]): string[] => {
       if (!items) return [];
-      return items.map((item: any) => typeof item === 'string' ? item : item.value).filter(Boolean);
+      return items
+        .map((item: any) => (typeof item === 'string' ? item : item.value))
+        .filter(Boolean);
     };
     this.groups = extractValues(facets?.groups);
     this.brands = extractValues(facets?.brands);
@@ -226,7 +234,10 @@ export class AllocationComponent implements OnInit, OnDestroy {
       .map(([value, label]) => ({ value, label }))
       .sort((a, b) => a.label.localeCompare(b.label, 'ru'));
 
-    this.nameSuggestions = products.map((p) => p.name).filter(Boolean).sort();
+    this.nameSuggestions = products
+      .map((p) => p.name)
+      .filter(Boolean)
+      .sort();
   }
 
   // ==================== КОНФИГУРАЦИЯ ПАНЕЛИ ФИЛЬТРОВ ====================
@@ -374,9 +385,15 @@ export class AllocationComponent implements OnInit, OnDestroy {
   }
 
   // ==================== ДЕЙСТВИЯ ====================
-  previewChanges(): void { /* TODO */ }
-  applyChanges(): void { /* TODO */ }
-  pushChanges(): void { /* TODO */ }
+  previewChanges(): void {
+    /* TODO */
+  }
+  applyChanges(): void {
+    /* TODO */
+  }
+  pushChanges(): void {
+    /* TODO */
+  }
 
   cancelChanges(): void {
     this.buildMatrix();

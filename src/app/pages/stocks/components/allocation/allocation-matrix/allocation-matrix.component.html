@@ -37,6 +37,9 @@
 
       <!-- Колонки складов -->
       <div *ngIf="column.field?.startsWith('stock_') && row" class="stock-cell-wrapper">
+
+        
+
         <app-allocation-matrix-cell
           [product]="row"
           [warehouseId]="column.warehouseId"
