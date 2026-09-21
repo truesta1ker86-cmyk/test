@@ -1,0 +1,44 @@
+.products-page {
+  position: relative;
+  padding: 16px;
+}
+
+.page-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 20px;
+  background: #181825;
+  border-radius: 10px;
+  border: 1px solid #313244;
+
+  .overlay-text {
+    font-size: 14px;
+    color: #9399b2;
+
+    &.error {
+      color: #f38ba8;
+    }
+  }
+}
+
+.edit-lock-banner {
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  background: #f9e2af;
+  color: #1e1e2e;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.page-content {
+  transition: opacity 0.2s;
+
+  &.locked {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}

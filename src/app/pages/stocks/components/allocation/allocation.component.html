@@ -1,6 +1,19 @@
 <section class="card stock-matrix" id="stockAllocationMatrix">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ЧАСТИЧНОЕ ПРЕДУПРЕЖДЕНИЕ (данные есть, но что-то упало)
+       ═══════════════════════════════════════════════════════════ -->
+  @if (hasPartialError()) {
+    <div class="warn-pill" role="status" style="margin:0 14px 12px">
+      <svg class="icon-xs" aria-hidden="true"><use href="#i-alert" /></svg>
+      <span>{{ lastError()!.message }}. Данные могут быть неполными.</span>
+      <button type="button" class="btn btn-ghost" (click)="retry()">Обновить</button>
+    </div>
+  }
+
   @if (loading()) {
     <app-skeleton-form [fields]="6" [columns]="2" [withActions]="true" />
+  } @else if (showError()) {  
   } @else {
     <div class="stock-matrix-controls">
       <!-- ===== ЗАГОЛОВОК ===== -->
@@ -35,25 +48,33 @@
     </div>
   }
 
+
   @if (loading() && !matrixData.length) {
     <app-skeleton-table [rows]="10" [columns]="4" [withCheckbox]="true" />
+  } @else if (showError()) {
+    <app-error-state
+      title="Не удалось загрузить матрицу"
+      [message]="lastError()?.message ?? 'Проверьте соединение и попробуйте ещё раз'"
+      retryLabel="Повторить"
+      (retry)="retry()"
+    />
   } @else {
 
     <!-- ===== МАССОВЫЕ ДЕЙСТВИЯ ===== -->
     <div class="stock-matrix-actions bulk-action-bar">
       <div class="bulk-action-status">
         <span class="bulk-action-dot"></span>
-        <span>Всего товаров: {{ matrixData.length }}</span>        
+        <span>Всего товаров: {{ matrixData.length }}</span>
         <strong>Выбрано: {{ selectedCount }}</strong>
         <small>Изменений: {{ changedCount }}</small>
       </div>
       <div class="bulk-action-buttons">
-        <button class="btn btn-ghost" (click)="openExpectedStock()">Ожидаемая поставка</button>
-        <button class="btn btn-ghost" (click)="cancelChanges()">Отменить</button>
-        <button class="btn btn-primary" (click)="previewChanges()" [disabled]="!hasChanges">
+        <button class="btn btn-ghost" type="button" (click)="openExpectedStock()">Ожидаемая поставка</button>
+        <button class="btn btn-ghost" type="button" (click)="cancelChanges()">Отменить</button>
+        <button class="btn btn-primary" type="button" (click)="previewChanges()" [disabled]="!hasChanges">
           Проверить
         </button>
-        <button class="btn btn-dark" (click)="applyChanges()" [disabled]="!hasChanges">
+        <button class="btn btn-dark" type="button" (click)="applyChanges()" [disabled]="!hasChanges">
           Сохранить и отправить
         </button>
       </div>
@@ -61,7 +82,6 @@
 
     <!-- ===== СТРОКА ПОИСКА И ФИЛЬТР ===== -->
     <div class="stock-matrix-primarybar">
-      <!-- Поиск по артикулу -->
 
       <app-input
         inputId="stockMatrixSearch"
@@ -123,8 +143,8 @@
 
           <!-- Действия -->
           <div class="filter-actions">
-            <button class="btn btn-ghost" (click)="ctx.resetAllFilters()">Сбросить</button>
-            <button class="btn btn-primary" (click)="onApplyFilters()">Применить</button>
+            <button class="btn btn-ghost" type="button" (click)="ctx.resetAllFilters()">Сбросить</button>
+            <button class="btn btn-primary" type="button" (click)="onApplyFilters()">Применить</button>
           </div>
         </div>
       </app-popup-button>
@@ -146,35 +166,47 @@
 
   <!-- ===== РЕЗУЛЬТАТ ПРЕДПРОСМОТРА ===== -->
   <div class="stock-matrix-output">
-    <div *ngIf="previewResult" class="preview-result">
-      <div class="warn-pill" [class.success]="previewResult.success">
-        {{ previewResult.message }}
+    @if (previewResult) {
+      <div class="preview-result">
+        <div class="warn-pill" [class.success]="previewResult.success">
+          {{ previewResult.message }}
+        </div>
+
+        @if (previewResult.items?.length) {
+          <div class="preview-details">
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th>Артикул</th>
+                  <th>Склад</th>
+                  <th>Было</th>
+                  <th>Станет</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (
+                  item of previewResult.items.slice(0, 10);
+                  track item.offer_id + '|' + item.warehouse_id
+                ) {
+                  <tr>
+                    <td>{{ item.offer_id }}</td>
+                    <td>{{ item.warehouse_id }}</td>
+                    <td>{{ item.before }}</td>
+                    <td><b>{{ item.after }}</b></td>
+                  </tr>
+                }
+
+                @if (previewResult.items.length > 10) {
+                  <tr>
+                    <td colspan="4">И ещё {{ previewResult.items.length - 10 }}…</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
-      <div *ngIf="previewResult.items?.length" class="preview-details">
-        <table class="preview-table">
-          <thead>
-            <tr>
-              <th>Артикул</th>
-              <th>Склад</th>
-              <th>Было</th>
-              <th>Станет</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of previewResult.items | slice: 0 : 10">
-              <td>{{ item.offer_id }}</td>
-              <td>{{ item.warehouse_id }}</td>
-              <td>{{ item.before }}</td>
-              <td>
-                <b>{{ item.after }}</b>
-              </td>
-            </tr>
-            <tr *ngIf="previewResult.items.length > 10">
-              <td colspan="4">И ещё {{ previewResult.items.length - 10 }}…</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    }
   </div>
+
 </section>

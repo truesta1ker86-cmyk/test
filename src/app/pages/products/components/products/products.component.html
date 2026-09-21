@@ -1,0 +1,53 @@
+<app-progress></app-progress> 
+
+<div class="products-page">
+
+    <!-- ============================================================
+         Проверка статуса
+         ============================================================ -->
+    @if (pageState() === 'checking') {
+      <div class="page-overlay">
+        <p-progress-spinner
+          [style]="{ width: '50px', height: '50px' }"
+          strokeWidth="4"
+        ></p-progress-spinner>
+        <div class="overlay-text">Проверка статуса сервиса…</div>
+      </div>
+    }
+  
+    <!-- ============================================================
+         Сервис недоступен
+         ============================================================ -->
+    @if (pageState() === 'failed') {
+      <div class="page-overlay">
+        <div class="overlay-text error">
+          Сервис недоступен: {{ progress.lastError() }}
+        </div>
+        <button
+          icon="pi pi-refresh"
+          severity="warn"
+          (onClick)="progress.retry()"
+        >Повторить</button>
+      </div>
+    }
+  
+    <!-- ============================================================
+         Идёт синхронизация — блокируем редактирование
+         ============================================================ -->
+    @if (pageState() === 'ready' && !canEdit()) {
+      <div class="edit-lock-banner">
+        🔒 {{ lockReason() }} Редактирование временно недоступно.
+      </div>
+    }
+  
+    <!-- ============================================================
+         Контент страницы
+         ============================================================ -->
+    <div class="page-content" [class.locked]="!canEdit()">
+  
+      <h2>Карточки товаров</h2>
+  
+  
+    </div>
+  
+  </div>

@@ -34,9 +34,7 @@
   }
 
   .stock-matrix-cell-grid {
-    display: grid;
-    grid-template-columns: minmax(190px, 1fr) minmax(82px, 100px) minmax(96px, 112px);
-    align-items: end;
+    display: flex;
     gap: 8px 10px;
   }
 

@@ -1,5 +1,18 @@
-import { BehaviorSubject, Observable } from 'rxjs';
-import { distinctUntilChanged, map, shareReplay } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import {
+  distinctUntilChanged,
+  map,
+  shareReplay,
+} from 'rxjs/operators';
+import { withCounter } from './with-counter.operator';
+
+
+export interface TrackedError {
+  message: string;
+  source?: string;
+  error?: unknown;
+  at: Date;
+}
 
 export class PendingTracker {
   /** Счётчик активных запросов. */
@@ -12,12 +25,22 @@ export class PendingTracker {
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
+  /** Последняя ошибка. */
+  readonly lastError$ = new BehaviorSubject<TrackedError | null>(null);
+
+  /** Поток всех ошибок. */
+  private readonly _errors$ = new Subject<TrackedError>();
+
   get count(): number {
     return this.pending$.value;
   }
 
   get isLoading(): boolean {
     return this.pending$.value > 0;
+  }
+
+  get errors$(): Observable<TrackedError> {
+    return this._errors$.asObservable();
   }
 
   track(): void {
@@ -30,9 +53,30 @@ export class PendingTracker {
 
   reset(): void {
     this.pending$.next(0);
+    this.lastError$.next(null);
+  }
+
+  reportError(
+    message: string,
+    options: { source?: string; error?: unknown } = {},
+  ): void {
+    const tracked: TrackedError = {
+      message,
+      source: options.source,
+      error: options.error,
+      at: new Date(),
+    };
+    this._errors$.next(tracked);
+    this.lastError$.next(tracked);
+  }
+
+  wrap<T>(source: Observable<T>): Observable<T> {
+    return source.pipe(withCounter(this.pending$));
   }
 
   dispose(): void {
     this.pending$.complete();
+    this._errors$.complete();
+    this.lastError$.complete();
   }
 }

@@ -1,0 +1,151 @@
+<div class="progress-container">
+
+  <!-- Спиннер, пока сервис не готов -->
+  @if (!progress.isHealthy()) {
+    <div class="spinner-overlay">
+      <div class="spinner-card">
+        <p-progress-spinner
+          [style]="{ width: '60px', height: '60px' }"
+          strokeWidth="4"
+          animationDuration="1s"
+        ></p-progress-spinner>
+        <div class="spinner-title">
+          @if (progress.pageState() === 'failed') {
+            Сервис недоступен
+          } @else {
+            Подключение…
+          }
+        </div>
+        @if (progress.pageState() === 'failed') {
+          <button
+            icon="pi pi-refresh"
+            severity="warn"
+            (click)="retry()"
+          >Повторить</button>
+        }
+      </div>
+    </div>
+  } @else {
+
+    <!-- Заголовок -->
+    <div class="header">
+      <div class="header-left">
+        <p-tag value="Live" severity="success"></p-tag>
+        @if (progress.anyRunning()) {
+          <p-tag value="Синхронизация идёт" severity="info"></p-tag>
+        }
+      </div>
+
+      <div class="header-right">
+        <!-- Кнопка ручного обновления статуса -->
+        <button
+          icon="pi pi-refresh"
+          severity="secondary"
+          size="small"
+          [disabled]="isRefreshing()"
+          tooltipPosition="top"
+          (click)="refresh()"
+        >Обновить статус</button>
+      </div>
+    </div>
+
+    <!-- Ozon -->
+    <div class="source-card" [class.running]="progress.isOzonRunning()">
+      <div class="source-header">
+        <div class="source-title">
+          <span class="source-icon">🟢</span>
+          <span class="source-name">Ozon</span>
+          @if (progress.ozonProgress(); as p) {
+            <p-tag [value]="p.status" [severity]="statusSeverity(p.status)"></p-tag>
+          }
+        </div>
+
+        <div class="source-actions">
+          @if (progress.isOzonRunning()) {
+            <button
+              icon="pi pi-stop"
+              severity="danger"
+              size="small"
+              [disabled]="isStoppingOzon()"
+              (click)="stopOzonSync()"
+            >{{isStoppingOzon() ? 'Остановка…' : 'Остановить'}}</button>
+          } @else {
+            <button
+              icon="pi pi-cloud-download"
+              severity="success"
+              size="small"
+              [disabled]="!canStartOzon()"
+              (click)="startOzonSync()"
+            >Синхронизировать</button>
+          }
+        </div>
+      </div>
+
+      <div class="source-body">
+        <p-progress-bar
+          [value]="progressValue('ozon')"
+          [showValue]="false"
+          [style]="{ height: '22px' }"
+        ></p-progress-bar>
+        <div class="progress-meta">
+          <span class="progress-info">{{ progressLabel('ozon') }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1С -->
+    <div class="source-card" [class.running]="progress.isOnecRunning()">
+      <div class="source-header">
+        <div class="source-title">
+          <span class="source-icon">🔵</span>
+          <span class="source-name">1С Каталог</span>
+          @if (progress.onecProgress(); as p) {
+            <p-tag [value]="p.status" [severity]="statusSeverity(p.status)"></p-tag>
+          }
+        </div>
+
+        <div class="source-actions">
+          @if (progress.isOnecRunning()) {
+            <button
+              icon="pi pi-stop"
+              severity="danger"
+              size="small"
+              [disabled]="isStoppingOnec()"
+              (click)="stopOnecSync()"
+            >{{isStoppingOnec() ? 'Остановка…' : 'Остановить'}}</button>
+          } @else {
+            <button
+              icon="pi pi-database"
+              severity="info"
+              size="small"
+              [disabled]="!canStartOnec()"
+              (click)="startOnecSync()"
+            >Синхронизировать</button>
+
+            <button
+              icon="pi pi-refresh"
+              severity="secondary"
+              size="small"
+              tooltipPosition="top"
+              [disabled]="!canStartOnec()"
+              (click)="startOnecFullSync()"
+            >Сброс</button>
+          }
+        </div>
+      </div>
+
+      <div class="source-body">
+        <p-progress-bar
+          [value]="progressValue('onec')"
+          [showValue]="false"
+          [style]="{ height: '22px' }"
+        ></p-progress-bar>
+        <div class="progress-meta">
+          <span class="progress-info">{{ progressLabel('onec') }}</span>
+        </div>
+      </div>
+    </div>
+
+  }
+
+</div>

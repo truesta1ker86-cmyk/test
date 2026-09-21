@@ -2,72 +2,126 @@
   display: block;
   min-width: 0;
 }
+
 .date {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
 }
+
+/* ─── Label ───────────────────────────────────────────────────
+   Раскрытый @include mx.control-label                          */
 .date__label {
-  @include mx.control-label;
-}
-.date__required {
-  margin-left: 3px;
-  color: var(--red);
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-2, #475467);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  user-select: none;
 }
 
+.date__required {
+  margin-left: 3px;
+  color: var(--red, #d92d20);
+}
+
+/* ─── Поле ────────────────────────────────────────────────────
+   Раскрытый @include mx.control-base                           */
 :host ::ng-deep .date__field.p-datepicker {
-  @include mx.control-base;
+  width: 100%;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 10px;
+
+  border: 1px solid var(--control-border, #98a2b3);
+  border-radius: var(--control-radius, 10px);
+  background: var(--control-bg, #f8fafc);
+  color: var(--text, #101828);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+
+  transition:
+    border-color var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+    background   var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+    box-shadow   var(--motion-fast, 160ms) var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+
   .p-datepicker-input {
     padding: 0 10px;
-    color: var(--text);
+    color: var(--text, #101828);
     font: inherit;
     font-size: 13px;
     line-height: 1;
     background: transparent;
     border: 0;
     outline: none;
+
     &::placeholder {
-      color: var(--faint);
+      color: var(--faint, #98a2b3);
     }
   }
+
   .p-datepicker-dropdown {
     width: 32px;
-    color: var(--muted);
+    color: var(--muted, #667085);
     border: 0;
     background: transparent;
   }
+
+  /* Раскрытый @include mx.control-hover */
   &:hover:not(.p-disabled) {
-    @include mx.control-hover;
+    border-color: var(--control-border-hover, #667085);
+    background: var(--surface, #ffffff);
   }
+
+  /* Раскрытый @include mx.control-focus */
   &:focus-within,
   &.p-focus {
-    @include mx.control-focus;
+    outline: none;
+    border-color: var(--brand, #005bff);
+    background: var(--surface, #ffffff);
+    box-shadow: 0 0 0 4px var(--control-focus-ring, rgba(0, 91, 255, 0.18));
   }
+
+  /* Раскрытый @include mx.control-disabled */
   &.p-disabled {
-    @include mx.control-disabled;
+    border-color: var(--control-disabled-border, #d0d5dd);
+    background: var(--control-disabled-bg, #eaecf0);
+    color: var(--faint, #98a2b3);
+    box-shadow: none;
+    cursor: not-allowed;
   }
 }
 
+/* ─── Панель календаря ──────────────────────────────────────── */
 :host ::ng-deep .p-datepicker-panel {
   margin-top: 4px;
-  border: 1px solid var(--hair-2);
-  border-radius: var(--control-radius);
-  background: var(--surface);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--hair-2, rgba(16, 24, 40, 0.11));
+  border-radius: var(--control-radius, 10px);
+  background: var(--surface, #ffffff);
+  box-shadow:
+    0 12px 32px -8px rgba(16, 24, 40, 0.18),
+    0 4px 12px -2px rgba(16, 24, 40, 0.08);
   padding: 10px;
   overflow: hidden;
 
   .p-datepicker-header {
     padding: 4px 2px 10px;
-    border-bottom: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair, rgba(16, 24, 40, 0.07));
   }
+
   .p-datepicker-weekday {
-    color: var(--muted);
+    color: var(--muted, #667085);
     font-size: 11px;
     font-weight: 650;
     text-transform: uppercase;
   }
+
   .p-datepicker-day {
     display: grid;
     place-items: center;
@@ -75,55 +129,76 @@
     height: 32px;
     margin: 1px;
     border-radius: 8px;
-    color: var(--text);
+    color: var(--text, #101828);
     font-size: 12px;
     font-weight: 600;
+
     &:hover {
-      background: var(--surface-2);
+      background: var(--surface-2, #f4f5f7);
     }
+
     &.p-datepicker-day-selected,
     &.p-highlight {
-      background: var(--brand);
+      background: var(--brand, #005bff);
       color: #fff;
     }
+
     &.p-datepicker-today {
-      box-shadow: inset 0 0 0 2px var(--brand-soft);
-      color: var(--brand);
+      box-shadow: inset 0 0 0 2px var(--brand-soft, #eff4ff);
+      color: var(--brand, #005bff);
     }
+
     &.p-disabled {
-      color: var(--faint);
+      color: var(--faint, #98a2b3);
       cursor: not-allowed;
       text-decoration: line-through;
     }
   }
 }
 
+/* ─── Размеры ─────────────────────────────────────────────── */
 :host(.app-date--compact) ::ng-deep .date__field.p-datepicker {
-  height: var(--control-height-compact);
-  min-height: var(--control-height-compact);
+  height: var(--control-height-compact, 32px);
+  min-height: var(--control-height-compact, 32px);
 }
+
 :host(.app-date--large) ::ng-deep .date__field.p-datepicker {
-  height: var(--control-height-large);
-  min-height: var(--control-height-large);
+  height: var(--control-height-large, 40px);
+  min-height: var(--control-height-large, 40px);
 }
+
+/* ─── Внешний вид ─────────────────────────────────────────── */
 :host([data-appearance='filled']) ::ng-deep .date__field.p-datepicker {
-  background: var(--surface-2);
+  background: var(--surface-2, #f4f5f7);
   border-color: transparent;
   box-shadow: none;
 }
+
+/* ─── Ошибка ────────────────────────────────────────────────
+   Раскрытый @include mx.control-invalid                        */
 :host(.app-date--invalid) ::ng-deep .date__field.p-datepicker {
-  @include mx.control-invalid;
+  border-color: var(--red, #d92d20);
+  background: var(--red-soft, #fef3f2);
+
+  &:focus,
+  &:focus-visible,
+  &:focus-within,
+  &.p-focus {
+    box-shadow: 0 0 0 4px rgba(217, 45, 32, 0.12);
+  }
 }
 
+/* ─── Подсказка и ошибка ─────────────────────────────────── */
 .date__hint {
   display: block;
-  color: var(--muted);
+  color: var(--muted, #667085);
   font-size: 11px;
   line-height: 1.35;
 }
+
 .date__error {
   display: block;
-  color: var(--red);
+  color: var(--red, #d92d20);
   font-size: 11px;
   font-weight: 600;
   line-height: 1.35;

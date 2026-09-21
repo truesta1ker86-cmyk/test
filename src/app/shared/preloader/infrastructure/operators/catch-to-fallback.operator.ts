@@ -6,6 +6,9 @@ export interface FallbackOptions<T> {
   onError?: (error: unknown) => void;
 }
 
+/**
+ * Ловит ошибку, вызывает `onError`, эмитит `fallback`.
+ */
 export function catchToFallback<T>({
   fallback,
   onError,

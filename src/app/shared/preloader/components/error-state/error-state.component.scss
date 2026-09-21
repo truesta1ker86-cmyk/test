@@ -10,7 +10,7 @@
   gap: 14px;
   padding: 40px 20px;
   text-align: center;
-  color: var(--muted);
+  color: var(--muted, #667085);
 }
 
 .error-state__icon {
@@ -23,26 +23,18 @@
   color: var(--red, #d92d20);
 }
 
-.error-state__icon .icon {
-  width: 20px;
-  height: 20px;
-}
-
 .error-state__body {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   max-width: 480px;
 }
 
 .error-state__title {
-  color: var(--text);
+  color: var(--text, #101828);
   font-size: 14px;
   font-weight: 650;
 }
 
 .error-state__message {
-  color: var(--muted);
+  color: var(--muted, #667085);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -50,24 +42,9 @@
 .error-state--compact {
   flex-direction: row;
   padding: 14px 16px;
-  align-items: flex-start;
   text-align: left;
   gap: 12px;
-  border: 1px solid var(--hair-2);
-  border-radius: var(--control-radius);
-  background: var(--surface);
-}
-
-.error-state--compact .error-state__icon {
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
-}
-
-.error-state--compact .error-state__body {
-  flex: 1;
-}
-.error-state--compact .error-state__action {
-  align-self: center;
-  flex: 0 0 auto;
+  border: 1px solid var(--hair-2, rgba(16, 24, 40, 0.11));
+  border-radius: var(--control-radius, 10px);
+  background: var(--surface, #fff);
 }

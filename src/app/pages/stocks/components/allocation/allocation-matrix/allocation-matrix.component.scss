@@ -1,39 +1,209 @@
-.allocation-matrix {
-  .stock-matrix-product {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
 
-    b {
-      font-size: 13px;
-      font-weight: 600;
-      line-height: 1.3;
-    }
+/* ═══════════════════════════════════════════════════════════════
+   Контейнер скролла
+   ═══════════════════════════════════════════════════════════════ */
+.stock-matrix-scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
 
-    .mono {
-      font-size: 11px;
-      color: var(--muted);
-    }
+/* ═══════════════════════════════════════════════════════════════
+   Таблица
+   ═══════════════════════════════════════════════════════════════ */
+.stock-matrix-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  table-layout: auto;
+}
 
-    .stock-matrix-product-meta {
-      font-size: 10px;
-      color: var(--muted);
+/* ─── Колонки ─────────────────────────────────────────────── */
+.stock-matrix-table .stock-matrix-select-cell {
+  width: 38px;
+  min-width: 38px;
+  max-width: 38px;
+  padding: 0;
+  text-align: center;
+}
 
-      .stock-matrix-product-onec {
-        color: var(--text-2);
-        font-weight: 500;
-      }
-    }
+.stock-matrix-table .stock-matrix-product {
+  width: 260px;
+  min-width: 260px;
+  max-width: 260px;
+}
+
+.stock-matrix-table .stock-matrix-category {
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+}
+
+.stock-matrix-table .stock-matrix-available {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+  text-align: right;
+}
+
+.stock-matrix-table .stock-matrix-warehouse-head,
+.stock-matrix-table .stock-matrix-cell-td {
+  width: 360px;
+  min-width: 360px;
+  max-width: 360px;
+  vertical-align: top;
+}
+
+/* ─── Шапка ───────────────────────────────────────────────── */
+.stock-matrix-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 8px 12px;
+  background: #f4f5f7;
+  box-shadow: 0 1px 0 rgba(16, 24, 40, 0.11);
+  color: #667085;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* ─── Sticky-колонки ──────────────────────────────────────── */
+.stock-matrix-table tbody td.stock-matrix-select-cell,
+.stock-matrix-table thead th.stock-matrix-select-cell {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #fff;
+}
+
+.stock-matrix-table thead th.stock-matrix-select-cell {
+  z-index: 4;
+  background: #f4f5f7;
+}
+
+.stock-matrix-table tbody td.stock-matrix-product,
+.stock-matrix-table thead th.stock-matrix-product {
+  position: sticky;
+  left: 38px;
+  z-index: 2;
+  background: #fff;
+}
+
+.stock-matrix-table thead th.stock-matrix-product {
+  z-index: 4;
+  background: #f4f5f7;
+}
+
+/* ─── Ячейки ──────────────────────────────────────────────── */
+.stock-matrix-table tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(16, 24, 40, 0.07);
+  background: #fff;
+  font-size: 12px;
+  vertical-align: top;
+}
+
+/* ─── Продуктовая ячейка ──────────────────────────────────── */
+.product-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.product-cell b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
+  font-size: 13px;
+}
+
+.product-cell .mono {
+  color: #667085;
+  font-size: 11px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ⭐ ПОДСВЕТКА СТРОК — через ::ng-deep + чистые цвета
+   ═══════════════════════════════════════════════════════════════ */
+:host ::ng-deep {
+  /* Красная строка — несохранённые изменения */
+  .stock-matrix-table tbody tr.is-dirty-row > td,
+  .stock-matrix-table tbody tr.is-dirty-row > th {
+    background-color: #fef3f2 !important;
+    border-bottom-color: rgba(217, 45, 32, 0.18) !important;
   }
 
-  .stock-cell-wrapper {
-    padding: 2px 0;
+  /* Красная полоса слева */
+  .stock-matrix-table tbody tr.is-dirty-row > td:first-child {
+    box-shadow: inset 3px 0 0 #d92d20 !important;
   }
 
-  .matrix-changes-indicator {
-    padding: 8px 16px;
-    border-top: 1px solid var(--hair);
-    background: var(--surface-2);
-    text-align: center;
+  /* Hover на грязной строке */
+  .stock-matrix-table tbody tr.is-dirty-row:hover > td,
+  .stock-matrix-table tbody tr.is-dirty-row:hover > th {
+    background-color: #fee4e2 !important;
+  }
+
+  /* Sticky-колонки тоже красные */
+  .stock-matrix-table tbody tr.is-dirty-row > td.stock-matrix-product,
+  .stock-matrix-table tbody tr.is-dirty-row > td.stock-matrix-select-cell {
+    background-color: #fef3f2 !important;
+  }
+
+  /* Зелёный — для сохранённых правил */
+  .stock-matrix-table tbody tr.is-saved-row > td,
+  .stock-matrix-table tbody tr.is-saved-row > th {
+    background-color: #ecfdf3 !important;
+  }
+
+  .stock-matrix-table tbody tr.is-saved-row:hover > td {
+    background-color: #d1fadf !important;
+  }
+
+  .stock-matrix-table tbody tr.is-saved-row > td.stock-matrix-product,
+  .stock-matrix-table tbody tr.is-saved-row > td.stock-matrix-select-cell {
+    background-color: #ecfdf3 !important;
+  }
+
+  /* ⭐ Бейдж «Не сохранено» */
+  .row-dirty-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    align-self: flex-start !important;
+    margin-top: 4px !important;
+    padding: 2px 7px !important;
+    border-radius: 999px !important;
+    background: #d92d20 !important;
+    color: #fff !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
+    line-height: 1.4 !important;
+  }
+
+  .row-dirty-badge .icon-xs {
+    width: 10px !important;
+    height: 10px !important;
+    flex: 0 0 auto !important;
   }
 }

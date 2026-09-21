@@ -1,0 +1,151 @@
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 12px;
+}
+
+/* ============================================================
+   Заголовок
+   ============================================================ */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .header-left,
+  .header-right {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+/* ============================================================
+   Карточка источника (Ozon / 1С)
+   ============================================================ */
+.source-card {
+  background: #181825;
+  border: 1px solid #313244;
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &.running {
+    border-color: #89b4fa;
+    box-shadow: 0 0 0 1px rgba(137, 180, 250, 0.3);
+  }
+
+  .source-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .source-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .source-icon {
+      font-size: 14px;
+    }
+
+    .source-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: #cdd6f4;
+    }
+  }
+
+  .source-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .source-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #9399b2;
+
+    .progress-info {
+      font-family: monospace;
+    }
+  }
+}
+
+/* ============================================================
+   Прогресс-бар PrimeNG
+   ============================================================ */
+:host ::ng-deep {
+  .progress-bar {
+    .p-progressbar {
+      background: #313244;
+      border-radius: 6px;
+      overflow: hidden;
+
+      .p-progressbar-value {
+        background: #89b4fa;
+        transition: width 0.3s ease;
+      }
+    }
+
+    &.is-done .p-progressbar-value {
+      background: #a6e3a1;
+    }
+
+    &.is-error .p-progressbar-value {
+      background: #f38ba8;
+    }
+  }
+
+  /* Кнопки: disabled */
+  .p-button:disabled,
+  .p-button.p-disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+  }
+}
+
+/* ============================================================
+   Блок ошибки
+   ============================================================ */
+.error-box {
+  padding: 10px 14px;
+  background: #f9e2af;
+  color: #1e1e2e;
+  border-radius: 8px;
+  font-size: 13px;
+
+  &.fatal {
+    background: #f38ba8;
+  }
+
+  .error-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .error-msg {
+    font-size: 12px;
+    opacity: 0.9;
+  }
+}

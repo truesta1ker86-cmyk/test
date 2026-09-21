@@ -6,5 +6,20 @@
     "changeOrigin": true,
     "withCredentials": true,
     "cookieDomainRewrite": "localhost"
-  }
+  },
+  "/events/subscribe": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/ozon": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/onec": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "changeOrigin": true
+  }      
 }

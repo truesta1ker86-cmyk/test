@@ -1,64 +1,100 @@
-<div class="allocation-matrix">
-  <app-data-table
-    [columns]="columns()"
-    [data]="filteredData()"
-    [loading]="false"
-    [rows]="rows()"
-    [selectionMode]="'multiple'"
-    [(selection)]="selectedProducts"
-    (selectionChange)="onSelectionChange($event)"
-    [rowClickable]="false"
-  >
-    <ng-template #cellTemplate let-row let-column="column" let-value="value">
-      <!-- Колонка "Товар" -->
-      <div *ngIf="column.field === 'product'" class="stock-matrix-product">
-        <b>{{ row?.name || 'Без названия' }}</b>
-        <small class="mono">{{ row?.offer_id || '—' }}</small>
-        <small class="stock-matrix-product-meta">
-          {{ row?.category_label || 'Без категории' }} · {{ row?.type_label || 'Без типа' }}
-          <span class="stock-matrix-product-onec" *ngIf="row?.available_1c != null">
-            · Остаток 1С: {{ row?.available_1c }}
-          </span>
-        </small>
-      </div>
+<table class="stock-matrix-table">
+  <thead>
+    <tr>
+      <th class="stock-matrix-select-cell">
+        <input
+          type="checkbox"
+          aria-label="Выбрать все видимые товары"
+          [checked]="allVisibleSelected()"
+          (change)="toggleAllVisible($any($event.target).checked)"
+        />
+      </th>
+      <th class="stock-matrix-product">Товар / артикул</th>
+      <th class="stock-matrix-category">Категория / тип</th>
+      <th class="stock-matrix-available">Физический остаток 1С</th>
 
-      <!-- Колонка "Категория / тип" -->
-      <div *ngIf="column.field === 'category'" class="stock-matrix-category">
-        <span>{{ row?.category_label || 'Без категории' }}</span>
-        <small class="muted" style="display: block; margin-top: 3px">
-          {{ row?.type_label || 'Без типа' }}
-        </small>
-      </div>
+      @for (warehouseId of selectedWarehouses(); track warehouseId) {
+        <th class="stock-matrix-warehouse-head">
+          <div class="stock-matrix-warehouse-title">
+            <span class="stock-matrix-warehouse-name">
+              {{ getWarehouseName(warehouseId) }}
+            </span>
+          </div>
+        </th>
+      }
+    </tr>
+  </thead>
 
-      <!-- Колонка "Физический остаток 1С" -->
-      <div *ngIf="column.field === 'available_1c'" class="num stock-matrix-available">
-        {{ row?.available_1c != null ? row?.available_1c : '—' }}
-      </div>
+  <tbody>
+    @for (row of filteredData(); track row.offer_id) {
+      <tr
+        [class.is-dirty-row]="isRowDirty(row)"
+        [class.is-saved-row]="isRowSaved(row)"
+        [class.is-selected]="selectedProducts().includes(row)"
+      >
+        <!-- Чекбокс -->
+        <td class="stock-matrix-select-cell">
+          <input
+            type="checkbox"
+            [attr.aria-label]="'Выбрать ' + row.offer_id"
+            [checked]="selectedProducts().includes(row)"
+            (change)="toggleRowSelection(row, $any($event.target).checked)"
+          />
+        </td>
 
-      <!-- Колонки складов -->
-      <div *ngIf="column.field?.startsWith('stock_') && row" class="stock-cell-wrapper">
+        <!-- ⭐ Товар / артикул + бейдж -->
+        <td class="stock-matrix-product">
+          <div class="product-cell">
+            <b>{{ row.name || 'Без названия' }}</b>
+            <small class="mono">{{ row.offer_id }}</small>
 
-        
+            @if (isRowDirty(row)) {
+              <span class="row-dirty-badge" aria-label="Есть несохранённые изменения">
+                <svg class="icon-xs" aria-hidden="true"><use href="#i-alert" /></svg>
+                Не сохранено
+              </span>
+            }
+          </div>
+        </td>
 
-        <app-allocation-matrix-cell
-          [product]="row"
-          [warehouseId]="column.warehouseId"
-          [physicalQty]="row?.available_1c ?? null"
-          [currentOzonQty]="getCurrentOzonQty(row, column.warehouseId)"
-          [mode]="getRuleState(row, column.warehouseId).mode"
-          [value]="getRuleState(row, column.warehouseId).value"
-          [quantum]="getRuleState(row, column.warehouseId).quantum"
-          [isDirty]="getRuleState(row, column.warehouseId).dirty"
-          [isEnabled]="getRuleState(row, column.warehouseId).enabled"
-          [isSaved]="isRuleSaved(row, column.warehouseId)"
-          (draftChange)="onDraftChange(row, column.warehouseId, $event)"
-        ></app-allocation-matrix-cell>
-      </div>
-    </ng-template>
-  </app-data-table>
+        <!-- Категория -->
+        <td class="stock-matrix-category">
+          <span>{{ row.category_label || 'Без категории' }}</span>
+          <small class="muted" style="display: block; margin-top: 3px">
+            {{ row.type_label || 'Без типа' }}
+          </small>
+        </td>
 
-  <!-- Индикатор изменений -->
-  <div *ngIf="hasChanges()" class="matrix-changes-indicator">
-    <span class="badge amber">Есть несохранённые изменения</span>
-  </div>
-</div>
+        <!-- Остаток 1С -->
+        <td class="num stock-matrix-available">
+          {{ getPhysicalQty(row) ?? '—' }}
+        </td>
+
+        <!-- Ячейки по складам -->
+        @for (warehouseId of selectedWarehouses(); track warehouseId) {
+          <td class="stock-matrix-cell-td">
+            <app-allocation-matrix-cell
+              [product]="row"
+              [warehouseId]="warehouseId"
+              [physicalQty]="getPhysicalQty(row)"
+              [currentOzonQty]="getCurrentOzonQty(row, warehouseId)"
+              [mode]="getRuleState(row, warehouseId).mode"
+              [value]="getRuleState(row, warehouseId).value"
+              [quantum]="getRuleState(row, warehouseId).quantum"
+              [isDirty]="getRuleState(row, warehouseId).dirty"
+              [isEnabled]="getRuleState(row, warehouseId).enabled"
+              [isSaved]="isRuleSaved(row, warehouseId)"
+              (draftChange)="onDraftChange(row, warehouseId, $event)"
+            />
+          </td>
+        }
+      </tr>
+    } @empty {
+      <tr>
+        <td [attr.colspan]="4 + selectedWarehouses().length">
+          <div class="empty">По выбранному фильтру товаров нет</div>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
