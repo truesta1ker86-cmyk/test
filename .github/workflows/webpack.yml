@@ -1,0 +1,42 @@
+name: Angular CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Клонирование репозитория
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2. Установка Node.js v22.22.3
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.22.3'
+        cache: 'npm' # Автоматическое кэширование node_modules
+
+    # 3. Чистая установка зависимостей
+    - name: Install dependencies
+      run: npm ci
+
+    # 4. Запуск Unit-тестов в headless-режиме (без зависания пайплайна)
+    - name: Run tests
+      run: npm run test -- --watch=false --browsers=ChromeHeadless
+
+    # 5. Сборка приложения для продакшена
+    - name: Build application
+      run: npm run build -- --configuration=production
+
+    # 6. Сохранение артефактов сборки (каталог dist/)
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: angular-build
+        path: dist/
