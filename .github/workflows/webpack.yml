@@ -1,4 +1,4 @@
-name: CI
+name: Angular CI
 
 on:
   push:
@@ -17,17 +17,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
-      # Сначала ставим зависимости (это обновит package-lock.json, если нужно)
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      # Тесты: вместо ng test пишем npx ng test
       - name: Test
         run: npx ng test --watch=false
 
-      # Сборка: тоже через npx
       - name: Build
         run: npx ng build --configuration=production
