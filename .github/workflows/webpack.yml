@@ -39,5 +39,5 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: ${{ secrets.SERVER_PORT }}
           source: "dist/o1c_panel/*"
-          target: "/var/www/o1c_panel"
+          target: "/var/www/o1c_panel/"
           rm: true
