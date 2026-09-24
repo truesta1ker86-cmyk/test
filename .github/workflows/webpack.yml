@@ -24,6 +24,13 @@ jobs:
       - name: Build
         run: npx ng build --configuration=production
 
+      - name: Debug secrets
+        run: |
+          echo "HOST=[${{ secrets.SERVER_HOST }}]"
+          echo "USER=[${{ secrets.SERVER_USER }}]"
+          echo "PASS_LEN=$(echo -n '${{ secrets.SERVER_PASSWORD }}' | wc -c)"
+          echo "PORT=[${{ secrets.SERVER_PORT }}]"
+
       - name: Deploy to server
         uses: appleboy/scp-action@v1
         with:
