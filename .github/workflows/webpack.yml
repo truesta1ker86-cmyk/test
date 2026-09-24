@@ -24,8 +24,7 @@ jobs:
       - name: Build
         run: npx ng build --configuration=production
 
-      - name: Deploy to server
+      - name: Deploy to server (SCP via password)
         uses: appleboy/scp-action@v1
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username:
+          host: ${{ secrets.DEPLOY_HOST
