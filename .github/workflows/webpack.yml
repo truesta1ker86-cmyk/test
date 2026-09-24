@@ -33,5 +33,5 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           source: "dist/o1c_panel/*"
           target: "/var/www/o1c_panel"
-          # rm: true                ← УДАЛИТЬ эту строку
-          overwrite: true           ← ДОБАВИТЬ эту строку
+          overwrite: true
+          # rm: true  ← пока не включай, пока не настроишь права на сервере
