@@ -21,7 +21,6 @@ export class ProductsComponent {
 
   /** Что показывать пользователю */
   readonly lockReason = computed(() => {
-    if (this.progress.isOnecRunning()) return '1С каталог синхронизируется…';
     if (this.progress.isOzonRunning()) return 'Ozon синхронизируется…';
     return '';
   });

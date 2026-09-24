@@ -48,6 +48,155 @@
   --motion-fast: 160ms;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  // -------------------------------------------------------------------------
+  // PRIMARY
+  // -------------------------------------------------------------------------
+  --p-button-primary-background:         #89b4fa;
+  --p-button-primary-hover-background:   #b4befe;
+  --p-button-primary-active-background:  #7287fd;
+  --p-button-primary-border-color:       #b4befe;
+  --p-button-primary-hover-border-color: #b4befe;
+  --p-button-primary-active-border-color:#7287fd;
+  --p-button-primary-color:              #1e1e2e;
+  --p-button-primary-hover-color:        #1e1e2e;
+  --p-button-primary-active-color:       #1e1e2e;
+  --p-button-primary-focus-ring-color:   rgba(137, 180, 250, 0.35);
+  --p-button-primary-focus-ring-shadow:  0 0 0 3px rgba(137, 180, 250, 0.35);
+
+  // -------------------------------------------------------------------------
+  // SECONDARY
+  // -------------------------------------------------------------------------
+  --p-button-secondary-background:         #45475a;
+  --p-button-secondary-hover-background:   #585b70;
+  --p-button-secondary-active-background:  #313244;
+  --p-button-secondary-border-color:       #585b70;
+  --p-button-secondary-hover-border-color: #585b70;
+  --p-button-secondary-active-border-color:#313244;
+  --p-button-secondary-color:              #cdd6f4;
+  --p-button-secondary-hover-color:        #cdd6f4;
+  --p-button-secondary-active-color:       #cdd6f4;
+
+  // -------------------------------------------------------------------------
+  // SUCCESS
+  // -------------------------------------------------------------------------
+  --p-button-success-background:         #a6e3a1;
+  --p-button-success-hover-background:   #c2edbc;
+  --p-button-success-active-background:  #8ad489;
+  --p-button-success-border-color:       #c2edbc;
+  --p-button-success-hover-border-color: #c2edbc;
+  --p-button-success-active-border-color:#8ad489;
+  --p-button-success-color:              #1e1e2e;
+  --p-button-success-hover-color:        #1e1e2e;
+  --p-button-success-active-color:       #1e1e2e;
+
+  // -------------------------------------------------------------------------
+  // INFO
+  // -------------------------------------------------------------------------
+  --p-button-info-background:         #89dceb;
+  --p-button-info-hover-background:   #b3e7f1;
+  --p-button-info-active-background:  #5fc8dc;
+  --p-button-info-border-color:       #b3e7f1;
+  --p-button-info-hover-border-color: #b3e7f1;
+  --p-button-info-active-border-color:#5fc8dc;
+  --p-button-info-color:              #1e1e2e;
+  --p-button-info-hover-color:        #1e1e2e;
+  --p-button-info-active-color:       #1e1e2e;
+
+  // -------------------------------------------------------------------------
+  // WARN
+  // -------------------------------------------------------------------------
+  --p-button-warn-background:         #f9e2af;
+  --p-button-warn-hover-background:   #fce6a3;
+  --p-button-warn-active-background:  #e8cf7a;
+  --p-button-warn-border-color:       #fce6a3;
+  --p-button-warn-hover-border-color: #fce6a3;
+  --p-button-warn-active-border-color:#e8cf7a;
+  --p-button-warn-color:              #1e1e2e;
+  --p-button-warn-hover-color:        #1e1e2e;
+  --p-button-warn-active-color:       #1e1e2e;
+
+  // -------------------------------------------------------------------------
+  // HELP
+  // -------------------------------------------------------------------------
+  --p-button-help-background:         #cba6f7;
+  --p-button-help-hover-background:   #dcc0fc;
+  --p-button-help-active-background:  #b48ef2;
+  --p-button-help-border-color:       #dcc0fc;
+  --p-button-help-hover-border-color: #dcc0fc;
+  --p-button-help-active-border-color:#b48ef2;
+  --p-button-help-color:              #1e1e2e;
+  --p-button-help-hover-color:        #1e1e2e;
+  --p-button-help-active-color:       #1e1e2e;
+
+  // -------------------------------------------------------------------------
+  // DANGER
+  // -------------------------------------------------------------------------
+  --p-button-danger-background:         #f38ba8;
+  --p-button-danger-hover-background:   #f5a3bb;
+  --p-button-danger-active-background:  #e06c8a;
+  --p-button-danger-border-color:       #f5a3bb;
+  --p-button-danger-hover-border-color: #f5a3bb;
+  --p-button-danger-active-border-color:#e06c8a;
+  --p-button-danger-color:              #1e1e2e;
+  --p-button-danger-hover-color:        #1e1e2e;
+  --p-button-danger-active-color:       #1e1e2e;
+
+  // -------------------------------------------------------------------------
+  // CONTRAST
+  // -------------------------------------------------------------------------
+  --p-button-contrast-background:         #11111b;
+  --p-button-contrast-hover-background:   #1e1e2e;
+  --p-button-contrast-active-background:  #000000;
+  --p-button-contrast-border-color:       #45475a;
+  --p-button-contrast-hover-border-color: #45475a;
+  --p-button-contrast-active-border-color:#000000;
+  --p-button-contrast-color:              #cdd6f4;
+  --p-button-contrast-hover-color:        #cdd6f4;
+  --p-button-contrast-active-color:       #cdd6f4;
+
+  // -------------------------------------------------------------------------
+  // ОБЩИЕ — размеры, формы, паддинги
+  // -------------------------------------------------------------------------
+  --p-button-padding-x:                    0.9rem;
+  --p-button-padding-y:                    0.4rem;
+  --p-button-font-size:                    13px;
+  --p-button-font-weight:                  600;
+  --p-button-border-radius:                6px;
+  --p-button-transition-duration:          0.15s;
+
+  --p-button-sm-padding-x:                 0.65rem;
+  --p-button-sm-padding-y:                 0.3rem;
+  --p-button-sm-font-size:                 12px;
+
+  --p-button-lg-padding-x:                 1.25rem;
+  --p-button-lg-padding-y:                 0.55rem;
+  --p-button-lg-font-size:                 14.5px;
+
+  // Rounded
+  --p-button-rounded-border-radius:        999px;
+
+  // Disabled
+  --p-button-disabled-background:          #1e1e2e;
+  --p-button-disabled-border-color:        #45475a;
+  --p-button-disabled-color:               #a6adc8;
+  --p-button-disabled-opacity:             0.55;
+
+  // Outlined (border — заметный)
+  --p-button-outlined-primary-border-color:  #89b4fa;
+  --p-button-outlined-primary-color:         #89b4fa;
+  --p-button-outlined-danger-border-color:   #f38ba8;
+  --p-button-outlined-danger-color:          #f38ba8;
+
+  // Text / Link
+  --p-button-text-primary-color:             #89b4fa;
+  --p-button-text-secondary-color:           #cdd6f4;
+  --p-button-text-success-color:             #a6e3a1;
+  --p-button-text-info-color:                #89dceb;
+  --p-button-text-warn-color:                #f9e2af;
+  --p-button-text-help-color:                #cba6f7;
+  --p-button-text-danger-color:              #f38ba8;
+  --p-button-text-contrast-color:            #cdd6f4;
 }
 
 * {

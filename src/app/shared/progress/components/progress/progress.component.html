@@ -1,151 +1,355 @@
 <div class="progress-container">
+  <!-- ==================== HEADER ==================== -->
+  <div class="header">
+    <div class="header-left">
+      <h2 class="header-title">Синхронизация</h2>
 
-  <!-- Спиннер, пока сервис не готов -->
-  @if (!progress.isHealthy()) {
-    <div class="spinner-overlay">
-      <div class="spinner-card">
-        <p-progress-spinner
-          [style]="{ width: '60px', height: '60px' }"
-          strokeWidth="4"
-          animationDuration="1s"
-        ></p-progress-spinner>
-        <div class="spinner-title">
-          @if (progress.pageState() === 'failed') {
-            Сервис недоступен
-          } @else {
-            Подключение…
-          }
-        </div>
-        @if (progress.pageState() === 'failed') {
-          <button
-            icon="pi pi-refresh"
-            severity="warn"
-            (click)="retry()"
-          >Повторить</button>
-        }
-      </div>
+      <span
+        class="sse-indicator"
+        [class.open]="svc.status() === 'open'"
+        [class.reconnecting]="svc.status() === 'reconnecting'"
+        [class.failed]="svc.status() === 'failed'"
+        [class.idle]="svc.status() === 'idle' || svc.status() === 'closed'"
+      >
+        <i
+          class="pi"
+          [class.pi-circle-fill]="svc.status() === 'open'"
+          [class.pi-spin]="svc.status() === 'reconnecting'"
+          [class.pi-spinner]="svc.status() === 'reconnecting'"
+          [class.pi-times-circle]="svc.status() === 'failed'"
+          [class.pi-circle]="svc.status() === 'idle' || svc.status() === 'closed'"
+        >
+        </i>
+        <span>{{ svc.status() }}</span>
+      </span>
     </div>
-  } @else {
 
-    <!-- Заголовок -->
-    <div class="header">
-      <div class="header-left">
-        <p-tag value="Live" severity="success"></p-tag>
-        @if (progress.anyRunning()) {
-          <p-tag value="Синхронизация идёт" severity="info"></p-tag>
-        }
-      </div>
+    <div class="header-right">
+      <button
+        pButton
+        [disabled]="!svc.canStartAll()"
+        (click)="onStartAll()"
+        pTooltip="Запустить Ozon"
+      >
+        <i class="pi pi-play-circle"></i>
+        <span>Запустить всё</span>
+      </button>
 
-      <div class="header-right">
-        <!-- Кнопка ручного обновления статуса -->
+      @if (svc.anyRunning()) {
         <button
-          icon="pi pi-refresh"
-          severity="secondary"
-          size="small"
-          [disabled]="isRefreshing()"
-          tooltipPosition="top"
-          (click)="refresh()"
-        >Обновить статус</button>
-      </div>
+          pButton
+          severity="danger"
+          (click)="onStopAll()"
+          pTooltip="Остановить синхронизацию Ozon"
+        >
+          <i class="pi pi-stop-circle"></i>
+          <span>Остановить всё</span>
+        </button>
+      }
+
+      @if (!svc.connected()) {
+        <button
+          pButton
+          variant="text"
+          severity="warn"
+          (click)="onRetrySse()"
+          pTooltip="Переподключить SSE"
+        >
+          <i class="pi pi-refresh"></i>
+          <span>Переподключить</span>
+        </button>
+      }
+
+      <button
+        pButton
+        variant="text"
+        severity="secondary"
+        (click)="onRefresh()"
+        pTooltip="Обновить статус"
+      >
+        <i class="pi pi-refresh"></i>
+        <span>Обновить</span>
+      </button>
     </div>
+  </div>
 
-    <!-- Ozon -->
-    <div class="source-card" [class.running]="progress.isOzonRunning()">
-      <div class="source-header">
-        <div class="source-title">
-          <span class="source-icon">🟢</span>
-          <span class="source-name">Ozon</span>
-          @if (progress.ozonProgress(); as p) {
-            <p-tag [value]="p.status" [severity]="statusSeverity(p.status)"></p-tag>
-          }
-        </div>
-
-        <div class="source-actions">
-          @if (progress.isOzonRunning()) {
-            <button
-              icon="pi pi-stop"
-              severity="danger"
-              size="small"
-              [disabled]="isStoppingOzon()"
-              (click)="stopOzonSync()"
-            >{{isStoppingOzon() ? 'Остановка…' : 'Остановить'}}</button>
-          } @else {
-            <button
-              icon="pi pi-cloud-download"
-              severity="success"
-              size="small"
-              [disabled]="!canStartOzon()"
-              (click)="startOzonSync()"
-            >Синхронизировать</button>
-          }
-        </div>
+  <!-- ==================== ОШИБКА SSE ==================== -->
+  @if (svc.lastError() && svc.status() !== 'reconnecting') {
+    <div class="error-box" [class.fatal]="svc.lastError()!.type === 'max-retries'">
+      <div class="error-title">
+        @switch (svc.lastError()!.type) {
+          @case ('network') { Нет связи }
+          @case ('timeout') { Превышено время ожидания }
+          @case ('http')    { Ошибка сервера }
+          @case ('auth')    { Требуется авторизация }
+          @case ('parse')   { Некорректные данные }
+          @default          { Ошибка }
+        }
       </div>
-
-      <div class="source-body">
-        <p-progress-bar
-          [value]="progressValue('ozon')"
-          [showValue]="false"
-          [style]="{ height: '22px' }"
-        ></p-progress-bar>
-        <div class="progress-meta">
-          <span class="progress-info">{{ progressLabel('ozon') }}</span>
-        </div>
-      </div>
+      <div class="error-msg">{{ svc.lastError()!.message }}</div>
     </div>
-
-    <!-- 1С -->
-    <div class="source-card" [class.running]="progress.isOnecRunning()">
-      <div class="source-header">
-        <div class="source-title">
-          <span class="source-icon">🔵</span>
-          <span class="source-name">1С Каталог</span>
-          @if (progress.onecProgress(); as p) {
-            <p-tag [value]="p.status" [severity]="statusSeverity(p.status)"></p-tag>
-          }
-        </div>
-
-        <div class="source-actions">
-          @if (progress.isOnecRunning()) {
-            <button
-              icon="pi pi-stop"
-              severity="danger"
-              size="small"
-              [disabled]="isStoppingOnec()"
-              (click)="stopOnecSync()"
-            >{{isStoppingOnec() ? 'Остановка…' : 'Остановить'}}</button>
-          } @else {
-            <button
-              icon="pi pi-database"
-              severity="info"
-              size="small"
-              [disabled]="!canStartOnec()"
-              (click)="startOnecSync()"
-            >Синхронизировать</button>
-
-            <button
-              icon="pi pi-refresh"
-              severity="secondary"
-              size="small"
-              tooltipPosition="top"
-              [disabled]="!canStartOnec()"
-              (click)="startOnecFullSync()"
-            >Сброс</button>
-          }
-        </div>
-      </div>
-
-      <div class="source-body">
-        <p-progress-bar
-          [value]="progressValue('onec')"
-          [showValue]="false"
-          [style]="{ height: '22px' }"
-        ></p-progress-bar>
-        <div class="progress-meta">
-          <span class="progress-info">{{ progressLabel('onec') }}</span>
-        </div>
-      </div>
-    </div>
-
   }
 
+  <!-- ==================== ПРЕРВАНО ==================== -->
+  @if (svc.inventoryInterrupted() || svc.ozonInterrupted()) {
+    <div class="interrupted-box">
+      <i class="pi pi-exclamation-triangle"></i>
+
+      @if (svc.inventoryInterrupted(); as inv) {
+        <span class="interrupted-text">
+          Импорт из 1С был прерван
+          @if (inv.finished_at) {
+            ({{ formatLastSyncDate(inv.finished_at) }})
+          }.
+        </span>
+        <button pButton size="small" (click)="onResumeInventoryPull()">
+          <i class="pi pi-play"></i>
+          <span>Продолжить</span>
+        </button>
+      }
+
+      @if (svc.ozonInterrupted()) {
+        <span class="interrupted-text">
+          Синхронизация Ozon была прервана.
+        </span>
+        <button pButton size="small" (click)="onStartOzon()">
+          <i class="pi pi-play"></i>
+          <span>Продолжить</span>
+        </button>
+      }
+
+      <button
+        pButton
+        variant="text"
+        size="small"
+        severity="secondary"
+        (click)="onDismissInterrupted()"
+        pTooltip="Скрыть"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  }
+
+  <!-- ==================== OZON ==================== -->
+  <div class="source-card" [class]="statusClass(svc.ozonProgress()?.status ?? 'idle')">
+    <div class="source-header">
+      <div class="source-title">
+        <i class="pi pi-shopping-cart source-icon"></i>
+        <span class="source-name">Ozon</span>
+        <span class="badge" [class]="statusClass(svc.ozonProgress()?.status ?? 'idle')">
+          {{ statusLabel(svc.ozonProgress()?.status ?? 'idle') }}
+        </span>
+      </div>
+
+      <div class="source-actions">
+        <button pButton size="small" [disabled]="!svc.canEditOzon()" (click)="onStartOzon()">
+          <i class="pi pi-play"></i>
+          <span>Старт</span>
+        </button>
+
+        <button
+          pButton
+          variant="outlined"
+          size="small"
+          [disabled]="!svc.canEditOzon()"
+          (click)="onStartFullOzon()"
+        >
+          <i class="pi pi-replay"></i>
+          <span>Полная</span>
+        </button>
+
+        <button
+          pButton
+          severity="danger"
+          size="small"
+          [disabled]="!svc.canStopOzon()"
+          (click)="onStopOzon()"
+        >
+          <i class="pi pi-stop"></i>
+          <span>Стоп</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="source-body">
+      <p-progress-bar [value]="percent(svc.ozonProgress())" [showValue]="false"></p-progress-bar>
+
+      <div class="progress-meta">
+        <span class="progress-info">
+          <i [class]="statusIcon(svc.ozonProgress()?.status ?? 'idle')"></i>
+          {{ statusLabel(svc.ozonProgress()?.status ?? 'idle') }}
+        </span>
+
+        <span class="progress-info progress-numbers">
+          {{ percent(svc.ozonProgress()) | number: '1.0-1' }}% ·
+          {{ svc.ozonProgress()?.processed ?? 0 | number }}
+          @if ((svc.ozonProgress()?.total ?? 0) > 0) {
+            / {{ svc.ozonProgress()?.total | number }}
+          }
+        </span>
+      </div>
+
+      @if (svc.lastOzonSync(); as last) {
+        <div class="last-success">
+          <i class="pi pi-check-circle"></i>
+          <span class="last-success-label">Последняя удачная:</span>
+          <span class="last-success-date">{{ formatLastSyncDate(last.finished_at) }}</span>
+          <span class="last-success-meta">
+            принято {{ last.accepted ?? 0 | number }}
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ==================== 1C INVENTORY PULL ==================== -->
+  <div class="source-card" [class]="statusClass(svc.inventoryPull()?.status ?? 'idle')">
+    <div class="source-header">
+      <div class="source-title">
+        <i class="pi pi-box source-icon"></i>
+        <span class="source-name">Импорт из 1С (inventory-pulls)</span>
+        <span class="badge" [class]="statusClass(svc.inventoryPull()?.status ?? 'idle')">
+          {{ statusLabel(svc.inventoryPull()?.status ?? 'idle') }}
+        </span>
+      </div>
+
+      <div class="source-actions">
+        <button
+          pButton
+          variant="text"
+          size="small"
+          (click)="toggleWarehousesPanel()"
+          pTooltip="Настроить склады для сканирования"
+        >
+          <i class="pi pi-filter"></i>
+          <span>Склады</span>
+        </button>
+
+        <button
+          pButton
+          size="small"
+          [disabled]="!svc.canEditInventory()"
+          (click)="onStartInventoryPull()"
+          pTooltip="Запустить полный импорт (все SKU)"
+        >
+          <i class="pi pi-play"></i>
+          <span>Все</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="source-body">
+      <p-progress-bar [value]="inventoryPercent()" [showValue]="false"></p-progress-bar>
+
+      <div class="progress-meta">
+        <span class="progress-info">
+          <i [class]="statusIcon(svc.inventoryPull()?.status ?? 'idle')"></i>
+          {{ statusLabel(svc.inventoryPull()?.status ?? 'idle') }}
+        </span>
+
+        <span class="progress-info progress-numbers">
+          {{ inventoryPercent() }}%
+          @if (svc.inventoryJobId()) {
+            · job {{ svc.inventoryJobId()!.slice(-6) }}
+          }
+        </span>
+      </div>
+
+      @if (svc.inventoryStages().length) {
+        <ul class="stage-list">
+          @for (stage of svc.inventoryStages(); track stage.key) {
+            <li class="stage-item" [class]="inventoryStageClass(stage.status)">
+              <span class="stage-dot"></span>
+              <span class="stage-label">{{ stage.label }}</span>
+              @if (stage.detail) {
+                <span class="stage-detail">{{ stage.detail }}</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      @if (svc.lastInventorySync(); as last) {
+        <div class="last-success">
+          <i class="pi pi-check-circle"></i>
+          <span class="last-success-label">Последняя удачная:</span>
+          <span class="last-success-date">{{ formatLastSyncDate(last.finished_at) }}</span>
+          <span class="last-success-meta">
+            принято {{ last.accepted ?? 0 }},
+            остатков {{ last.stocks_accepted ?? 0 }},
+            себес {{ last.costs_accepted ?? 0 }}
+          </span>
+        </div>
+      }
+
+      <!-- ==================== СКЛАДЫ ==================== -->
+      @if (warehousesExpanded) {
+        <div class="warehouses-panel">
+          <div class="warehouses-header">
+            <span class="warehouses-title">Склады для сканирования</span>
+
+            <button
+              pButton
+              variant="text"
+              size="small"
+              (click)="onEnableAllWarehouses()"
+            >
+              Включить все
+            </button>
+            <button
+              pButton
+              variant="text"
+              size="small"
+              severity="secondary"
+              (click)="onDisableAllWarehouses()"
+            >
+              Выключить все
+            </button>
+          </div>
+          @if (svc.warehousesLoading()) {
+            <div class="warehouses-loading">Загрузка…</div>
+          } @else if (!svc.knownWarehouses().length) {
+            <div class="warehouses-empty">
+              Склады ещё не загружены. Запустите импорт хотя бы один раз —
+              после этого список складов появится здесь.
+            </div>
+          } @else {
+            <ul class="warehouses-list">
+              @for (w of svc.knownWarehouses(); track w.warehouse_id) {
+                <li class="warehouses-item">
+                  <p-checkbox
+                    [binary]="true"
+                    [ngModel]="w.enabled"
+                    (onChange)="onToggleWarehouse(w.warehouse_id, $event.checked)"
+                    [inputId]="'wh_' + w.warehouse_id"
+                  ></p-checkbox>
+                  <label [for]="'wh_' + w.warehouse_id" class="warehouses-label">
+                    {{ w.warehouse_name || w.warehouse_id }}
+                  </label>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ==================== OVERLAY-КОЛЛАПС ==================== -->
+  <div class="overlay-toggle">
+    <button
+      pButton
+      variant="text"
+      size="small"
+      (click)="svc.overlayCollapsed() ? svc.expandOverlay() : svc.collapseOverlay()"
+    >
+      <i
+        class="pi"
+        [class.pi-chevron-up]="!svc.overlayCollapsed()"
+        [class.pi-chevron-down]="svc.overlayCollapsed()"
+      ></i>
+      <span>{{ svc.overlayCollapsed() ? 'Показать' : 'Свернуть' }}</span>
+    </button>
+  </div>
 </div>

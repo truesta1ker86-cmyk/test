@@ -1,11 +1,8 @@
 {
 "/api": {
-    "target": "https://ozon1c.91.218.141.143.sslip.io",
-    "secure": false,
-    "logLevel": "debug",
-    "changeOrigin": true,
-    "withCredentials": true,
-    "cookieDomainRewrite": "localhost"
+  "target": "http://localhost:8090",
+  "secure": false,
+  "changeOrigin": true
   },
   "/events/subscribe": {
     "target": "http://localhost:8090",

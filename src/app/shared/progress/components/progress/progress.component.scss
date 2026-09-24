@@ -1,16 +1,33 @@
+:host {
+  --progress-bg: #313244;
+  --progress-value: #89b4fa;
+  --progress-done: #a6e3a1;
+  --progress-error: #f38ba8;
+  --progress-stopped: #f9e2af;
+
+  --text-main: #cdd6f4;
+  --text-muted: #a6adc8;
+
+  --surface-1: #1e1e2e;
+  --surface-2: #181825;
+  --border: #313244;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+}
+
 .progress-container {
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  background: #1e1e2e;
-  color: #cdd6f4;
-  border-radius: 12px;
+  background: var(--surface-1);
+  color: var(--text-main);
+  border-radius: var(--radius-lg);
 }
 
-/* ============================================================
-   Заголовок
-   ============================================================ */
+// ==================== HEADER ====================
 .header {
   display: flex;
   justify-content: space-between;
@@ -25,21 +42,119 @@
     align-items: center;
     flex-wrap: wrap;
   }
+
+  .header-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
 }
 
-/* ============================================================
-   Карточка источника (Ozon / 1С)
-   ============================================================ */
-.source-card {
-  background: #181825;
-  border: 1px solid #313244;
-  border-radius: 10px;
-  padding: 14px 16px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+.sse-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
 
-  &.running {
-    border-color: #89b4fa;
+  &.open {
+    background: rgba(34, 197, 94, 0.12);
+    color: #7ce8a3;
+    border-color: rgba(34, 197, 94, 0.35);
+  }
+  &.reconnecting {
+    background: rgba(245, 158, 11, 0.12);
+    color: #ffcf72;
+    border-color: rgba(245, 158, 11, 0.35);
+  }
+  &.failed {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ff9a9a;
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+  &.idle {
+    background: var(--surface-2);
+  }
+}
+
+// ==================== ERROR ====================
+.error-box {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--progress-stopped);
+  color: #1e1e2e;
+  font-size: 13px;
+
+  &.fatal {
+    background: var(--progress-error);
+  }
+
+  .error-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .error-msg {
+    font-size: 12px;
+    opacity: 0.9;
+  }
+}
+
+// ==================== INTERRUPTED ====================
+.interrupted-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(249, 226, 175, 0.08);
+  border: 1px solid rgba(249, 226, 175, 0.35);
+  color: var(--text-main);
+  font-size: 13px;
+  flex-wrap: wrap;
+
+  .pi-exclamation-triangle {
+    color: var(--progress-stopped);
+    font-size: 16px;
+  }
+
+  .interrupted-text {
+    color: var(--text-muted);
+    margin-right: 4px;
+  }
+}
+
+// ==================== CARD ====================
+.source-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+
+  &.is-running {
+    border-color: var(--progress-value);
     box-shadow: 0 0 0 1px rgba(137, 180, 250, 0.3);
+  }
+  &.is-done {
+    border-color: var(--progress-done);
+    box-shadow: 0 0 0 1px rgba(166, 227, 161, 0.25);
+  }
+  &.is-error {
+    border-color: var(--progress-error);
+    box-shadow: 0 0 0 1px rgba(243, 139, 168, 0.3);
+  }
+  &.is-stopped,
+  &.is-stopping {
+    border-color: var(--progress-stopped);
+    box-shadow: 0 0 0 1px rgba(249, 226, 175, 0.25);
   }
 
   .source-header {
@@ -58,12 +173,11 @@
 
     .source-icon {
       font-size: 14px;
+      color: var(--progress-value);
     }
-
     .source-name {
       font-weight: 600;
       font-size: 15px;
-      color: #cdd6f4;
     }
   }
 
@@ -71,81 +185,303 @@
     display: flex;
     gap: 8px;
     align-items: center;
+    flex-wrap: wrap;
   }
 
   .source-body {
     display: flex;
     flex-direction: column;
     gap: 6px;
+
+    p-progressBar,
+    p-slider {
+      display: block;
+      width: 100%;
+    }
   }
 
   .progress-meta {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 12px;
     font-size: 12px;
-    color: #9399b2;
+    color: var(--text-muted);
+    flex-wrap: wrap;
 
     .progress-info {
-      font-family: monospace;
-    }
-  }
-}
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
 
-/* ============================================================
-   Прогресс-бар PrimeNG
-   ============================================================ */
-:host ::ng-deep {
-  .progress-bar {
-    .p-progressbar {
-      background: #313244;
-      border-radius: 6px;
-      overflow: hidden;
-
-      .p-progressbar-value {
-        background: #89b4fa;
-        transition: width 0.3s ease;
+      &.progress-numbers {
+        margin-left: auto;
+        font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+        font-variant-numeric: tabular-nums;
       }
     }
-
-    &.is-done .p-progressbar-value {
-      background: #a6e3a1;
-    }
-
-    &.is-error .p-progressbar-value {
-      background: #f38ba8;
-    }
-  }
-
-  /* Кнопки: disabled */
-  .p-button:disabled,
-  .p-button.p-disabled {
-    opacity: 0.5 !important;
-    cursor: not-allowed !important;
-    pointer-events: none !important;
   }
 }
 
-/* ============================================================
-   Блок ошибки
-   ============================================================ */
-.error-box {
-  padding: 10px 14px;
-  background: #f9e2af;
-  color: #1e1e2e;
-  border-radius: 8px;
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--surface-1);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+
+  &.is-running {
+    background: rgba(137, 180, 250, 0.15);
+    color: #9ec1ff;
+    border-color: rgba(137, 180, 250, 0.35);
+  }
+  &.is-done {
+    background: rgba(166, 227, 161, 0.15);
+    color: #7ce8a3;
+    border-color: rgba(166, 227, 161, 0.35);
+  }
+  &.is-stopped,
+  &.is-stopping {
+    background: rgba(249, 226, 175, 0.15);
+    color: #ffcf72;
+    border-color: rgba(249, 226, 175, 0.35);
+  }
+  &.is-error {
+    background: rgba(243, 139, 168, 0.15);
+    color: #ff9a9a;
+    border-color: rgba(243, 139, 168, 0.35);
+  }
+}
+
+// ==================== PrimeNG tweaks ====================
+:host ::ng-deep {
+  .p-progressbar {
+    background: var(--progress-bg);
+    border-radius: var(--radius-sm);
+    height: 8px;
+    overflow: hidden;
+
+    .p-progressbar-value {
+      background: var(--progress-value);
+      transition: width 0.3s ease;
+    }
+  }
+
+  .is-running .p-progressbar-value {
+    background: linear-gradient(90deg, var(--progress-value), #b4befe, var(--progress-value));
+    background-size: 200% 100%;
+    animation: pulse-bar 2s linear infinite;
+  }
+  .is-done .p-progressbar-value {
+    background: var(--progress-done);
+  }
+  .is-error .p-progressbar-value {
+    background: var(--progress-error);
+  }
+  .is-stopped .p-progressbar-value,
+  .is-stopping .p-progressbar-value {
+    background: var(--progress-stopped);
+  }
+
+  .p-slider {
+    background: var(--progress-bg);
+    border-radius: var(--radius-sm);
+    height: 6px;
+
+    .p-slider-range {
+      background: var(--progress-value);
+    }
+    .p-slider-handle {
+      background: var(--progress-value);
+      border: 2px solid var(--surface-1);
+      width: 14px;
+      height: 14px;
+      margin-top: -4px;
+    }
+    &.p-disabled {
+      opacity: 0.6;
+    }
+  }
+}
+
+@keyframes pulse-bar {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+// ==================== STAGES ====================
+.stage-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
   font-size: 13px;
+}
 
-  &.fatal {
-    background: #f38ba8;
+.stage-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child {
+    border-bottom: none;
   }
 
-  .error-title {
-    font-weight: 600;
-    margin-bottom: 4px;
+  .stage-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--progress-bg);
+    flex-shrink: 0;
+    transition: background 0.2s;
   }
 
-  .error-msg {
+  .stage-label {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-main);
+  }
+
+  .stage-detail {
+    color: var(--text-muted);
     font-size: 12px;
-    opacity: 0.9;
+    text-align: right;
+    font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
   }
+
+  &.stage-running .stage-dot {
+    background: var(--progress-value);
+    animation: pulse-stage 1s infinite;
+  }
+  &.stage-done .stage-dot {
+    background: var(--progress-done);
+  }
+  &.stage-failed .stage-dot {
+    background: var(--progress-error);
+  }
+}
+
+@keyframes pulse-stage {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+// ==================== LAST SUCCESS ====================
+.last-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(166, 227, 161, 0.08);
+  border: 1px solid rgba(166, 227, 161, 0.25);
+  color: var(--text-main);
+  font-size: 12px;
+  flex-wrap: wrap;
+
+  .pi-check-circle {
+    color: var(--progress-done);
+    font-size: 14px;
+  }
+
+  .last-success-label {
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .last-success-date {
+    font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .last-success-meta {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// ==================== WAREHOUSES ====================
+.warehouses-panel {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+
+  .warehouses-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+
+    .warehouses-title {
+      flex: 1;
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 13px;
+    }
+  }
+
+  .warehouses-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 260px;
+    overflow-y: auto;
+
+    .warehouses-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .warehouses-label {
+        font-size: 13px;
+        color: var(--text-main);
+        cursor: pointer;
+        flex: 1;
+        user-select: none;
+      }
+    }
+  }
+
+  .warehouses-loading,
+  .warehouses-empty {
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 8px 0;
+  }
+}
+
+// ==================== OVERLAY TOGGLE ====================
+.overlay-toggle {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
 }

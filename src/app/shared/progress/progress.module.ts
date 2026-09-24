@@ -8,6 +8,9 @@ import { ButtonModule } from 'primeng/button';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SliderModule }      from 'primeng/slider';
+import { FormsModule } from '@angular/forms';
+import { CheckboxModule } from 'primeng/checkbox';
 
 
 
@@ -19,6 +22,9 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
   ],
   imports: [
     CommonModule,
+    FormsModule,
+    SliderModule,
+    CheckboxModule,
     IconsSpriteModule,
     NavigationModule,
     ButtonModule,
