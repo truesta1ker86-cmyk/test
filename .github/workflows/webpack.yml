@@ -24,13 +24,13 @@ jobs:
       - name: Build
         run: npx ng build --configuration=production
 
-      - name: Deploy to server (SCP via password)
+      - name: Deploy to server
         uses: appleboy/scp-action@v1
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
-          port: ${{ secrets.DEPLOY_PORT }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
           source: "dist/o1c_panel/*"
           target: "/var/www/o1c_panel"
           rm: true
