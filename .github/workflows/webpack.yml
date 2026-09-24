@@ -1,4 +1,4 @@
-name: Angular CI
+name: CI
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
-
+        
       - name: Test
         run: npx ng test --watch=false
 
