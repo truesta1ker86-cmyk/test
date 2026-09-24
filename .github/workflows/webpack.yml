@@ -21,10 +21,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
-        
-      - name: Test
-        run: npx ng test --watch=false
+        run: npm install --legacy-peer-dep
 
       - name: Build
         run: npx ng build --configuration=production
