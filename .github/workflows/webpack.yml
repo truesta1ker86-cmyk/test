@@ -25,10 +25,7 @@ jobs:
         run: npx ng build --configuration=production
 
       - name: Deploy to server
-        uses: garygrossgarten/github-action-scp@v1
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: "./dist/o1c_panel/*"
-          target: "/var/www/o1c_panel"
+          username:
