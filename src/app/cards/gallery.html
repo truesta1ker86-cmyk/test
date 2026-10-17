@@ -1,0 +1,110 @@
+<div class="media-toolbar">
+  <label class="button upload-button"
+    ><input
+      type="file"
+      accept="image/png,image/jpeg,image/webp"
+      [disabled]="uploading()"
+      (change)="upload($event)"
+    />{{ uploading() ? 'Загружаем…' : 'Загрузить фото' }}</label
+  ><span>JPEG, PNG или WebP · до 8 МБ</span>
+</div>
+<div class="gallery-grid">
+  @for (image of images(); track $index; let index = $index) {
+    <article class="gallery-item">
+      @if (previewable(image)) {
+        <img
+          [src]="image"
+          [alt]="'Фото товара ' + (index + 1)"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+        />
+      } @else {
+        <div class="empty-section">
+          <strong>Внешняя ссылка</strong>
+          <p>
+            Ссылка сохранена в черновике. В локальном макете изображение не загружается из внешнего
+            сервиса.
+          </p>
+        </div>
+      }
+      <div class="gallery-caption">
+        <strong>{{ index === 0 ? 'Главное фото' : 'Фото ' + (index + 1) }}</strong>
+        @if (index > 0) {
+          <button
+            class="text-button"
+            type="button"
+            [attr.aria-label]="'Сделать главным фото ' + (index + 1)"
+            (click)="makePrimary(index)"
+          >
+            Сделать главным
+          </button>
+        }
+        <div class="gallery-actions">
+          <button
+            class="icon-button"
+            type="button"
+            [disabled]="index === 0"
+            [attr.aria-label]="'Поднять фото ' + (index + 1)"
+            (click)="move(index, -1)"
+          >
+            <app-icon name="up" /></button
+          ><button
+            class="icon-button"
+            type="button"
+            [disabled]="index === images().length - 1"
+            [attr.aria-label]="'Опустить фото ' + (index + 1)"
+            (click)="move(index, 1)"
+          >
+            <app-icon name="down" /></button
+          ><button
+            class="icon-button"
+            type="button"
+            [attr.aria-label]="'Убрать фото ' + (index + 1)"
+            (click)="remove(index)"
+          >
+            <app-icon name="close" />
+          </button>
+        </div>
+      </div>
+    </article>
+  } @empty {
+    <div class="empty-section">
+      <h3>Добавьте первое фото</h3>
+      <p>
+        Загрузите фотографию или вставьте HTTPS-ссылку. Задачу для AI-фото можно подготовить на этом
+        шаге.
+      </p>
+    </div>
+  }
+</div>
+<div class="gallery-url">
+  <label for="card-images"
+    >Добавить фото по ссылке<input
+      id="card-images"
+      [formControl]="imageUrl"
+      type="url"
+      placeholder="https://…" /></label
+  ><button type="button" class="button" (click)="addUrl()">Добавить ссылку</button>
+</div>
+<h3>Сохранённые фото и AI-версии</h3>
+<div class="stored-media">
+  @for (item of media(); track item.id) {
+    <article>
+      <img [src]="item.content_url" alt="Сохранённое фото" loading="lazy" />
+      <div>
+        <strong>Версия {{ item.version }}</strong
+        ><small>{{ item.width }} × {{ item.height }} · {{ item.model }}</small
+        ><small>{{
+          item.status === 'approved'
+            ? 'Принято'
+            : item.status === 'rejected'
+              ? 'Отклонено'
+              : 'Черновик'
+        }}</small>
+      </div>
+      <button type="button" class="button" (click)="add(item.content_url)">В галерею</button>
+    </article>
+  } @empty {
+    <p>Загруженных или сгенерированных фото пока нет.</p>
+  }
+</div>

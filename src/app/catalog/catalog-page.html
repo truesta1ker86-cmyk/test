@@ -1,0 +1,415 @@
+<div class="page-heading">
+  <div>
+    <h1>{{ mode === 'products' ? 'Товары' : 'Сопоставление с 1С' }}</h1>
+    <p>
+      {{
+        mode === 'products'
+          ? 'Карточки, себестоимость и упаковки из сохранённого каталога.'
+          : 'Связи артикулов Ozon с номенклатурой 1С по коду, артикулу и характеристикам.'
+      }}
+    </p>
+  </div>
+  <div class="button-row">
+    @if (canManage() && mode === 'products') {
+      <a class="button primary" routerLink="/products/create">Создать карточку</a>
+    }
+    <button class="button" [disabled]="loading()" (click)="refresh()">
+      <app-icon name="refresh" />Обновить локальный снимок
+    </button>
+  </div>
+</div>
+<div class="workspace-note">
+  {{
+    databaseCopy()
+      ? 'Данные из копии рабочей базы. Сохранения меняют только эту копию.'
+      : 'Локальный макет · тестовые данные. Сохранения меняют только локальные настройки и черновики.'
+  }}
+  Отправка в Ozon и синхронизация с 1С отключены.
+</div>
+@if (notice()) {
+  <p class="editor-success" role="status">{{ notice() }}</p>
+}
+<section class="panel catalog-panel" aria-label="Каталог товаров">
+  <div class="catalog-filterbar">
+    <button class="button primary" [disabled]="loading()" (click)="applyFilters()">
+      Применить
+    </button>
+    <span>{{ data()?.meta?.total || 0 }} товаров</span>
+    <button class="button" (click)="productFiltersOpen.set(true)">
+      <app-icon name="filter" />Фильтры
+    </button>
+  </div>
+  @if (error()) {
+    <div class="editor-error" role="alert">
+      {{ error() }} <button class="text-button" (click)="refresh()">Повторить загрузку</button>
+    </div>
+  }
+  <div class="selection-bar">
+    <strong>Выбрано: {{ selected().size }}</strong>
+    @if (hiddenSelected()) {
+      <span>На других страницах или вне фильтра: {{ hiddenSelected() }}</span>
+    }
+    <button
+      class="text-button"
+      [disabled]="busy() || loading() || !data()?.meta?.total"
+      (click)="selectAll()"
+    >
+      Выбрать все по фильтру</button
+    ><button class="text-button" [disabled]="!selected().size" (click)="selected.set(newSet())">
+      Снять выбор
+    </button>
+    @if (canManage() && mode === 'products') {
+      <div class="button-row catalog-actions">
+        <button
+          class="button"
+          [disabled]="!selected().size || busy()"
+          (click)="attributeHistoryOnly.set(false); attributeBulk.set(true)"
+        >
+          Характеристики
+        </button>
+        @if (mode === 'products') {
+          <button class="button" [disabled]="!selected().size || busy()" (click)="edit('finance')">
+            Категория, тип и маржа
+          </button>
+          <button
+            class="button"
+            [disabled]="!selected().size || busy()"
+            (click)="edit('promotion')"
+          >
+            Модель акций
+          </button>
+          <button
+            class="button"
+            [disabled]="!selected().size || busy()"
+            (click)="campaignOffers.set(selectedOffers())"
+          >
+            Конкретная акция…
+          </button>
+          <button class="button" [disabled]="!selected().size || busy()" (click)="openStocks()">
+            Остатки
+          </button>
+        }
+        @if (selected().size) {
+          <button class="button" [disabled]="!selected().size || busy()" (click)="edit('mapping')">
+            Сопоставить с 1С</button
+          ><button class="button" [disabled]="!selected().size || busy()" (click)="edit('cost')">
+            Стоимость и квант</button
+          ><button class="button" [disabled]="!selected().size || busy()" (click)="edit('labels')">
+            Изменить поля
+          </button>
+        }
+      </div>
+    }
+  </div>
+  @if (mode === 'products') {
+    <app-catalog-product-grid
+      [rows]="data()?.items || []"
+      [selected]="selected()"
+      [allSelected]="allFilteredSelected()"
+      [loading]="loading()"
+      [canManage]="canManage()"
+      [columnRules]="columnRules()"
+      [columnOptions]="data()?.column_values || {}"
+      [sort]="query().sort"
+      [direction]="query().direction"
+      (toggled)="toggle($event)"
+      (filteredSelected)="toggleFiltered($event)"
+      (sorted)="sortColumn($event)"
+      (columnChanged)="columnChanged($event)"
+      (edited)="edit($event.kind, $event.row, $event.field || '')"
+      (card)="openCard($event)"
+      (details)="productDetails.set($event)"
+      (campaign)="campaignOffers.set($event)"
+    />
+  } @else {
+    <app-mapping-workspace
+      [rows]="data()?.items || []"
+      [selected]="selected()"
+      [allSelected]="allFilteredSelected()"
+      [loading]="loading()"
+      [canManage]="canManage()"
+      [columnRules]="columnRules()"
+      [columnOptions]="data()?.column_values || {}"
+      (toggled)="toggle($event)"
+      (filteredSelected)="toggleFiltered($event)"
+      (columnChanged)="columnChanged($event)"
+      (sorted)="sortColumn($event)"
+      (card)="openCard($event)"
+      (details)="productDetails.set($event)"
+      (saved)="changed()"
+    />
+  }
+  @if (mode === 'mapping') {
+    <div
+      class="pagination"
+      appMappingMore
+      [enabled]="!loading() && !moreLoading() && !moreFailed() && !!data()?.meta?.has_more"
+      (visible)="loadMoreMappings()"
+    >
+      <span>Показано {{ data()?.items?.length || 0 }} из {{ data()?.meta?.total || 0 }}</span>
+      @if (data()?.meta?.has_more) {
+        <button class="button" [disabled]="loading() || moreLoading()" (click)="loadMoreMappings()">
+          {{ moreLoading() ? 'Загружаем…' : moreFailed() ? 'Повторить загрузку' : 'Показать ещё' }}
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="pagination">
+      <span>Страница {{ query().page }} из {{ pages() }}</span>
+      <div class="button-row">
+        <button
+          class="button"
+          [disabled]="loading() || query().page <= 1"
+          (click)="applyFilters(query().page - 1)"
+        >
+          Назад</button
+        ><button
+          class="button"
+          [disabled]="loading() || !data()?.meta?.has_more"
+          (click)="applyFilters(query().page + 1)"
+        >
+          Дальше
+        </button>
+      </div>
+    </div>
+  }
+</section>
+<details class="panel operations-panel catalog-history">
+  <summary>История изменений товаров и связей</summary>
+  @if (mode === 'products') {
+    <button class="button" (click)="attributeHistoryOnly.set(true); attributeBulk.set(true)">
+      История характеристик
+    </button>
+  }
+  <button class="button" [disabled]="busy() || loading()" (click)="export()">
+    Выгрузить отбор CSV
+  </button>
+  <button class="text-button" (click)="loadHistory()">Обновить историю</button>
+  @if (historyError()) {
+    <p class="editor-error" role="alert">{{ historyError() }}</p>
+  }
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Когда</th>
+          <th>Действие</th>
+          <th>Товаров</th>
+          <th>Статус</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (op of history(); track op.operation_id) {
+          <tr>
+            <td>{{ date(op.created_at) }}</td>
+            <td>
+              {{
+                op.kind === 'mapping'
+                  ? 'Сопоставление'
+                  : op.kind === 'cost'
+                    ? 'Стоимость и квант'
+                    : op.kind === 'finance'
+                      ? 'FIN и маржа'
+                      : op.kind === 'promotion'
+                        ? 'Модель акций'
+                        : 'Поля товаров'
+              }}<small>{{ op.operation_id.slice(0, 8) }}</small>
+            </td>
+            <td>{{ op.eligible }}</td>
+            <td>
+              {{
+                op.status === 'applied'
+                  ? 'Применено'
+                  : op.status === 'undone'
+                    ? 'Отменено'
+                    : 'Предпросмотр'
+              }}
+              @if (op.conflicts) {
+                <small>Пропущено: {{ op.conflicts }}</small>
+              }
+            </td>
+            <td>
+              @if (op.status === 'applied' && canManage()) {
+                <button class="text-button" [disabled]="!!undoId()" (click)="undo(op)">
+                  {{ undoId() === op.operation_id ? 'Отменяем…' : 'Отменить изменение' }}
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5">Изменений в каталоге v2 пока нет.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</details>
+@if (action(); as active) {
+  <app-catalog-actions
+    [kind]="active.kind"
+    [offers]="active.offers"
+    [row]="active.row"
+    [initialField]="active.field || ''"
+    (closed)="action.set(null)"
+    (saved)="changed()"
+  />
+}
+@if (attributeBulk()) {
+  <app-attribute-bulk
+    [offers]="attributeHistoryOnly() ? [] : selectedOffers()"
+    [canManage]="canManage()"
+    (closed)="attributeBulk.set(false)"
+    (saved)="attributeBulk.set(false); changed()"
+  />
+}
+
+@if (productDetails(); as row) {
+  <app-catalog-product-details
+    [offer]="row.offer_id"
+    [days]="query().days"
+    (closed)="productDetails.set(null)"
+    (edit)="productDetails.set(null); openCard(row)"
+  />
+}
+@if (campaignOffers(); as offers) {
+  <app-catalog-campaign [offers]="offers" (closed)="campaignOffers.set(null)" />
+}
+
+@if (productFiltersOpen()) {
+  <dialog
+    appMappingModal
+    appModalFocus
+    class="catalog-filter-dialog"
+    aria-label="Фильтры товаров"
+    (cancel)="$event.preventDefault(); productFiltersOpen.set(false)"
+    (modalEscape)="productFiltersOpen.set(false)"
+  >
+    <header>
+      <h2>Фильтры</h2>
+      <button
+        class="icon-button"
+        aria-label="Закрыть фильтры"
+        (click)="productFiltersOpen.set(false)"
+      >
+        ×
+      </button>
+    </header>
+    <form [formGroup]="form" (ngSubmit)="applyProductFilters()" class="catalog-filters">
+      <div class="catalog-search">
+        <label
+          >Номенклатура<input
+            type="search"
+            formControlName="name_search"
+            placeholder="Название товара"
+        /></label>
+        <label
+          >Артикул<input formControlName="q" placeholder="Артикул, SKU или код 1С" type="search"
+        /></label>
+        <label
+          >Сопоставление<select
+            formControlName="mapping_status"
+            (change)="mode === 'mapping' && setMappingGroup(form.controls['mapping_status'].value)"
+          >
+            <option value="">Все состояния</option>
+            @for (key of statusKeys; track key) {
+              <option [value]="key">{{ labels[key] }}</option>
+            }
+          </select></label
+        >
+        @if (mode === 'mapping') {
+          <label
+            >Почему не сопоставлен<select
+              formControlName="mapping_reason"
+              (change)="
+                form.controls['mapping_reason'].value &&
+                  form.controls['mapping_status'].setValue('unmatched');
+                applyFilters()
+              "
+            >
+              <option value="">Все причины</option>
+              @for (key of reasonKeys; track key) {
+                <option [value]="key">{{ reasons[key] }}</option>
+              }
+            </select></label
+          >
+        }
+        @if (mode === 'products') {
+          <label
+            >Продажи за период<select formControlName="days">
+              <option value="7">7 дней</option>
+              <option value="30">30 дней</option>
+              <option value="90">90 дней</option>
+              <option value="365">365 дней</option>
+            </select></label
+          >
+        }
+      </div>
+      <div class="catalog-more">
+        <div class="catalog-facet-grid">
+          @for (field of fields; track field.key) {
+            <app-stock-choice
+              [label]="field.label"
+              [options]="facetOptions(field.key)"
+              [values]="facetValues(form.controls[field.key].value)"
+              (valuesChange)="setFacet(field.key, $event)"
+            />
+          }
+          <label
+            >Себестоимость<select formControlName="cost_mode">
+              <option value="">Все</option>
+              <option value="manual">Ручная</option>
+              <option value="auto">Автоматическая</option>
+              <option value="missing">Не определена</option>
+            </select></label
+          >
+          <label class="article-list"
+            >Артикулы продавца<textarea
+              formControlName="articles"
+              rows="2"
+              placeholder="Через пробел, запятую или с новой строки"
+            ></textarea>
+          </label>
+          <label class="check-label"
+            ><input type="checkbox" [formControl]="excludeArticles" />Исключить перечисленные
+            артикулы</label
+          >
+        </div>
+      </div>
+      <div class="catalog-sort">
+        <label
+          >Сортировка<select formControlName="sort">
+            <option value="name">Название</option>
+            <option value="linked_first">Сначала связанные с 1С</option>
+            <option value="unlinked_first">Сначала без связи с 1С</option>
+            <option value="price">Цена Ozon</option>
+            <option value="offer_id">Артикул</option>
+            <option value="revenue">Выручка</option>
+            <option value="units_sold">Продажи</option>
+            <option value="unit_cost">Цена штуки</option>
+            <option value="units_per_item">Квант</option>
+            <option value="available">Остаток 1С</option>
+          </select></label
+        ><label
+          >Порядок<select formControlName="direction">
+            <option value="asc">По возрастанию</option>
+            <option value="desc">По убыванию</option>
+          </select></label
+        ><label
+          >На странице<select formControlName="page_size">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+            <option value="500">500</option>
+          </select></label
+        >
+      </div>
+      <footer>
+        <button type="button" class="button" (click)="resetProductFilters()">Сбросить</button
+        ><button type="submit" class="button primary">Применить фильтры</button>
+      </footer>
+    </form>
+  </dialog>
+}

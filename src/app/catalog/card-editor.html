@@ -1,0 +1,131 @@
+<dialog #dialog class="catalog-dialog" (cancel)="close($event)" aria-labelledby="card-title">
+  <div class="dialog-heading">
+    <div>
+      <span class="eyebrow">Карточка · локальные версии</span>
+      <h2 id="card-title" [appProductName]="row()">{{ row().name || row().offer_id }}</h2>
+      <p>{{ row().offer_id }} · SKU {{ row().sku || '—' }}</p>
+    </div>
+    <button class="icon-button" aria-label="Закрыть карточку" [disabled]="busy()" (click)="close()">
+      ×
+    </button>
+  </div>
+  <div class="catalog-dialog-body">
+    <p class="workspace-note">
+      Правки сохраняются как отдельная версия карточки в v2. Оригинальная карточка Ozon остаётся
+      прежней.
+    </p>
+    @if (loading()) {
+      <p role="status">Открываем сохранённую карточку…</p>
+    }
+    @if (error()) {
+      <p class="editor-error" role="alert">{{ error() }}</p>
+    }
+    @if (message()) {
+      <p class="editor-success" role="status">{{ message() }}</p>
+    }
+    @if (workspace(); as data) {
+      <div class="snapshot-info">
+        Снимок: {{ date(data.snapshot_synced_at) }} ·
+        {{ data.snapshot_complete ? 'полная карточка' : 'доступные локальные данные' }}
+      </div>
+      <div class="card-images">
+        @for (image of data.working_copy.images || []; track $index) {
+          <img [src]="image" alt="Фотография товара" loading="lazy" referrerpolicy="no-referrer" />
+        }
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <fieldset [disabled]="busy() || !canManage() || uncertain()">
+          <div class="editor-fields">
+            @for (field of fields; track field.key) {
+              <label
+                >{{ field.label
+                }}<input
+                  [formControlName]="field.key"
+                  [type]="field.type"
+                  [attr.maxlength]="field.type === 'text' ? field.max : null"
+                  [attr.min]="field.type === 'number' ? 0 : null"
+                  [attr.step]="
+                    field.key === 'weight' ? 'any' : field.type === 'number' ? '1' : null
+                  "
+              /></label>
+            }
+          </div>
+          <label
+            >Описание<textarea
+              formControlName="description"
+              rows="5"
+              maxlength="6000"
+            ></textarea></label
+          ><label
+            >Фотографии — HTTPS-ссылка на каждой строке<textarea
+              formControlName="images"
+              rows="3"
+              placeholder="До 15 ссылок"
+            ></textarea>
+          </label>
+          <details class="card-attributes">
+            <summary>Характеристики · {{ data.working_copy.attributes?.length || 0 }}</summary>
+            <div [formGroup]="attributes">
+              @for (attribute of data.working_copy.attributes || []; track attribute.id) {
+                <label
+                  >{{ attributeName(attribute.id) }}
+                  @if (attributes.controls[attribute.id]) {
+                    <textarea
+                      [formControlName]="attribute.id"
+                      rows="2"
+                      placeholder="Одно значение на строке"
+                    ></textarea>
+                  } @else {
+                    <span class="attribute-readonly">
+                      @for (value of attribute.values; track $index) {
+                        <span>{{
+                          value.value || 'Значение справочника ' + value.dictionary_value_id
+                        }}</span>
+                      }</span
+                    ><small>Справочное значение сохранено в снимке.</small>
+                  }
+                </label>
+              } @empty {
+                <p>В локальном снимке характеристики отсутствуют.</p>
+              }
+            </div>
+          </details>
+          @if (canManage()) {
+            <div class="button-row">
+              <button class="button primary" type="submit">
+                {{ busy() ? 'Сохраняем…' : 'Сохранить локальную версию' }}</button
+              ><button type="button" class="text-button" (click)="discard()">
+                Отбросить несохранённый черновик
+              </button>
+            </div>
+          }
+        </fieldset>
+      </form>
+      @if (uncertain()) {
+        <button class="button" [disabled]="busy()" (click)="inspectSaved()">
+          Проверить сохранённую версию</button
+        ><button class="text-button" (click)="discard()">Открыть свежую карточку</button>
+      }
+      <section class="card-versions">
+        <h3>История локальных версий</h3>
+        @for (version of data.versions; track version.version) {
+          <div class="version-row">
+            <strong>Версия {{ version.version }}</strong
+            ><span>{{ date(version.created_at) }}</span
+            ><small>
+              @for (change of version.changes; track change.field) {
+                {{ change.label }}{{ $last ? '' : ', ' }}
+              } @empty {
+                Без отличий от снимка
+              }
+            </small>
+          </div>
+        } @empty {
+          <p>Сохранённых версий пока нет.</p>
+        }
+      </section>
+    } @else if (!loading()) {
+      <button class="button" (click)="load()">Повторить загрузку карточки</button>
+    }
+  </div>
+</dialog>

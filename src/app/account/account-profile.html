@@ -1,0 +1,132 @@
+@let a = account();
+<div class="profile-grid">
+  <section class="profile-panel" aria-labelledby="profile-access-title">
+    <header>
+      <h2 id="profile-access-title">Доступ к кабинету</h2>
+      <p>Пользователь, магазин и права</p>
+    </header>
+    <dl>
+      <div>
+        <dt>Пользователь</dt>
+        <dd>{{ a.session.actor_name }}</dd>
+      </div>
+      <div>
+        <dt>Роль</dt>
+        <dd>{{ role() }}</dd>
+      </div>
+      <div>
+        <dt>Кабинет продавца</dt>
+        <dd>{{ a.session.name }}</dd>
+      </div>
+      <div>
+        <dt>Управление командой</dt>
+        <dd>{{ a.is_owner ? 'Можно выдавать и отзывать доступ' : 'Только у владельца' }}</dd>
+      </div>
+    </dl>
+    <p class="profile-hint">
+      {{
+        a.is_owner
+          ? 'Выдавайте сотрудникам отдельные доступы в разделе «Команда». Их можно отключить независимо друг от друга.'
+          : 'Вы вошли с отдельным доступом сотрудника. Настройки подключений меняет владелец магазина.'
+      }}
+    </p>
+  </section>
+
+  <app-stock-automation
+    [tenantId]="a.session.tenant_id"
+    [owner]="a.is_owner"
+    [localPreview]="a.local_preview === true"
+    [summary]="a.stock_automation"
+  />
+
+  <section class="profile-panel" aria-labelledby="profile-connections-title">
+    <header class="with-action">
+      <div>
+        <h2 id="profile-connections-title">Подключения</h2>
+        <p>Настройки этого магазина</p>
+      </div>
+      <button type="button" (click)="refresh.emit()">Обновить</button>
+    </header>
+    @if (a.is_owner) {
+      <div class="connection-row">
+        <div>
+          <strong>Ozon Seller API</strong
+          ><small
+            >Client-Id: {{ currentShop()?.ozon_client_id || '—' }} · снимок
+            {{ date(currentShop()?.last_synced_at) }}</small
+          >
+        </div>
+        <span class="profile-status">{{
+          currentShop()?.has_api_key ? 'Ключ сохранён' : 'Не настроено'
+        }}</span
+        ><button type="button" (click)="settings.emit('shops')">Настроить магазины</button>
+      </div>
+      <div class="connection-row">
+        <div><strong>Реклама Ozon</strong><small>Performance API · кампании и расходы</small></div>
+        <span class="profile-status">{{
+          currentShop()?.has_performance_api ? 'Ключ сохранён' : 'Не настроено'
+        }}</span
+        ><button type="button" (click)="settings.emit('shops')">Настроить рекламу</button>
+      </div>
+      <div class="connection-row">
+        <div>
+          <strong>1С</strong
+          ><small>{{ a.onec?.message || 'Состояние подключения не загружено' }}</small>
+        </div>
+        <span class="profile-status" [class.ready]="a.onec?.ready">{{
+          a.onec?.ready
+            ? a.local_preview
+              ? 'Настроено в макете'
+              : 'Доступ проверен'
+            : a.onec?.configured
+              ? 'Нужна проверка'
+              : 'Не настроено'
+        }}</span
+        ><button type="button" (click)="settings.emit('onec')">Настроить 1С</button>
+      </div>
+      <div class="connection-row">
+        <div>
+          <strong>AI</strong
+          ><small>{{ a.ai_settings?.message || 'Состояние подключения не загружено' }}</small>
+        </div>
+        <span class="profile-status">{{
+          a.ai_settings?.key_configured
+            ? a.ai_settings.runtime_enabled
+              ? 'Ключ сохранён'
+              : 'Вызовы выключены'
+            : 'Не настроено'
+        }}</span
+        ><button type="button" (click)="settings.emit('ai')">Настроить AI</button>
+      </div>
+    } @else {
+      <p class="profile-hint">Подключения и ключи доступны владельцу магазина.</p>
+    }
+  </section>
+
+  <section class="profile-panel" aria-labelledby="profile-shortcuts-title">
+    <header>
+      <h2 id="profile-shortcuts-title">Быстрые действия</h2>
+      <p>Основные настройки без поиска по меню</p>
+    </header>
+    <div class="profile-shortcuts">
+      @if (a.is_owner) {
+        <button type="button" (click)="settings.emit('shops')">
+          <strong>Магазины маркетплейса</strong
+          ><small>Названия, ключи и переключение кабинетов</small><span aria-hidden="true">›</span>
+        </button>
+        <button type="button" (click)="settings.emit('team')">
+          <strong>Команда</strong><small>Выдать или отключить доступ</small
+          ><span aria-hidden="true">›</span>
+        </button>
+      }
+      <button type="button" (click)="settings.emit('billing')">
+        <strong>Баланс и оплата</strong><small>Расходы AI и история операций</small
+        ><span aria-hidden="true">›</span>
+      </button>
+      <a routerLink="/mapping"
+        ><strong>Сопоставление с 1С</strong><small>Связать товары с номенклатурой</small
+        ><span aria-hidden="true">›</span></a
+      >
+    </div>
+  </section>
+</div>

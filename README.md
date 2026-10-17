@@ -1,59 +1,45 @@
-# O1cPanel
+# Ozon × 1С — Angular
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.7.
+Новый интерфейс сервиса на Angular 22.2.2 и TypeScript 6. Исходный пример `test` сохранён в истории `master`; перенос находится в ветке `ii_test`.
 
-## Development server
+## Что перенесено
 
-To start a local development server, run:
+Каталог товаров, карточки и сопоставление с 1С, остатки и распределение по складам, расчёт цен и формулы, финансовые представления и выгрузки, заказы и возвраты, акции, профили магазинов и настройки. Общие таблицы используют компактный шрифт, фильтры заголовков, подсветку строк и карточку товара при наведении.
 
-```bash
-ng serve
+Это исходники фронтенда. Прежний Python-бэкенд и отдельный C++-сервер находятся в основном проекте и сюда не скопированы. Данные не встроены в приложение: для работы разделов нужен совместимый API на `/v2/api/`. Наличие экрана не означает, что все его действия уже проверены с сервером.
+
+## Запуск
+
+Требуется Node.js 24.15+ в ветке 24; проверенная версия указана в `.nvmrc`.
+
+```sh
+npm ci
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Интерфейс открывается по адресу `http://localhost:4200/v2/`. `proxy.conf.json` направляет `/v2/api/` на локальный совместимый сервер `127.0.0.1:8766`, убирая префикс `/v2`. Эта настройка предназначена для локального API-стенда, а не для рабочего сервиса.
 
-## Code scaffolding
+## Сборка и проверки
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```sh
+npm test
+npm run build
+npm run format:check
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Сборка находится в `dist/ozon1c-v2/browser/`; base href — `/v2/`. Веб-сервер должен отдавать `index.html` для глубоких ссылок `/v2/*` и отдельно маршрутизировать `/v2/api/*` к совместимому API.
 
-```bash
-ng generate --help
-```
+## Проверка с копией базы
 
-## Building
+Отдельный Docker-контур на машине разработчика доступен по адресу `http://127.0.0.1:55349/v2/products`. Он разворачивается из основного проекта и содержит собственную копию PostgreSQL, API и Angular. Базы, дампы, ключи и рабочие настройки в этот репозиторий не включены.
 
-To build the project run:
+Изоляция обеспечивается сервером: автоматические синхронизации, отправки и внешние вызовы в копии отключены, разрешены только явно перечисленные локальные действия. Один фронтенд этих ограничений не обеспечивает. Не направляйте его на рабочий сервис для проверки записей. Для работы с готовым Docker-контуром используйте его адрес напрямую: API копии проверяет исходный Origin.
 
-```bash
-ng build
-```
+## Структура
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+- `src/app/core` — HTTP, сессия и контекст магазина.
+- `src/app/shared` — общие таблицы, фильтры, иконки и карточки при наведении.
+- `src/app/catalog`, `cards`, `stocks`, `pricing`, `finance`, `workspace`, `promotions`, `account`, `imports` — функциональные разделы.
+- `DESIGN.md` — правила интерфейса.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Сессия хранится в HttpOnly-cookie. Секреты и production-конфигурация в клиентский код не добавляются.

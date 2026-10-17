@@ -1,0 +1,118 @@
+.full-width {
+  grid-column: 1 / -1;
+}
+.workflow-error {
+  color: var(--danger, #b42318);
+}
+.condition-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.check-line {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+}
+.check-line input {
+  width: 16px !important;
+  min-height: 16px !important;
+}
+.workspace-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.workspace-tabs button,
+.workspace-tabs a {
+  padding: 7px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.workspace-tabs button:focus-visible,
+.workspace-tabs a:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.workspace-tabs button.active,
+.workspace-tabs a.active {
+  color: var(--brand);
+  border-bottom: 2px solid var(--brand);
+}
+.price-workflow-table {
+  border-collapse: collapse;
+  min-width: 100%;
+  font-size: 12px;
+}
+.price-workflow-table th,
+.price-workflow-table td {
+  padding: 10px 12px;
+  border: 1px solid var(--table-grid);
+  text-align: left;
+}
+.price-workflow-table th {
+  background: var(--table-heading-bg);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.price-workflow-table small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.inline-price-input {
+  min-width: 110px;
+  width: 130px;
+}
+.price-workflow-table td.dirty {
+  background: var(--brand-soft);
+}
+.repair-reason {
+  min-width: 240px;
+  max-width: 350px;
+}
+details.full-width {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+details.full-width summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.inline-bulk {
+  position: static;
+  display: block;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 16px 0;
+  box-shadow: none;
+  border: 1px solid var(--border);
+  box-sizing: border-box;
+}
+.pricing-header-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 3px #10182805;
+}

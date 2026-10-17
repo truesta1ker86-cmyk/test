@@ -1,0 +1,378 @@
+<section class="allocation-setup" aria-label="Настройка распределения">
+  <div class="allocation-toolbar">
+    <div class="allocation-warehouses">
+      <div class="allocation-step"><b>1</b><span>Выберите склады, где показывать товар</span></div>
+      <app-warehouse-picker
+        [warehouses]="orderedWarehouses()"
+        [added]="visibleIds()"
+        [disabled]="busy() || filling()"
+        (addedChange)="columnsChange.emit($event)"
+      />
+    </div>
+    <div class="allocation-quantities">
+      <div class="allocation-step">
+        <b>2</b><span>Отметьте товары · выбрано: {{ selection().size }}</span>
+      </div>
+      @if (canWrite()) {
+        <div class="allocation-tools">
+          <label class="all-percent"
+            >Доля на каждый склад, %<input
+              aria-label="Доля всем складам, %"
+              inputmode="decimal"
+              [ngModel]="allPercent()"
+              (ngModelChange)="allPercentChange.emit($event)"
+          /></label>
+          <button
+            class="button"
+            (click)="fill()"
+            [disabled]="busy() || filling() || !selection().size || !visible().length"
+          >
+            {{ filling() ? 'Заполняем…' : 'Установить всем складам' }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+  <p class="matrix-help">
+    Каждый склад получает свою долю независимо. Можно задавать больше 100%, в том числе 150 000%,
+    одновременно на все добавленные склады. 0 — не показывать товар.
+  </p>
+  @if (canWrite() && visible().length) {
+    <details class="warehouse-settings">
+      <summary>
+        Настроить добавленные склады <span>{{ visible().length }}</span
+        ><small>Режим, доля или фиксированное количество, округление</small>
+      </summary>
+      <div class="warehouse-defaults-grid">
+        @for (w of visible(); track w.warehouse_id) {
+          <section class="warehouse-default-card">
+            <header>
+              <strong>{{ w.warehouse_name }}</strong
+              ><span>{{ w.is_rfbs ? 'rFBS' : 'FBS' }}</span
+              ><button
+                (click)="toggleWarehouse(w.warehouse_id, false)"
+                [disabled]="busy() || filling()"
+              >
+                Скрыть
+              </button>
+            </header>
+            <div class="column-defaults">
+              <label class="default-mode"
+                >Режим<select
+                  [attr.aria-label]="'Режим для выбранных, ' + w.warehouse_name"
+                  [ngModel]="default(w.warehouse_id).fixed"
+                  (ngModelChange)="setDefault(w.warehouse_id, 'fixed', $event)"
+                >
+                  <option [ngValue]="false">По физическому остатку 1С</option>
+                  <option [ngValue]="true">Фиксированное количество к показу</option>
+                </select></label
+              >
+              <label
+                >{{ default(w.warehouse_id).fixed ? 'К показу, шт.' : 'Доля, %'
+                }}<input
+                  [attr.aria-label]="'Значение для выбранных, ' + w.warehouse_name"
+                  [ngModel]="default(w.warehouse_id).value"
+                  (ngModelChange)="setDefault(w.warehouse_id, 'value', $event)"
+                  inputmode="decimal"
+              /></label>
+              <label
+                >Округлять до, шт.<input
+                  [attr.aria-label]="'Кратность для выбранных, ' + w.warehouse_name"
+                  [ngModel]="default(w.warehouse_id).quantum"
+                  (ngModelChange)="setDefault(w.warehouse_id, 'quantum', $event)"
+                  inputmode="numeric"
+              /></label>
+            </div>
+            <button
+              class="button"
+              (click)="fill(w.warehouse_id)"
+              [disabled]="busy() || filling() || !selection().size"
+            >
+              Применить к выбранным товарам
+            </button>
+          </section>
+        }
+      </div>
+    </details>
+  }
+</section>
+<ng-content select="[allocation-actions]" />
+@if (errors()['bulk']) {
+  <p class="cell-error" role="alert">{{ errors()['bulk'] }}</p>
+}
+@if (invalidCount()) {
+  <p class="cell-error" role="alert">
+    Полей с ошибкой: {{ invalidCount() }}. Исправьте значения или
+    <button type="button" class="reset-cell" (click)="clearInvalidInputs()">
+      отмените ошибочный ввод</button
+    >. Остальные изменения сохранятся.
+  </p>
+}
+<div
+  class="allocation-scroll"
+  tabindex="0"
+  aria-label="Распределение по складам, таблица прокручивается по горизонтали"
+>
+  <table class="allocation-table">
+    <thead>
+      <tr>
+        <th
+          class="product-column"
+          [attr.aria-sort]="
+            sort() === 'offer_id' ? (direction() === 'asc' ? 'ascending' : 'descending') : 'none'
+          "
+        >
+          <div class="page-check">
+            <input
+              type="checkbox"
+              aria-label="Выбрать товары на странице"
+              [checked]="allChecked()"
+              (change)="togglePage($any($event.target).checked)"
+            /><button
+              type="button"
+              class="matrix-sort"
+              (click)="sortChange.emit('offer_id')"
+              [disabled]="busy()"
+            >
+              Номенклатура / артикул
+              <span aria-hidden="true">{{
+                sort() === 'offer_id' ? (direction() === 'asc' ? '↑' : '↓') : '↕'
+              }}</span>
+            </button>
+          </div>
+        </th>
+        <th
+          class="physical-column"
+          [attr.aria-sort]="
+            sort() === 'physical_1c' ? (direction() === 'asc' ? 'ascending' : 'descending') : 'none'
+          "
+        >
+          <button
+            type="button"
+            class="matrix-sort"
+            (click)="sortChange.emit('physical_1c')"
+            [disabled]="busy()"
+          >
+            Физический остаток 1С
+            <span aria-hidden="true">{{
+              sort() === 'physical_1c' ? (direction() === 'asc' ? '↑' : '↓') : '↕'
+            }}</span></button
+          ><small>Полные упаковки · все склады 1С</small>
+        </th>
+        @for (w of visible(); track w.warehouse_id) {
+          <th class="warehouse-column">
+            {{ w.warehouse_name }}<small>{{ w.is_rfbs ? 'rFBS' : 'FBS' }}</small>
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.offer_id) {
+        <tr [attr.data-offer]="row.offer_id" [class.selected]="selection().has(row.offer_id)">
+          <td class="product-column">
+            <div class="product-cell">
+              <input
+                type="checkbox"
+                [attr.aria-label]="'Выбрать ' + row.offer_id"
+                [checked]="selection().has(row.offer_id)"
+                (change)="toggle(row.offer_id, $any($event.target).checked)"
+              />
+              <div>
+                <button class="product-title" [appProductName]="row" data-product-preview-pin>
+                  {{ row.product_name || row.offer_id }}
+                </button>
+                <a
+                  class="article-link"
+                  routerLink="/products/card"
+                  [queryParams]="{ offer_id: row.offer_id }"
+                  >{{ row.offer_id }}</a
+                >
+                <div class="distribution-badges">
+                  <span [class.has-rules]="row.distributed">{{
+                    row.distributed
+                      ? 'Распределено'
+                      : row.rules_count
+                        ? 'Есть правила, без распределения'
+                        : 'Без правил'
+                  }}</span>
+                  @if (pendingOffers().has(row.offer_id)) {
+                    <span class="pending-badge">Не сохранено</span>
+                  }
+                </div>
+                <small
+                  >1С: {{ row.onec_code || row.sku_1c || 'не сопоставлен' }} ·
+                  {{ row.units_per_item || 1 }} ед./уп.</small
+                >
+                <small
+                  >{{ row.category || 'Категория не определена' }} ·
+                  {{ row.type || 'Тип не определён' }}</small
+                >
+              </div>
+            </div>
+          </td>
+          <td class="physical-column">
+            <strong>{{ row.matrix_physical ?? '—' }}</strong
+            ><small>{{ row.matrix_physical_base ?? '—' }} базовых ед.</small>
+            @if (row.matrix_physical === null) {
+              <small>{{ row.mapping_verified ? 'Нет снимка 1С' : 'Проверьте связь с 1С' }}</small>
+            }
+          </td>
+          @for (w of visible(); track w.warehouse_id) {
+            @let cell = state(row.offer_id, w.warehouse_id);
+            <td class="warehouse-column" [class.dirty]="isDirty(row.offer_id, w.warehouse_id)">
+              <div class="current-stock">
+                <span
+                  ><small class="cell-offer">{{ row.offer_id }}</small
+                  >Сейчас на этом складе<small>Ozon API</small></span
+                ><strong>{{
+                  currentQuantity(row, w.warehouse_id) === null
+                    ? 'Нет данных'
+                    : currentQuantity(row, w.warehouse_id) + ' шт.'
+                }}</strong>
+              </div>
+              <fieldset [disabled]="!canWrite() || busy() || filling()" class="cell-editor">
+                <label class="cell-mode"
+                  >Режим расчёта<select
+                    [attr.aria-label]="'Режим ' + row.offer_id + ', ' + w.warehouse_name"
+                    [ngModel]="cell?.maintain_target ? 'fixed' : 'share'"
+                    (ngModelChange)="change(row.offer_id, w.warehouse_id, 'mode', $event)"
+                  >
+                    <option value="share">По остатку 1С</option>
+                    <option value="fixed">Фиксированное</option>
+                  </select></label
+                >
+                <label
+                  >{{ cell?.maintain_target ? 'От 1С, %' : 'Доля 1С, %'
+                  }}<input
+                    [attr.aria-label]="'Доля ' + row.offer_id + ', ' + w.warehouse_name"
+                    [ngModel]="inputValue(row.offer_id, w.warehouse_id, 'percent')"
+                    [title]="'Точная доля: ' + exactPercent(row.offer_id, w.warehouse_id) + '%'"
+                    (ngModelChange)="change(row.offer_id, w.warehouse_id, 'percent', $event)"
+                    [disabled]="
+                      !!cell?.maintain_target && !(row.matrix_physical && row.matrix_physical > 0)
+                    "
+                    inputmode="decimal"
+                    placeholder="Доля"
+                /></label>
+                <label
+                  >К показу, шт.<input
+                    [attr.aria-label]="
+                      'Количество к показу ' + row.offer_id + ', ' + w.warehouse_name
+                    "
+                    [ngModel]="inputValue(row.offer_id, w.warehouse_id, 'quantity')"
+                    (ngModelChange)="change(row.offer_id, w.warehouse_id, 'quantity', $event)"
+                    [disabled]="
+                      !cell?.maintain_target && !(row.matrix_physical && row.matrix_physical > 0)
+                    "
+                    inputmode="numeric"
+                /></label>
+                <details class="cell-advanced">
+                  <summary>
+                    Дополнительно
+                    <small>{{
+                      (cell?.quantum || 1) > 1 ? 'Округлять до ' + cell?.quantum : 'Без округления'
+                    }}</small>
+                  </summary>
+                  <div>
+                    <label
+                      >Округлять до, шт.<input
+                        [attr.aria-label]="'Кратность ' + row.offer_id + ', ' + w.warehouse_name"
+                        [ngModel]="inputValue(row.offer_id, w.warehouse_id, 'quantum')"
+                        (ngModelChange)="change(row.offer_id, w.warehouse_id, 'quantum', $event)"
+                        inputmode="numeric" /></label
+                    ><label class="enabled"
+                      ><input
+                        type="checkbox"
+                        [checked]="!!cell?.enabled"
+                        (change)="
+                          change(
+                            row.offer_id,
+                            w.warehouse_id,
+                            'enabled',
+                            $any($event.target).checked
+                          )
+                        "
+                      />Правило включено</label
+                    >
+                  </div>
+                </details>
+              </fieldset>
+              @if (cellError(row.offer_id, w.warehouse_id)) {
+                <small class="cell-error" role="alert">{{
+                  cellError(row.offer_id, w.warehouse_id)
+                }}</small>
+              }
+              <div
+                class="cell-balance"
+                title="Каждый склад рассчитывается независимо; остаток не вычитается из других складов."
+              >
+                @if (cell?.maintain_target) {
+                  <span>Процент и штуки связаны</span
+                  ><span>Физический остаток не распределяется</span>
+                  <small
+                    >Процент считается от физического остатка 1С; дробный результат округляется
+                    вниз.</small
+                  >
+                } @else if (row.matrix_physical == null) {
+                  <span>Остаток 1С: <b>нет снимка</b></span
+                  ><span>Количество не рассчитано</span>
+                } @else {
+                  <span
+                    >Остаток 1С: <b>{{ row.matrix_physical }} шт.</b></span
+                  >
+                  <span
+                    >После доли: <b>{{ remaining(row, w.warehouse_id) }} шт.</b></span
+                  >
+                }
+              </div>
+              <div class="cell-result">
+                <span
+                  ><b
+                    >К показу:
+                    {{
+                      displayed(row, w.warehouse_id) === null
+                        ? 'нет снимка 1С'
+                        : displayed(row, w.warehouse_id) + ' шт.'
+                    }}</b
+                  >
+                  ·
+                  {{
+                    isDirty(row.offer_id, w.warehouse_id)
+                      ? 'Не сохранено'
+                      : cell
+                        ? cell.enabled
+                          ? 'Сохранено'
+                          : 'Не показывается'
+                        : 'Сейчас не показывается'
+                  }}</span
+                >
+              </div>
+              @if (
+                isDirty(row.offer_id, w.warehouse_id) || cellError(row.offer_id, w.warehouse_id)
+              ) {
+                <button
+                  class="reset-cell"
+                  [attr.aria-label]="'Отменить изменение ' + row.offer_id + ', ' + w.warehouse_name"
+                  (click)="reset(row.offer_id, w.warehouse_id)"
+                  [disabled]="busy() || filling()"
+                >
+                  Отменить изменение
+                </button>
+              }
+            </td>
+          }
+        </tr>
+      } @empty {
+        <tr>
+          <td [attr.colspan]="visible().length + 2" class="empty">
+            По выбранному фильтру товаров нет
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+<p class="matrix-help">
+  Для доли расчёт идёт из базовых единиц 1С с учётом упаковки и округления вниз. Фиксированное
+  количество задаётся напрямую. Скрытие склада не удаляет сохранённые правила.
+</p>

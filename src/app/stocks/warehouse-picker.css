@@ -1,0 +1,163 @@
+:host {
+  display: block;
+  position: relative;
+  z-index: 8;
+}
+.picker-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+}
+.picker-trigger {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 10px;
+  border: 1px solid var(--brand);
+  border-radius: 10px;
+  background: var(--brand-soft);
+  color: var(--text);
+  font-weight: 550;
+}
+.picker-trigger > span {
+  color: var(--brand);
+}
+.picker-trigger small {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.warehouse-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(420px, calc(100vw - 24px));
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 14px 40px #152b4b1f;
+  overflow: hidden;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+header strong {
+  font-size: 11px;
+}
+small {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+header small {
+  margin-top: 4px;
+}
+header button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 22px;
+  cursor: pointer;
+}
+.warehouse-options {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  max-height: min(420px, 55dvh);
+  overflow-y: auto;
+}
+label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+}
+input {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  accent-color: var(--brand);
+}
+label b {
+  font-size: 11px;
+  font-weight: 550;
+}
+label small {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.already-added {
+  background: color-mix(in srgb, #2fbb79 8%, var(--surface));
+  border-color: color-mix(in srgb, #2fbb79 28%, var(--border));
+}
+.scheme,
+.added-badge {
+  padding: 2px 6px;
+  border-radius: 20px;
+  font-weight: 550;
+}
+.scheme {
+  background: var(--surface-2);
+}
+.added-badge {
+  background: var(--surface);
+  color: #148455;
+}
+footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+footer > small:nth-child(2) {
+  margin-left: auto;
+}
+@media (max-width: 640px) {
+  .warehouse-menu {
+    position: fixed;
+    top: 15dvh;
+    left: 12px;
+    width: calc(100vw - 24px);
+  }
+  .picker-trigger {
+    max-width: 100%;
+    flex-wrap: nowrap;
+  }
+}
+
+.picker-copy {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text) !important;
+  flex: 1;
+  text-align: left;
+}
+.picker-trigger small {
+  font-size: 9px;
+  flex: none;
+}
+.picker-actions > .button {
+  min-height: 34px;
+  padding: 5px 8px;
+  font-size: 10px;
+  white-space: nowrap;
+}

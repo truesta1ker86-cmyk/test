@@ -1,0 +1,496 @@
+<div class="workspace-surface promotions-page">
+  <header class="page-heading">
+    <div>
+      <h1>Акции и модели участия</h1>
+      <p>Правила категорий и товаров, проверка участия в конкретной акции.</p>
+    </div>
+    <button class="button" [disabled]="loading() || busy()" (click)="load()">
+      <app-icon name="refresh" />Обновить экран
+    </button>
+  </header>
+  <p class="mode-note">
+    {{
+      databaseCopy()
+        ? 'Данные из копии рабочей базы. Изменение правил доступно только в копии; отправки отключены.'
+        : 'Локальный макет · тестовые данные. Изменяются только правила в памяти; проверки ничего не отправляют в Ozon.'
+    }}
+  </p>
+  <nav class="promo-tabs" aria-label="Разделы акций">
+    @for (
+      item of [
+        ['campaigns', 'Конкретные акции'],
+        ['products', 'Модели товаров'],
+        ['categories', 'Управление категориями'],
+        ['history', 'История'],
+      ];
+      track item[0]
+    ) {
+      <button
+        class="button"
+        [class.active]="tab() === item[0]"
+        [attr.aria-current]="tab() === item[0] ? 'page' : null"
+        (click)="navigate(item[0])"
+      >
+        {{ item[1] }}
+      </button>
+    }
+  </nav>
+  @if (error()) {
+    <p class="editor-error" role="alert">
+      {{ error() }} <button class="text-button" (click)="load()">Повторить</button>
+    </p>
+  }
+  @if (notice()) {
+    <p class="editor-success" role="status">{{ notice() }}</p>
+  }
+  @if (tab() !== 'history') {
+    @if (tab() === 'categories') {
+      <div class="model-guide" aria-label="Как работают модели акций">
+        <section>
+          <h2>Бустинг и цена Ozon</h2>
+          <p>
+            Обычные акции — рекомендованная цена Ozon, в том числе ниже минималки. Эластичный
+            бустинг — цена максимального бустинга. Нет новых заказов без отмен за 7 суток —
+            минималка в бустинге.
+          </p>
+        </section>
+        <section>
+          <h2>По минимальной цене</h2>
+          <p>
+            В каждой подходящей акции — ваша минималка как выбранный способ цены. Отсутствие заказов
+            правило не меняет. Участие зависит от ограничений Ozon.
+          </p>
+        </section>
+      </div>
+    }
+    @if (tab() === 'campaigns') {
+      <p class="section-note">
+        Минималка — способ выбора цены, а не ограничение для других способов. Чтобы подготовить
+        конкретное действие, отметьте товары и откройте «Работа с акцией».
+      </p>
+    }
+    <section class="panel">
+      <form class="promo-toolbar" (ngSubmit)="navigate()">
+        <label class="search"
+          >Поиск<input
+            type="search"
+            name="q"
+            [(ngModel)]="q"
+            [placeholder]="
+              tab() === 'categories' ? 'Категория маркетплейса' : 'Артикул или название товара'
+            "
+        /></label>
+        @if (tab() !== 'categories') {
+          <label
+            >Категория<select name="category" [(ngModel)]="category">
+              <option value="">Все категории</option>
+              @for (c of data()?.categories || []; track c.category_id) {
+                <option [value]="c.category_id">{{ c.category }}</option>
+              }
+            </select></label
+          >
+        }
+        <app-stock-choice
+          [label]="tab() === 'categories' ? 'Модель акций' : 'Итоговая модель'"
+          [options]="
+            [
+              { value: '1', label: 'Бустинг и цена Ozon' },
+              { value: '2', label: 'По минимальной цене' },
+              { value: '__empty__', label: 'Не назначена' },
+            ].concat(tab() === 'categories' ? [] : [{ value: '0', label: 'Не участвовать' }])
+          "
+          [values]="models"
+          (valuesChange)="models = $event; navigate()"
+        />
+        @if (tab() === 'campaigns') {
+          <label
+            >Акция<select name="action" [(ngModel)]="action">
+              <option value="">Все акции</option>
+              @for (a of data()?.preview?.actions || []; track a.id) {
+                <option [value]="a.id">{{ a.title }}</option>
+              }
+            </select></label
+          >
+          <label
+            >Участие<select name="participating" [(ngModel)]="participating">
+              <option value="all">Все</option>
+              <option value="yes">Участвует</option>
+              <option value="no">Не участвует</option>
+            </select></label
+          >
+          <label
+            >Результат<select name="decision" [(ngModel)]="decision">
+              <option value="">Все результаты</option>
+              @for (
+                d of [
+                  'add',
+                  'update',
+                  'unchanged',
+                  'remove',
+                  'skip',
+                  'protected',
+                  'incomplete',
+                  'unmanaged',
+                ];
+                track d
+              ) {
+                <option [value]="d">{{ decisions[d] }}</option>
+              }
+            </select></label
+          >
+        }
+        <button class="button primary" [disabled]="loading()" type="submit">
+          <app-icon name="filter" />Применить
+        </button>
+      </form>
+      <div class="promo-bulk">
+        <div>
+          <strong>Выбрано: {{ selectedCount() }}</strong
+          ><small>{{
+            hiddenCount()
+              ? hiddenCount() + ' скрыто текущим фильтром'
+              : 'В текущем отборе: ' + rows().length
+          }}</small>
+        </div>
+        <div class="button-row">
+          <button
+            class="button"
+            [disabled]="loading() || !rows().length || (tab() === 'categories' && !canWrite())"
+            (click)="selectFiltered()"
+          >
+            Выбрать все по фильтру</button
+          ><button class="button" [disabled]="!selectedCount()" (click)="clear()">
+            Снять выделение
+          </button>
+          @if (tab() === 'categories') {
+            <select
+              aria-label="Модель акций для выбранных категорий"
+              [(ngModel)]="bulkModel"
+              [disabled]="!canWrite()"
+            >
+              <option value="choose" disabled>Выберите модель…</option>
+              <option value="">Не назначена</option>
+              <option value="1">Бустинг и цена Ozon</option>
+              <option value="2">По минимальной цене</option></select
+            ><button
+              class="button primary"
+              [disabled]="!selectedCount() || !canWrite() || bulkModel === 'choose'"
+              (click)="saveCategory()"
+            >
+              Назначить выбранным
+            </button>
+          } @else {
+            <button
+              class="button"
+              [disabled]="!selection().size || !canWrite()"
+              (click)="editModels()"
+            >
+              Модель выбранным</button
+            ><button
+              class="button"
+              [disabled]="!rows().length || !canWrite()"
+              (click)="editModels(filteredOffers())"
+            >
+              Модель всем по фильтру</button
+            ><button
+              class="button primary"
+              [disabled]="!selection().size || !canWrite()"
+              (click)="openPlan()"
+            >
+              Работа с акцией…</button
+            ><button
+              class="button"
+              [disabled]="!rows().length || !canWrite()"
+              (click)="openPlan(filteredOffers())"
+            >
+              Акция всем по фильтру…
+            </button>
+          }
+        </div>
+      </div>
+      @if (tab() === 'categories') {
+        <p class="table-note">
+          Категорий: {{ data()?.categories?.length || 0 }} · Несохранённых изменений:
+          {{ drafts().size }}. Фильтры и выделение сохраняют черновики. Индивидуальные правила
+          товаров не заменяются.
+        </p>
+      }
+      <div
+        class="table-scroll"
+        tabindex="0"
+        aria-label="Таблица акций с прокруткой"
+        [attr.aria-busy]="loading()"
+      >
+        <table class="promo-table">
+          <thead>
+            <tr>
+              <th class="check-cell">
+                <input
+                  type="checkbox"
+                  aria-label="Выбрать все строки текущего фильтра"
+                  [checked]="allSelected()"
+                  [indeterminate]="!allSelected() && someSelected()"
+                  [disabled]="loading() || (tab() === 'categories' && !canWrite())"
+                  (change)="selectFiltered($any($event.target).checked)"
+                />
+              </th>
+              @for (col of columns(); track col.key) {
+                <th
+                  [attr.data-column-label]="col.label"
+                  [attr.aria-sort]="
+                    sorting().key === col.key
+                      ? sorting().desc
+                        ? 'descending'
+                        : 'ascending'
+                      : 'none'
+                  "
+                >
+                  <div class="column-heading">
+                    <button class="heading-sort" (click)="sort(col.key)">
+                      {{ col.label }}
+                      <span aria-hidden="true">{{
+                        sorting().key === col.key ? (sorting().desc ? '↓' : '↑') : '↕'
+                      }}</span></button
+                    ><app-finance-column-filter
+                      [field]="col.key"
+                      [label]="col.label"
+                      [numeric]="!!col.numeric"
+                      [rule]="columnRules()[col.key]"
+                      [options]="options()[col.key] || []"
+                      (changed)="columnChanged($event)"
+                    />
+                  </div>
+                </th>
+              }
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track track(row)) {
+              <tr [class.selected]="isSelected(row)">
+                <td class="check-cell">
+                  <input
+                    type="checkbox"
+                    [attr.aria-label]="
+                      'Выбрать ' +
+                      (tab() === 'categories' ? categoryRow(row).category : product(row).offer_id)
+                    "
+                    [checked]="isSelected(row)"
+                    [disabled]="busy() || (tab() === 'categories' && !canWrite())"
+                    (change)="toggle(row, $any($event.target).checked)"
+                  />
+                </td>
+                @if (tab() === 'categories') {
+                  @let r = categoryRow(row);
+                  <td>{{ r.category }}</td>
+                  <td class="numeric">{{ r.products }}</td>
+                  <td class="model-cell" [class.dirty]="drafts().has(r.category_id)">
+                    <select
+                      [attr.aria-label]="'Модель акций: ' + r.category"
+                      [ngModel]="'' + (categoryModel(r) ?? '')"
+                      [disabled]="!canWrite()"
+                      (ngModelChange)="draft(r, $event)"
+                    >
+                      <option value="">Не назначена</option>
+                      <option value="1">Бустинг и цена Ozon</option>
+                      <option value="2">По минимальной цене</option></select
+                    ><small
+                      >{{
+                        categoryModel(r) === null
+                          ? 'Выберите правило для товаров этой категории.'
+                          : help(categoryModel(r))
+                      }}{{
+                        drafts().has(r.category_id) ? ' Изменение ещё не сохранено.' : ''
+                      }}</small
+                    >
+                  </td>
+                  <td>
+                    <button
+                      class="button"
+                      [disabled]="!canWrite() || !drafts().has(r.category_id)"
+                      (click)="saveCategory(r)"
+                    >
+                      Сохранить
+                    </button>
+                  </td>
+                } @else if (tab() === 'products') {
+                  @let r = product(row);
+                  <td>{{ r.offer_id }}</td>
+                  <td class="name-cell">
+                    <a
+                      [appProductName]="r"
+                      routerLink="/products/card"
+                      [queryParams]="{ offer_id: r.offer_id }"
+                      >{{ r.name }}</a
+                    >
+                  </td>
+                  <td>{{ r.category || 'Не определена' }}</td>
+                  <td>{{ label(r.model) }}</td>
+                  <td>
+                    {{ r.effective_model === null ? 'Не назначена' : label(r.effective_model) }}
+                  </td>
+                  <td>{{ source(r.model_source) }}</td>
+                  <td>
+                    <button
+                      class="button"
+                      [disabled]="!canWrite()"
+                      (click)="editModels([r.offer_id])"
+                    >
+                      Изменить правило</button
+                    ><button
+                      class="text-button"
+                      [disabled]="!canWrite()"
+                      (click)="openPlan([r.offer_id])"
+                    >
+                      Конкретная акция…
+                    </button>
+                  </td>
+                } @else {
+                  @let r = campaign(row);
+                  <td>{{ r.offer_id }}</td>
+                  <td class="name-cell">
+                    <a
+                      [appProductName]="r"
+                      routerLink="/products/card"
+                      [queryParams]="{ offer_id: r.offer_id }"
+                      >{{ r.name }}</a
+                    >
+                  </td>
+                  <td>{{ r.action }}</td>
+                  <td>{{ r.participating ? 'Участвует' : 'Не участвует' }}</td>
+                  <td>
+                    {{ r.model === null ? 'Не назначена' : label(r.model)
+                    }}<small>{{ source(r.model_source) }}</small>
+                  </td>
+                  <td class="numeric">{{ r.orders_7_days ?? 'неизвестно' }}</td>
+                  <td class="numeric">{{ currency(r.current_price) }}</td>
+                  <td class="numeric">{{ currency(r.minimum_price) }}</td>
+                  <td class="numeric proposed">{{ currency(r.desired_price) }}</td>
+                  <td class="reason-cell">
+                    <strong>{{ decisions[r.decision] || r.decision }}</strong
+                    ><small>{{ r.reason }}</small>
+                    @if (r.warning) {
+                      <small class="warning">{{ r.warning }}</small>
+                    }
+                  </td>
+                  <td>
+                    <button
+                      class="button"
+                      [disabled]="!canWrite()"
+                      (click)="openPlan([r.offer_id], r.action_id)"
+                    >
+                      Работа с акцией
+                    </button>
+                  </td>
+                }
+              </tr>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="columns().length + 2" class="empty">
+                  {{ loading() ? 'Загружаем локальный снимок…' : 'По этому отбору строк нет.' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  } @else {
+    <section class="panel history-panel">
+      <div class="panel-heading">
+        <h2>Изменения правил в локальном макете</h2>
+        <button class="button" [disabled]="loading()" (click)="load()">Обновить список</button>
+      </div>
+      <div class="table-scroll">
+        <table class="promo-table">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Область</th>
+              <th>Модель</th>
+              <th>Строк</th>
+              <th>Состояние</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (op of data()?.history || []; track op.operation_id) {
+              <tr>
+                <td>{{ date(op.created_at) }}</td>
+                <td>{{ op.scope === 'category' ? 'Категории' : 'Товары' }}</td>
+                <td>{{ label(op.model, op.scope === 'category') }}</td>
+                <td class="numeric">{{ op.changed }}</td>
+                <td>
+                  {{ op.status === 'undone' ? 'Отменено' : 'Сохранено' }}
+                  @if (op.undone !== undefined) {
+                    <small
+                      >Отменено {{ op.undone }}, поздних изменений пропущено
+                      {{ op.conflicts }}</small
+                    >
+                  }
+                </td>
+                <td>
+                  <button
+                    class="button"
+                    [disabled]="!canWrite() || op.status !== 'applied'"
+                    (click)="undo(op)"
+                  >
+                    Отменить изменение
+                  </button>
+                  <details>
+                    <summary>Открыть результат</summary>
+                    <table class="promo-table">
+                      <thead>
+                        <tr>
+                          <th>Строка</th>
+                          <th>До</th>
+                          <th>После</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (change of op.changes; track change.id) {
+                          <tr>
+                            <td>{{ change.id }}</td>
+                            <td>{{ label(change.before, op.scope === 'category') }}</td>
+                            <td>{{ label(change.after, op.scope === 'category') }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </details>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="empty">Изменений правил пока нет.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel history-panel">
+      <div class="panel-heading"><h2>Результаты отправок в акции</h2></div>
+      <p class="empty">
+        Отправок нет: работа ведётся локально. Проверки товаров не выдаются за отправки в Ozon.
+      </p>
+    </section>
+  }
+</div>
+@if (modelOffers(); as offers) {
+  @if (data(); as state) {
+    <app-promotion-model-editor
+      [offers]="offers"
+      [state]="state"
+      (closed)="modelOffers.set(null)"
+      (saved)="savedModel()"
+    />
+  }
+}
+@if (planOffers(); as offers) {
+  <app-catalog-campaign
+    [offers]="offers"
+    [initialAction]="planAction()"
+    (closed)="planOffers.set(null)"
+  />
+}

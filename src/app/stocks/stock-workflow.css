@@ -1,0 +1,24 @@
+dialog.rule-dialog {
+  margin: auto;
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--surface);
+}
+dialog.rule-dialog::backdrop {
+  background: #0f172a66;
+}
+.stocks-page .table-wrap th,
+.stocks-page .table-wrap td,
+.expected-quantity-table th,
+.expected-quantity-table td {
+  border-right: 1px solid var(--table-grid);
+  border-bottom: 1px solid var(--table-row-line);
+}
+.stocks-page .table-wrap th {
+  background: var(--table-heading-bg);
+}
+.stock-filter-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}

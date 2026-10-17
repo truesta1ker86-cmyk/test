@@ -1,0 +1,102 @@
+<section class="margin-rules" aria-labelledby="margin-rules-heading">
+  <div class="rules-heading">
+    <h3 id="margin-rules-heading">Целевая маржа для минимальной цены</h3>
+    <p>
+      Задайте цель для выбранной группы товаров. Ручная цель товара сохраняет приоритет перед
+      правилом категории.
+    </p>
+  </div>
+  <nav class="rules-tabs" aria-label="Способ группировки маржи">
+    <button
+      type="button"
+      [class.active]="form.controls.kind.value === 'category'"
+      (click)="form.controls.kind.setValue('category')"
+    >
+      Категория маркетплейса
+    </button>
+    <button
+      type="button"
+      [class.active]="form.controls.kind.value === 'fin'"
+      (click)="form.controls.kind.setValue('fin')"
+    >
+      Тип Фин
+    </button>
+  </nav>
+  <form [formGroup]="form" (ngSubmit)="save()">
+    @if (form.controls.kind.value === 'category') {
+      <div class="rule-fields">
+        <label
+          >Категория маркетплейса<select
+            formControlName="category"
+            aria-label="Категория для маржи"
+            (change)="categoryChanged()"
+          >
+            <option value="">Выберите категорию</option>
+            @for (category of categoryOptions(); track category.description_category_id) {
+              <option [value]="category.description_category_id">
+                {{ category.category_label }}
+              </option>
+            }
+          </select></label
+        >
+        <label
+          >Тип маркетплейса<select formControlName="type" aria-label="Тип для маржи">
+            <option value="0">Вся категория</option>
+            @for (type of categoryTypes(); track type.type_id) {
+              <option [value]="type.type_id">{{ type.type_label }}</option>
+            }
+          </select></label
+        >
+        <label
+          >Целевая маржа, %<input
+            formControlName="margin"
+            aria-label="Маржа группы"
+            inputmode="decimal"
+        /></label>
+        <button class="button primary" type="submit" [disabled]="busy()">
+          <app-icon name="tag" />Сохранить правило
+        </button>
+      </div>
+    } @else {
+      <label class="fin-select"
+        >Тип Фин<select formControlName="fin_type" aria-label="Тип Фин для правила">
+          <option value="">Выберите тип Фин</option>
+          @for (type of finGroups(); track type.report_type) {
+            <option [value]="type.report_type">{{ type.label }}</option>
+          }
+        </select></label
+      >
+    }
+  </form>
+  @if (form.controls.kind.value === 'fin' && hasDrafts()) {
+    <p class="inline-notice">Сначала сохраните или отмените правки в таблице.</p>
+  } @else if (form.controls.kind.value === 'fin' && form.controls.fin_type.value) {
+    <app-bulk-editor
+      [inline]="true"
+      [marginOnly]="true"
+      [scope]="finScope()"
+      [label]="'Маржа товаров · ' + form.controls.fin_type.value"
+      (applied)="changed.emit()"
+    />
+  }
+  <div class="rules-recalc" [formGroup]="form">
+    <label
+      >Область пересчёта<select formControlName="recalc_fin" aria-label="Область пересчёта">
+        <option value="">Все товары</option>
+        @for (type of finTypes(); track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select></label
+    >
+    <button type="button" class="button" [disabled]="busy()" (click)="recalculate()">
+      <app-icon name="refresh" />Запустить пересчёт
+    </button>
+    <small>Обновит расчётную, минимальную и старую цены. Защищённые товары пропускаются.</small>
+  </div>
+  @if (error()) {
+    <p class="editor-error" role="alert">{{ error() }}</p>
+  }
+  @if (message()) {
+    <p class="editor-success" role="status">{{ message() }}</p>
+  }
+</section>

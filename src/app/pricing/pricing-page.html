@@ -1,0 +1,485 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Ценообразование</span>
+    <h1>Расчёт цен</h1>
+    <p>Параметры товаров, минимальная цена и фактическая маржа Ozon</p>
+  </div>
+  <div class="page-top-actions">
+    @if (canManage() && workspace() === 'calculation') {
+      <button class="button" type="button" (click)="initialize()" [disabled]="actionBusy()">
+        <app-icon name="refresh" />Инициализировать товары
+      </button>
+      <button class="button" type="button" (click)="recalculateAll()" [disabled]="actionBusy()">
+        <app-icon name="refresh" />Пересчитать все
+      </button>
+    }
+    <button class="button" type="button" (click)="reload()" [disabled]="busy()">
+      <app-icon name="refresh" />Обновить список
+    </button>
+  </div>
+</div>
+<div class="preview-note">
+  <span class="status-dot" aria-hidden="true"></span
+  ><strong>{{
+    localPreview() ? 'Локальный макет · тестовые данные' : 'Изолированная копия v2'
+  }}</strong>
+  <span
+    >Редактирование и пересчёт сохраняются здесь. Рабочий магазин и цены Ozon не изменятся.</span
+  >
+</div>
+
+<nav class="workspace-tabs" aria-label="Разделы расчёта цен">
+  <button
+    type="button"
+    [class.active]="workspace() === 'calculation'"
+    (click)="workspace.set('calculation')"
+  >
+    Расчёт цен
+  </button>
+  <a routerLink="/pricing/formula">Формула и параметры</a>
+  <button
+    type="button"
+    [class.active]="workspace() === 'automation'"
+    (click)="workspace.set('automation')"
+  >
+    Автоматическая отправка
+  </button>
+</nav>
+@if (workspace() === 'automation') {
+  <app-pricing-publication-preview
+    [scope]="scope(selection.selected().size > 0)"
+    (repair)="workspace.set('calculation'); update({ results: 'failed', page: 1 })"
+  />
+} @else {
+  <section class="panel" aria-labelledby="products-heading">
+    <div class="pricing-products-header">
+      <div class="pricing-products-copy">
+        <h2 id="products-heading">Товары и расчёт</h2>
+        <p>Контролируйте результат правил маржи и открывайте расшифровку расчёта в строке.</p>
+        @if (data(); as page) {
+          <div class="pricing-header-metrics" aria-label="Сводка таблицы цен">
+            <span class="pricing-metric"
+              ><b>{{ page.total }}</b> товаров</span
+            >
+            <span class="pricing-metric"
+              >Страница <b>{{ loadedThroughPage() }}/{{ pageCount() }}</b></span
+            >
+            <span class="pricing-metric ready" title="На текущей странице"
+              >Готово <b>{{ page.ready_on_page }}</b></span
+            >
+            <span class="pricing-metric needs-data" title="На текущей странице"
+              >Требуют данных <b>{{ page.blocked_on_page }}</b></span
+            >
+            <span class="pricing-metric" title="На текущей странице"
+              >Без активной схемы <b>{{ page.inactive_on_page }}</b></span
+            >
+          </div>
+        } @else {
+          <p class="pricing-header-loading" role="status">
+            {{ busy() ? 'Загружаем товары…' : 'Данные не загружены' }}
+          </p>
+        }
+      </div>
+      <div class="pricing-header-actions">
+        @if (canManage()) {
+          <label class="pricing-mode-control">
+            <app-icon name="menu" />
+            <select
+              aria-label="Режим работы с ценами"
+              [ngModel]="mode()"
+              (ngModelChange)="mode.set($event)"
+            >
+              <option value="margin">Маржа</option>
+              <option value="single">Один товар</option>
+              <option value="bulk">Массово</option></select
+            ><app-icon class="mode-chevron" name="down" />
+          </label>
+          <button
+            class="button pricing-header-button"
+            type="button"
+            (click)="advertising()"
+            [disabled]="actionBusy()"
+          >
+            <app-icon name="refresh" />Обновить рекламу
+          </button>
+          <button
+            class="button pricing-header-button"
+            type="button"
+            aria-label="Сохранить параметры цен"
+            (click)="saveInline()"
+            [disabled]="actionBusy() || busy() || !dirtyCount()"
+          >
+            <app-icon name="save" />Сохранить
+            @if (dirtyCount()) {
+              <span class="pricing-save-count">{{ dirtyCount() }}</span>
+            }
+          </button>
+        }
+        <app-pricing-filters
+          [query]="query()"
+          [facets]="facets()"
+          [canManage]="canManage()"
+          (applied)="applyQuery($event)"
+        />
+      </div>
+    </div>
+    @if (canManage() && mode() === 'margin') {
+      <app-margin-rules
+        [finTypes]="finTypes()"
+        [finGroups]="finGroups()"
+        [hasDrafts]="dirtyCount() > 0"
+        [categories]="catalogFilters()"
+        (changed)="changed()"
+      />
+    }
+    @if (canManage() && mode() === 'bulk') {
+      <label
+        >Область массовой правки<select
+          aria-label="Область массовой правки"
+          [ngModel]="bulkUsesSelection()"
+          (ngModelChange)="bulkUsesSelection.set($event)"
+        >
+          <option [ngValue]="false">Все по текущему отбору</option>
+          <option [ngValue]="true">Только выбранные товары</option>
+        </select></label
+      >
+      <app-bulk-editor
+        [inline]="true"
+        [scope]="inlineBulkScope()"
+        [label]="
+          bulkUsesSelection()
+            ? 'Выбранные товары: ' + selection.selected().size
+            : 'Массовое редактирование по текущему отбору'
+        "
+        (applied)="changed()"
+      />
+    }
+    <nav class="workspace-tabs" aria-label="Результаты расчёта">
+      <button
+        type="button"
+        [class.active]="query().results === 'all'"
+        (click)="update({ results: 'all', page: 1 })"
+      >
+        Все товары
+      </button>
+      <button
+        type="button"
+        [class.active]="query().results === 'failed'"
+        (click)="update({ results: 'failed', page: 1 })"
+      >
+        Не рассчитаны · {{ data()?.uncalculated_total || 0 }}
+      </button>
+    </nav>
+    <div class="filter-bar">
+      <form [formGroup]="form" (ngSubmit)="applyFilters()">
+        <label
+          >Артикул или наименование<input
+            type="search"
+            aria-label="Артикул или наименование"
+            formControlName="search"
+            placeholder="Найти товар"
+        /></label>
+      </form>
+    </div>
+    @if (query().results === 'failed') {
+      <p class="parameter-note">
+        Измените недостающие параметры и сохраните правки. Расчёт ничего не отправляет в Ozon.
+      </p>
+      <button class="button" type="button" (click)="exportRepairs()" [disabled]="actionBusy()">
+        <app-icon name="download" />{{
+          selection.selected().size
+            ? 'Excel: выбранные (' + selection.selected().size + ')'
+            : 'Выгрузить список Excel'
+        }}
+      </button>
+    }
+    @if (query().results === 'failed' && canManage()) {
+      <div class="filter-bar">
+        <label
+          >Поле массовой правки<select
+            aria-label="Поле исправления ошибок"
+            [(ngModel)]="repairField"
+          >
+            @for (f of repairFields; track f.key) {
+              <option [value]="f.key">{{ f.label }}</option>
+            }
+          </select></label
+        >
+        <label
+          >Новое значение<input
+            aria-label="Значение исправления ошибок"
+            [(ngModel)]="repairValue"
+            placeholder="Пусто — автоматический источник"
+        /></label>
+        <button
+          class="button"
+          type="button"
+          (click)="stageRepairs()"
+          [disabled]="actionBusy() || !selection.selected().size"
+        >
+          Заполнить выбранным
+        </button>
+      </div>
+    }
+    @if (refsError()) {
+      <div class="inline-error" role="alert">
+        Типы Фин не загрузились. {{ refsError() }}
+        <button class="text-button" type="button" (click)="loadRefs()">Повторить</button>
+      </div>
+    }
+    <div class="pricing-actions">
+      <div class="pricing-selection-state" role="status">
+        <span class="selection-dot" aria-hidden="true"></span
+        ><strong>Выбрано: {{ selection.selected().size }}</strong
+        ><small>{{
+          selection.selected().size
+            ? 'На текущей странице: ' + visibleSelected()
+            : 'Отметьте товары в первом столбце'
+        }}</small>
+      </div>
+      <div class="pricing-selection-actions">
+        <button
+          class="button"
+          type="button"
+          (click)="selection.clear()"
+          [disabled]="!selection.selected().size"
+        >
+          Снять
+        </button>
+        <button
+          class="button"
+          type="button"
+          (click)="selectFiltered()"
+          [disabled]="actionBusy() || busy()"
+        >
+          Выбрать все по фильтру
+        </button>
+        @if (canManage()) {
+          <button
+            class="button primary"
+            type="button"
+            (click)="openBulk(true)"
+            [disabled]="!selection.selected().size || actionBusy()"
+          >
+            Изменить выбранные
+          </button>
+          <button
+            class="button"
+            type="button"
+            (click)="openBulk()"
+            [disabled]="busy() || !data()?.total || actionBusy()"
+          >
+            Изменить все по фильтру
+          </button>
+          <button
+            class="button"
+            type="button"
+            (click)="recalculate(true)"
+            [disabled]="!selection.selected().size || actionBusy()"
+          >
+            Пересчитать выбранные
+          </button>
+          <button
+            class="button"
+            type="button"
+            (click)="recalculate()"
+            [disabled]="busy() || !data()?.total || actionBusy()"
+          >
+            Пересчитать по фильтру
+          </button>
+          <button
+            class="button primary"
+            type="button"
+            (click)="openPublication()"
+            [disabled]="!selection.selected().size || actionBusy()"
+          >
+            Проверить выбранные для отправки
+          </button>
+        }
+      </div>
+    </div>
+    @if (dirtyCount()) {
+      <div class="selection-bar">
+        <strong>Товаров с правками: {{ dirtyCount() }}</strong
+        ><button
+          class="button primary"
+          type="button"
+          (click)="saveInline()"
+          [disabled]="actionBusy()"
+        >
+          Сохранить правки и пересчитать</button
+        ><button class="button" type="button" (click)="clearDrafts()" [disabled]="actionBusy()">
+          Отменить правки
+        </button>
+      </div>
+    }
+    @if (actionBusy()) {
+      <p class="inline-notice" role="status">Выполняем локальную операцию…</p>
+    }
+    @if (actionError()) {
+      <p class="editor-error" role="alert">{{ actionError() }}</p>
+    }
+    @if (actionMessage()) {
+      <p class="editor-success" role="status">{{ actionMessage() }}</p>
+    }
+    @if (busy()) {
+      <div class="loading-table" role="status" aria-label="Загрузка товаров" aria-busy="true">
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+          <div class="skeleton-row"><span></span><span></span><span></span><span></span></div>
+        }
+        <span class="visually-hidden">Загружаем товары</span>
+      </div>
+    } @else if (error()) {
+      <div class="empty-state" role="alert">
+        <h3>Не удалось загрузить цены</h3>
+        <p>{{ error() }}</p>
+        <button class="button" type="button" (click)="reload()">Повторить попытку</button>
+      </div>
+    } @else if (data(); as page) {
+      @if (!page.items.length) {
+        <div class="empty-state" role="status">
+          <h3>
+            {{
+              query().results === 'failed'
+                ? 'Нерассчитанных товаров по отбору нет'
+                : 'Товары не найдены'
+            }}
+          </h3>
+          <p>Измените поиск или сбросьте фильтры.</p>
+          <button class="button" type="button" (click)="resetFilters()">Сбросить фильтры</button>
+        </div>
+      } @else {
+        <app-pricing-grid
+          [rows]="page.items"
+          [hasMore]="hasMore()"
+          [moreBusy]="moreBusy()"
+          [moreError]="moreError()"
+          (more)="loadMore()"
+          [selection]="selection.selected()"
+          [drafts]="drafts()"
+          [editing]="mode() === 'single'"
+          [failed]="query().results === 'failed'"
+          [canManage]="canManage()"
+          [busy]="actionBusy()"
+          [query]="query()"
+          (columnChanged)="applyColumn($event)"
+          [sortColumn]="query().sort_by"
+          [sortDirection]="query().sort_direction"
+          (sorted)="sort($event)"
+          (selected)="selection.toggle($event)"
+          (pageSelected)="togglePage($event)"
+          (details)="details.set($event)"
+          (edit)="editor.set($event)"
+          (changed)="stage($event)"
+          (saved)="saveInline($event)"
+          (recalc)="recalculateOne($event)"
+          (workingChanged)="saveWorkingCell($event)"
+        />
+      }
+      <nav class="pagination" aria-label="Страницы товаров">
+        <label
+          >На странице
+          <select
+            [value]="query().page_size"
+            (change)="update({ page_size: +$any($event.target).value, page: 1 })"
+          >
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+            <option value="250">250</option>
+            <option value="500">500</option>
+          </select></label
+        >
+        <span aria-live="polite"
+          >Показано {{ page.items.length }} из {{ page.total }} товаров · страницы
+          {{ query().page }}–{{ loadedThroughPage() }} из {{ pageCount() }}</span
+        >
+        <div class="button-row">
+          <button
+            class="button"
+            type="button"
+            (click)="update({ page: 1 })"
+            [disabled]="query().page <= 1"
+          >
+            Первая
+          </button>
+          <button
+            class="button"
+            type="button"
+            (click)="update({ page: query().page - 1 })"
+            [disabled]="query().page <= 1"
+          >
+            Назад
+          </button>
+          <button
+            class="button"
+            type="button"
+            (click)="update({ page: loadedThroughPage() + 1 })"
+            [disabled]="loadedThroughPage() >= pageCount()"
+          >
+            Вперёд
+          </button>
+          <button
+            class="button"
+            type="button"
+            (click)="update({ page: pageCount() })"
+            [disabled]="loadedThroughPage() >= pageCount()"
+          >
+            Последняя
+          </button>
+        </div>
+      </nav>
+    }
+  </section>
+  @if (details(); as row) {
+    <app-product-details [row]="row" (closed)="details.set(null)" />
+  }
+  @if (editor(); as offer) {
+    <app-price-editor [offer]="offer" (closed)="editor.set(null)" (saved)="changed()" />
+  }
+  @if (bulk(); as operation) {
+    <app-bulk-editor
+      [scope]="operation.scope"
+      [label]="operation.label"
+      (closed)="bulk.set(null)"
+      (applied)="changed()"
+    />
+  }
+  <section class="panel operations-panel" aria-labelledby="operations-title">
+    <div class="panel-heading">
+      <h2 id="operations-title">История массовых правок</h2>
+      <button class="text-button" type="button" (click)="loadOperations()">Обновить историю</button>
+    </div>
+    @if (!operations().length) {
+      <p class="parameter-note muted">Операций в копии v2 пока нет.</p>
+    }
+    @for (operation of operations(); track operation.operation_id) {
+      <div class="operation-row">
+        <div>
+          <strong>{{
+            operation.status === 'undone'
+              ? 'Отменено'
+              : operation.status === 'applied'
+                ? 'Применено'
+                : 'Предпросмотр'
+          }}</strong
+          ><small
+            >{{ operation.operation_id.slice(0, 8) }} · изменено {{ operation.applied }} · отменено
+            {{ operation.undone }}</small
+          >
+        </div>
+        @if (operation.can_undo && canManage()) {
+          <button
+            class="button"
+            type="button"
+            (click)="undo(operation.operation_id)"
+            [disabled]="actionBusy()"
+          >
+            Отменить правку
+          </button>
+        }
+      </div>
+    }
+  </section>
+}

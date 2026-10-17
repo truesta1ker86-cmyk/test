@@ -1,0 +1,125 @@
+<dialog #dialog class="product-dialog" aria-labelledby="editor-title" (cancel)="close($event)">
+  <div class="drawer-heading">
+    <div>
+      <span class="eyebrow">Редактор параметров · копия v2</span>
+      <h2 id="editor-title">{{ offer() }}</h2>
+    </div>
+    <button
+      class="icon-button"
+      type="button"
+      aria-label="Закрыть редактор"
+      [disabled]="busy()"
+      (click)="close()"
+    >
+      <app-icon name="close" />
+    </button>
+  </div>
+  <p class="inline-notice">
+    Сохранение относится к изолированной копии. Рабочий магазин и цены в Ozon не изменятся.
+  </p>
+  @if (error()) {
+    <p class="editor-error" role="alert">{{ error() }}</p>
+  }
+  @if (message()) {
+    <p class="editor-success" role="status">{{ message() }}</p>
+  }
+  @if (loading()) {
+    <p role="status">Загружаем параметры…</p>
+  } @else if (config()) {
+    <form [formGroup]="form" class="editor-form" (ngSubmit)="save()">
+      <div class="editor-fields">
+        @for (field of fields; track field.key) {
+          <label
+            ><span
+              >{{ field.label }}
+              @if (form.controls[field.key].dirty) {
+                <small class="good">· изменено</small>
+              }
+            </span>
+            @if (field.kind === 'scheme') {
+              <select [formControlName]="field.key" [attr.aria-label]="field.label">
+                <option value="">Не задана</option>
+                <option value="FBS">FBS</option>
+                <option value="FBO">FBO</option>
+                <option value="RFBS">РФБС</option>
+              </select>
+            } @else if (field.kind === 'boolean') {
+              <select [formControlName]="field.key" [attr.aria-label]="field.label">
+                <option value="false">Выключена</option>
+                <option value="true">Включена</option>
+              </select>
+            } @else {
+              <input
+                [formControlName]="field.key"
+                [attr.aria-label]="field.label"
+                [attr.inputmode]="field.kind === 'text' ? 'text' : 'decimal'"
+              />
+            }
+            @if (field.nullable) {
+              <button
+                class="text-button field-clear"
+                type="button"
+                (click)="clear(field.key)"
+                [disabled]="busy()"
+              >
+                Очистить / автоматически
+              </button>
+            }
+          </label>
+        }
+      </div>
+      <div class="button-row">
+        <button class="button primary" type="submit" [disabled]="busy() || uncertain()">
+          Сохранить и пересчитать
+        </button>
+        <button
+          class="button"
+          type="button"
+          (click)="save(false)"
+          [disabled]="busy() || uncertain()"
+        >
+          Сохранить параметры
+        </button>
+        <button class="button quiet" type="button" (click)="discard()" [disabled]="busy()">
+          Сбросить черновик
+        </button>
+      </div>
+    </form>
+    <section class="working-editor">
+      <h3>Рабочая цена и целевая маржа</h3>
+      <p class="muted">
+        Изменение цены или минималки подбирает целевую маржу по действующей формуле. Фактические
+        цены Ozon остаются справочными.
+      </p>
+      <form [formGroup]="workingForm" (ngSubmit)="saveWorking()" class="filter-bar">
+        <label
+          >Изменить<select formControlName="field" aria-label="Рабочее поле">
+            <option value="margin">Целевую маржу, %</option>
+            <option value="min_price">Минималку, ₽</option>
+            <option value="price">Расчётную цену, ₽</option>
+          </select></label
+        >
+        <label
+          >Значение<input formControlName="value" aria-label="Рабочее значение" inputmode="decimal"
+        /></label>
+        <button class="button" type="submit" [disabled]="busy() || uncertain()">
+          Применить значение
+        </button>
+        <button
+          class="text-button"
+          type="button"
+          (click)="saveWorking(true)"
+          [disabled]="busy() || uncertain()"
+        >
+          Вернуть расчёт по формуле
+        </button>
+      </form>
+    </section>
+    @if (uncertain()) {
+      <p class="inline-notice">Перед повтором сверьте сохранённые данные. Черновик сохранён.</p>
+      <button class="button" type="button" (click)="load()" [disabled]="busy()">
+        Сверить сохранённые параметры
+      </button>
+    }
+  }
+</dialog>

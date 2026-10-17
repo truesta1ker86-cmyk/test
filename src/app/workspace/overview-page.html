@@ -1,0 +1,156 @@
+<div class="workspace-surface overview-page">
+  <div class="page-heading">
+    <div>
+      <h1>Рабочая панель</h1>
+      <p>Состояние данных, отправления и последние операции в отдельной v2.</p>
+    </div>
+    <button class="button" [disabled]="loading()" (click)="load()">Обновить экран</button>
+  </div>
+  <div class="overview-notice">
+    <span class="status-pill">Изолированная v2</span
+    ><span
+      >Отправки и автоматические действия в Ozon выключены. Основная версия продолжает
+      работать.</span
+    >
+  </div>
+  @if (error()) {
+    <div class="editor-error" role="alert">
+      {{ error() }} <button class="text-button" (click)="load()">Повторить</button>
+    </div>
+  }
+  @if (loading()) {
+    <p class="overview-loading" role="status">Загружаем данные копии…</p>
+  }
+  @if (data(); as d) {
+    <section class="overview-totals" aria-label="Данные магазина">
+      <a routerLink="/products"
+        ><span>Товары</span><strong>{{ d.products }}</strong></a
+      ><a routerLink="/orders"
+        ><span>Отправления</span><strong>{{ d.status.totals.orders }}</strong></a
+      ><a routerLink="/returns"
+        ><span>Возвраты</span><strong>{{ d.status.totals.returns }}</strong></a
+      >
+      <div>
+        <span>Строки остатков</span><strong>{{ d.status.totals.stocks_rows }}</strong>
+      </div>
+      <div>
+        <span>Финансовые операции</span><strong>{{ d.status.totals.finance_rows }}</strong>
+      </div>
+    </section>
+    <div class="overview-layout">
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Последние отправления</h2>
+          <a routerLink="/orders">Все заказы</a>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Отправление</th>
+                <th>Статус</th>
+                <th>Создано</th>
+                <th class="numeric">Сумма</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of d.recent_orders; track order.posting_number) {
+                <tr>
+                  <td>
+                    <a
+                      routerLink="/orders"
+                      [queryParams]="{ posting: order.posting_number, lifecycle: '' }"
+                      >{{ order.posting_number }}</a
+                    ><small>{{ order.scheme?.toUpperCase() }}</small>
+                  </td>
+                  <td>{{ status(order.status, order.scheme) }}</td>
+                  <td>{{ date(order.in_process_at) }}</td>
+                  <td class="numeric">{{ currency(order.total_price, order.currency) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="empty-row">В копии ещё нет отправлений.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <aside class="overview-side">
+        <section class="panel">
+          <div class="panel-heading"><h2>Следующие задачи</h2></div>
+          <div class="task-links">
+            <a routerLink="/products/create"
+              >Создать карточку товара<span>Категория, свойства, фото и AI</span></a
+            ><a routerLink="/pricing"
+              >Проверить расчёт цен<span>Себестоимость, маржа и формула</span></a
+            ><a routerLink="/mapping" [queryParams]="{ mapping_status: 'unmapped' }"
+              >Сопоставить товары с 1С<span>Коды, артикулы и упаковки</span></a
+            >
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-heading"><h2>Состояние снимка</h2></div>
+          <dl class="snapshot-facts">
+            <dt>Последняя загрузка</dt>
+            <dd>{{ date(d.status.last_synced_at) }}</dd>
+            <dt>Снимок 1С</dt>
+            <dd>{{ date(d.status.integrations.onec_last_snapshot_at) }}</dd>
+            <dt>AI-подключение</dt>
+            <dd>
+              {{
+                d.status.integrations.ai_state === 'ready'
+                  ? 'Ключ настроен'
+                  : d.status.integrations.ai_state === 'disabled'
+                    ? 'Выключено'
+                    : 'Требует настройки'
+              }}
+            </dd>
+            <dt>Публикация в Ozon</dt>
+            <dd>Выключена в v2</dd>
+          </dl>
+        </section>
+      </aside>
+    </div>
+    <section class="panel overview-history">
+      <div class="panel-heading">
+        <h2>Последние операции</h2>
+        <span>История данных копии</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Когда</th>
+              <th>Раздел</th>
+              <th>Результат</th>
+              <th class="numeric">Записей</th>
+              <th>Подробности</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (op of d.operations; track $index) {
+              <tr>
+                <td>{{ date(op.completed_at) }}</td>
+                <td>{{ operation(op.entity) }}</td>
+                <td>
+                  <span class="status-pill" [class.failed]="op.status === 'error'">{{
+                    status(op.status)
+                  }}</span>
+                </td>
+                <td class="numeric">{{ op.affected ?? '—' }}</td>
+                <td class="operation-error">{{ op.error || '—' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty-row">
+                  Операций пока нет. Начните с карточек или расчёта цен.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</div>

@@ -1,0 +1,136 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Ценообразование</span>
+    <h1>Формула и параметры</h1>
+    <p>Действующие настройки текущего магазина</p>
+  </div>
+  <a class="button" routerLink="/pricing">К списку товаров</a>
+</div>
+<p class="preview-note">
+  Формула изолированной копии v2. Сохранение пересчитает её цены; рабочий магазин останется прежним.
+</p>
+@if (message()) {
+  <p class="editor-success" role="status">{{ message() }}</p>
+}
+@if (busy()) {
+  <div class="panel empty-state" role="status">Загружаем формулу…</div>
+} @else if (error() && !formula()) {
+  <div class="panel empty-state" role="alert">
+    <h2>Формула не загрузилась</h2>
+    <p>{{ error() }}</p>
+    <button class="button" type="button" (click)="load()">Повторить попытку</button>
+  </div>
+} @else if (formula(); as config) {
+  <section class="panel formula-panel" aria-labelledby="formula-heading">
+    <div class="panel-heading">
+      <h2 id="formula-heading">Расчёт цены</h2>
+      <span class="muted">Редакция {{ config.revision }}</span>
+    </div>
+    <div class="formula-line">
+      <h3>Минимальная цена</h3>
+      <code class="formula-expression">{{ config.expressions.min_price }}</code>
+    </div>
+    <div class="formula-line">
+      <h3>Цена продавца</h3>
+      <code class="formula-expression">{{ config.expressions.price }}</code>
+    </div>
+    <div class="formula-line">
+      <h3>Цена до скидки</h3>
+      <code class="formula-expression">{{ config.expressions.old_price }}</code>
+    </div>
+  </section>
+  <section class="panel parameter-panel" aria-labelledby="parameters-heading">
+    <div class="panel-heading"><h2 id="parameters-heading">Общие параметры</h2></div>
+    <dl class="detail-grid">
+      <div>
+        <dt>Делитель цены</dt>
+        <dd>{{ config.price_divisor }}</dd>
+      </div>
+      <div>
+        <dt>Делитель цены до скидки</dt>
+        <dd>{{ config.old_price_divisor }}</dd>
+      </div>
+      <div>
+        <dt>Обработка отправления</dt>
+        <dd>{{ money(config.handling_fee) }}</dd>
+      </div>
+      <div>
+        <dt>Последняя миля</dt>
+        <dd>{{ money(config.last_mile_fee) }}</dd>
+      </div>
+      <div>
+        <dt>Эквайринг</dt>
+        <dd>{{ percent(config.acquiring_percent) }}</dd>
+      </div>
+      <div>
+        <dt>Прочие начисления</dt>
+        <dd>{{ percent(config.other_fees_percent) }}</dd>
+      </div>
+      <div>
+        <dt>Доставка РФБС</dt>
+        <dd>{{ percent(config.rfbs_delivery_percent) }}</dd>
+      </div>
+      <div>
+        <dt>Обновлено</dt>
+        <dd>{{ date(config.updated_at) }}</dd>
+      </div>
+    </dl>
+    <p class="muted parameter-note">
+      Комиссия и логистика берутся из источников действующего расчёта. Схема плана и схема
+      фактической маржи остаются отдельными.
+    </p>
+  </section>
+  @if (canManage()) {
+    <section class="panel formula-edit-panel">
+      <div class="panel-heading"><h2>Редактор формулы и расходов</h2></div>
+      <form [formGroup]="editForm" (ngSubmit)="save()" class="editor-form formula-editor-form">
+        <div class="editor-fields">
+          @for (field of parameterFields; track field.key) {
+            <label
+              >{{ field.label
+              }}<input
+                [formControlName]="field.key"
+                [attr.aria-label]="field.label"
+                inputmode="decimal"
+            /></label>
+          }
+        </div>
+        <label
+          >Формула минималки<textarea
+            formControlName="min_price_expression"
+            aria-label="Формула минималки"
+            rows="3"
+          ></textarea>
+        </label>
+        <label
+          >Формула цены<textarea
+            formControlName="price_expression"
+            aria-label="Формула цены"
+            rows="2"
+          ></textarea>
+        </label>
+        <label
+          >Формула цены до скидки<textarea
+            formControlName="old_price_expression"
+            aria-label="Формула цены до скидки"
+            rows="2"
+          ></textarea>
+        </label>
+        @if (error()) {
+          <p class="editor-error" role="alert">{{ error() }}</p>
+        }
+        <button class="button primary" type="submit" [disabled]="saving()">
+          Сохранить формулу и пересчитать копию
+        </button>
+        <button
+          class="button"
+          type="button"
+          (click)="restoreDefaults()"
+          [disabled]="saving() || !defaults()"
+        >
+          Вернуть исходные формулы v1
+        </button>
+      </form>
+    </section>
+  }
+}

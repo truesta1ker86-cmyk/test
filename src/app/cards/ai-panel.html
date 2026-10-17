@@ -1,0 +1,193 @@
+<section class="ai-compose" aria-labelledby="ai-title">
+  <h2 id="ai-title">AI-помощник карточки</h2>
+  @if (localPreview()) {
+    <p>
+      Локальный макет: AI-генерация, списания и внешние запросы выключены. Поля задачи можно
+      подготовить заранее.
+    </p>
+  } @else {
+    <p>
+      Генерация использует подключённого провайдера. Результат сначала появляется здесь для
+      проверки; карточка меняется после вашего принятия и сохранения.
+    </p>
+  }
+  @if (error()) {
+    <div class="editor-error" role="alert">{{ error() }}</div>
+  }
+  @if (message()) {
+    <div class="editor-success" role="status">{{ message() }}</div>
+  }
+  <fieldset [disabled]="busy() || uncertain() || !canManage()">
+    <div class="ai-controls">
+      <label
+        >Что подготовить<select [formControl]="kind" aria-label="Тип AI-генерации">
+          <option value="content">Название и описание</option>
+          <option value="attributes">Характеристики</option>
+          <option value="image">Фото товара</option>
+        </select></label
+      ><label
+        >Исходное фото<select [formControl]="reference" aria-label="Исходное фото для AI">
+          <option value="none">Без фото</option>
+          <option value="product">Первое фото из галереи</option>
+        </select></label
+      >
+    </div>
+    <label
+      >Задача для AI<textarea
+        [formControl]="brief"
+        rows="3"
+        maxlength="2000"
+        placeholder="Например: сделай описание короче, сохрани размеры и материал"
+      ></textarea>
+    </label>
+    @if (kind.value === 'image') {
+      <div class="ai-controls">
+        <label
+          >Формат<select [formControl]="aspect" aria-label="Формат AI-фото">
+            <option>1:1</option>
+            <option>4:5</option>
+            <option>3:4</option>
+            <option>16:9</option>
+            <option>9:16</option>
+          </select></label
+        ><label
+          >Качество<select [formControl]="quality" aria-label="Качество AI-фото">
+            <option value="auto">Автоматически</option>
+            <option value="low">Быстрое</option>
+            <option value="medium">Стандартное</option>
+            <option value="high">Высокое</option>
+          </select></label
+        >
+      </div>
+    }
+    @if (operation(); as op) {
+      <div class="ai-price">
+        <span
+          >Запрос: <strong>{{ money(op.price_rub) }}</strong></span
+        ><span>Баланс v2: {{ money(info()?.balance_rub) }}</span
+        ><small>{{ op.model }}</small>
+      </div>
+      @if (!op.available) {
+        <p class="ai-blocked">{{ op.block_reason }}</p>
+      }
+      <button
+        type="button"
+        class="button primary"
+        [disabled]="localPreview() || !op.available || busy()"
+        (click)="generate()"
+      >
+        {{ busy() ? 'Генерация выполняется…' : 'Создать предложение' }}
+      </button>
+    }
+  </fieldset>
+  @if (uncertain()) {
+    <button type="button" class="button" [disabled]="busy()" (click)="check()">
+      Проверить результат запроса
+    </button>
+  }
+</section>
+@if (result(); as current) {
+  @if (current.result) {
+    <section class="ai-result">
+      <div class="section-title">
+        <h2>Предложение AI</h2>
+        <span class="status-pill">{{
+          current.accepted === true
+            ? 'Принято'
+            : current.accepted === false
+              ? 'Отклонено'
+              : 'На проверке'
+        }}</span>
+      </div>
+      @for (warning of current.result.warnings || []; track warning) {
+        <p class="ai-warning">{{ warning }}</p>
+      }
+      @if (current.kind === 'content') {
+        <label>Предложенное название<input [formControl]="proposedTitle" maxlength="500" /></label
+        ><label
+          >Предложенное описание<textarea
+            [formControl]="proposedDescription"
+            rows="8"
+            maxlength="6000"
+          ></textarea>
+        </label>
+      }
+      @if (current.kind === 'attributes') {
+        <div class="ai-suggestions">
+          @for (suggestion of suggestionForms(); track suggestion.id) {
+            <div>
+              <label class="suggestion-choice"
+                ><input type="checkbox" [formControl]="suggestion.selected" />{{
+                  suggestion.name
+                }}</label
+              ><textarea
+                [formControl]="suggestion.values"
+                rows="2"
+                [attr.aria-label]="'AI-значение: ' + suggestion.name"
+              ></textarea>
+            </div>
+          }
+        </div>
+        <p class="ai-note">
+          Справочные значения проверяются по точному совпадению перед переносом. Неоднозначные
+          значения задайте вручную в свойствах.
+        </p>
+      }
+      @if (current.kind === 'image' && current.result.media; as media) {
+        <img class="ai-image" [src]="media.content_url" alt="AI-предложение фотографии товара" />
+      }
+      <div class="button-row">
+        <button
+          type="button"
+          class="button primary"
+          [disabled]="
+            accepting() || !canManage() || current.accepted === true || current.accepted === false
+          "
+          (click)="accept()"
+        >
+          {{ accepting() ? 'Проверяем значения…' : 'Перенести в карточку' }}</button
+        ><button
+          type="button"
+          class="button"
+          [disabled]="
+            accepting() || !canManage() || current.accepted === true || current.accepted === false
+          "
+          (click)="reject()"
+        >
+          Отклонить предложение
+        </button>
+      </div>
+    </section>
+  }
+}
+<section class="ai-history">
+  <div class="section-title">
+    <h2>История AI</h2>
+    <button class="text-button" type="button" (click)="load()">Обновить</button>
+  </div>
+  @for (item of history(); track item.operation_id) {
+    <button class="ai-history-row" type="button" (click)="open(item)">
+      <span
+        >{{
+          item.kind === 'content'
+            ? 'Название и описание'
+            : item.kind === 'attributes'
+              ? 'Характеристики'
+              : 'Фото'
+        }}<small>{{ date(item.created_at) }}</small></span
+      ><span>{{
+        item.status === 'completed'
+          ? 'Готово'
+          : item.status === 'accepted'
+            ? 'Принято'
+            : item.status === 'rejected'
+              ? 'Отклонено'
+              : item.status === 'failed'
+                ? 'Ошибка'
+                : 'Выполняется'
+      }}</span>
+    </button>
+  } @empty {
+    <p>Запросов по этой карточке пока нет.</p>
+  }
+</section>

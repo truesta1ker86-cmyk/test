@@ -1,0 +1,111 @@
+<section class="connection-card" aria-labelledby="mapping-connection-title">
+  <header>
+    <span class="connection-icon"><app-icon name="refresh" /></span>
+    <div>
+      <h2 id="mapping-connection-title">Подключение веб-базы 1С</h2>
+      <p>Публикация Standard OData для вашего кабинета.</p>
+    </div>
+    <span class="connection-badge" [class.configured]="data()?.onec?.configured">{{
+      data()?.onec?.configured ? 'Настроено локально' : 'Не подключено'
+    }}</span>
+  </header>
+  <div class="connection-body">
+    <p class="local-note">
+      Локальный макет: адрес сохраняется только на тестовом стенде. Пароль не сохраняется и не
+      отправляется. Подключение к 1С отключено.
+    </p>
+    @if (error()) {
+      <p class="editor-error" role="alert">{{ error() }}</p>
+    }
+    <form (ngSubmit)="save()">
+      <fieldset [disabled]="busy() || !editable()">
+        <div class="connection-fields">
+          <label
+            >Адрес публикации 1С<input
+              name="url"
+              [(ngModel)]="url"
+              type="url"
+              placeholder="https://example.invalid/base/"
+              autocomplete="off"
+            /><small>Адрес веб-клиента до /odata.</small></label
+          >
+          <label
+            >Пользователь 1С<input name="user" [(ngModel)]="user" autocomplete="off" /><small
+              >Отдельная учётная запись с правами только на чтение.</small
+            ></label
+          >
+          <label class="connection-password"
+            >Пароль 1С<span
+              ><input
+                name="password"
+                [(ngModel)]="password"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Введите или вставьте пароль"
+              /><button class="button" type="button" (click)="pastePassword()">
+                Вставить
+              </button></span
+            ><small
+              >Доступна обычная вставка ⌘V / Ctrl+V. В макете поле очищается после проверки.</small
+            ></label
+          >
+        </div>
+        <label class="http-permission"
+          ><input name="http" [(ngModel)]="allowHttp" type="checkbox" /><span
+            ><strong>Разрешить подключение 1С по HTTP</strong
+            ><small
+              >Настройка формы для старой HTTP-публикации. Внешние соединения в макете не
+              выполняются.</small
+            ></span
+          ></label
+        >
+        <div class="button-row">
+          <button class="button primary" type="submit">
+            <app-icon name="shield" />Проверить и подключить</button
+          ><button
+            class="button"
+            type="button"
+            [disabled]="!data()?.onec?.configured"
+            (click)="test()"
+          >
+            <app-icon name="refresh" />Проверить снова</button
+          ><button
+            class="button"
+            type="button"
+            [disabled]="!data()?.onec?.configured"
+            (click)="disconnect()"
+          >
+            Отключить 1С
+          </button>
+        </div>
+      </fieldset>
+    </form>
+    @if (notice()) {
+      <p class="connection-result" role="status">{{ notice() }}</p>
+    }
+    <div class="snapshot-actions">
+      <div>
+        <h3>Остатки и себестоимость</h3>
+        <p>Проверка сохранённого локального снимка. В 1С и маркетплейс ничего не отправляется.</p>
+      </div>
+      <div class="button-row">
+        <button class="button" [disabled]="busy() || !data()?.local_preview" (click)="snapshot()">
+          Обновить номенклатуру</button
+        ><button
+          class="button"
+          [disabled]="busy() || !data()?.local_preview"
+          (click)="snapshot(true)"
+        >
+          Проверить данные
+        </button>
+      </div>
+    </div>
+    <details>
+      <summary>Что попросить у администратора 1С</summary>
+      <p>
+        Адрес публикации Standard OData, отдельного пользователя с правами чтения каталога, остатков
+        и себестоимости. Подключение на этом стенде не выполняется.
+      </p>
+    </details>
+  </div>
+</section>

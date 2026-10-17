@@ -1,0 +1,148 @@
+:host {
+  display: block;
+}
+h2 {
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+p {
+  font-size: 12px;
+  color: var(--text-2);
+  max-width: 75ch;
+  margin: 8px 0 16px;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+label {
+  font-size: 12px;
+  color: var(--text-2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+input:not([type='checkbox']),
+select,
+textarea {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  padding: 9px 10px;
+  border: 1px solid #98a2b3;
+  border-radius: 6px;
+  background: white;
+  color: var(--text);
+}
+textarea {
+  resize: vertical;
+}
+.ai-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.ai-price {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-2);
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.ai-price small {
+  color: var(--muted);
+  margin-left: auto;
+}
+.ai-blocked,
+.ai-warning {
+  color: var(--amber);
+  font-size: 12px;
+}
+.ai-result,
+.ai-history {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.section-title h2 {
+  margin: 0;
+}
+.ai-result > label {
+  margin: 16px 0;
+}
+.ai-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.suggestion-choice {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-weight: 550;
+}
+.ai-image {
+  display: block;
+  width: min(100%, 480px);
+  max-height: 480px;
+  object-fit: contain;
+  background: var(--surface-2);
+  margin: 16px 0;
+}
+.ai-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+.ai-history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  text-align: left;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ai-history-row small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.ai-history-row:hover {
+  color: var(--brand);
+}
+@media (max-width: 600px) {
+  .ai-controls {
+    grid-template-columns: 1fr;
+  }
+  .ai-price small {
+    margin-left: 0;
+    width: 100%;
+  }
+}

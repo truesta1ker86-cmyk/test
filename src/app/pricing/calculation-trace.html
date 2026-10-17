@@ -1,0 +1,123 @@
+@if (trace().actual_margin; as actual) {
+  <details class="history-entry">
+    <summary>Пошаговый расчёт фактической маржи Ozon API</summary>
+    <div class="history-body">
+      <p>
+        Схема: {{ actual['shipping_scheme'] || 'не определена' }}. Используется снимок Seller API.
+        Цена сайта и ручная себестоимость в фактическую маржу не подставляются.
+      </p>
+      <table class="price-workflow-table trace-table">
+        <thead>
+          <tr>
+            <th>Показатель</th>
+            <th>Значение снимка</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (field of actualFields; track field[0]) {
+            <tr>
+              <th scope="row">{{ field[1] }}</th>
+              <td>
+                {{
+                  field[2] === 'rate'
+                    ? percent(amount(actual, field[0]))
+                    : money(amount(actual, field[0]))
+                }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      @if (actual['has_negative_profit']) {
+        <p class="workflow-error">В диапазоне расходов API есть убыточный сценарий.</p>
+      }
+      @if (hasAdditional()) {
+        <p>
+          Дополнительные настроенные расходы вне снимка API:
+          {{ percent(amount(actual, 'additional_rate_outside_api_snapshot')) }} =
+          {{ money(amount(actual, 'additional_amount_outside_api_snapshot')) }}.
+        </p>
+        <p>
+          После всех настроенных расходов: прибыль
+          {{ money(amount(actual, 'profit_after_all_configured_expenses_low')) }}, маржа от цены
+          {{ percent(amount(actual, 'margin_on_sale_price_after_all_configured_expenses_low')) }}.
+        </p>
+      }
+    </div>
+  </details>
+}
+@if (trace().minimum_price; as minimum) {
+  <details class="history-entry" open>
+    <summary>Расшифровка минимальной цены</summary>
+    <div class="history-body">
+      <code class="formula-expression">{{ minimum.expression }}</code>
+      <table class="price-workflow-table trace-table">
+        <thead>
+          <tr>
+            <th>Вход формулы</th>
+            <th>Значение</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (variable of variables(); track variable[0]) {
+            <tr>
+              <th scope="row">{{ variableLabels[variable[0]] || variable[0] }}</th>
+              <td>{{ variable[1] ?? '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <p>
+        Результат формулы: {{ money(minimum.formula_result) }} · рабочая минималка:
+        {{ money(minimum.working_result) }}.
+      </p>
+      <p>
+        Источник логистики: {{ sourceLabel(minimum['logistics_source']) }}. Сравнение с диапазоном
+        API не заменяет плановую логистику в формуле.
+      </p>
+      @if (scenarios().length) {
+        <details class="history-entry">
+          <summary>Сравнение сценариев логистики</summary>
+          <div class="table-scroll">
+            <table class="price-workflow-table trace-table">
+              <thead>
+                <tr>
+                  <th>Сценарий</th>
+                  <th>Минималка</th>
+                  <th>Цена</th>
+                  <th>Цена до скидки</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (scenario of scenarios(); track scenario.label) {
+                  <tr>
+                    <th scope="row">{{ scenario.label }}</th>
+                    <td>{{ money(amount(scenario.values, 'min_price')) }}</td>
+                    <td>{{ money(amount(scenario.values, 'price')) }}</td>
+                    <td>{{ money(amount(scenario.values, 'old_price')) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </details>
+      }
+    </div>
+  </details>
+}
+@if (trace().working_price; as working) {
+  <details class="history-entry">
+    <summary>Расчёт цены и цены до скидки</summary>
+    <div class="history-body">
+      <code class="formula-expression">{{ working['expression'] }}</code>
+      <p>
+        Делитель {{ working['price_divisor'] }} · результат {{ money(amount(working, 'result')) }}.
+      </p>
+      <code class="formula-expression">{{ working['old_price_expression'] }}</code>
+      <p>
+        Делитель {{ working['old_price_divisor'] }} · цена до скидки
+        {{ money(amount(working, 'old_price_result')) }}.
+      </p>
+    </div>
+  </details>
+}

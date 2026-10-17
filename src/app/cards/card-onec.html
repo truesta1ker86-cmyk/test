@@ -1,0 +1,100 @@
+<p class="section-note">
+  Связь определяет, откуда брать остаток и себестоимость. Сохраняется только локальный снимок; 1С и
+  маркетплейс не изменяются.
+</p>
+<div class="onec-fields">
+  <label
+    >Номенклатура 1С<select
+      aria-label="Номенклатура 1С"
+      [value]="code()"
+      [disabled]="loading() || busy() || !canManage()"
+      (change)="choose($any($event.target).value)"
+    >
+      <option value="">Выберите товар из снимка</option>
+      @for (c of candidates(); track c.onec_code || c.sku_1c) {
+        <option
+          [value]="c.onec_code || c.sku_1c"
+          [selected]="
+            (c.onec_code || c.sku_1c) === code() || candidate()?.onec_code === c.onec_code
+          "
+          [disabled]="!c.is_verified"
+        >
+          {{ c.sku_1c }} · {{ c.onec_name }} · код {{ c.onec_code || '—' }}
+        </option>
+      }
+    </select></label
+  >
+  <label
+    >Единиц 1С в позиции<input
+      aria-label="Единиц 1С в позиции"
+      type="number"
+      min="1"
+      max="1000000"
+      step="1"
+      [value]="units()"
+      [disabled]="busy() || !canManage()"
+      (input)="units.set($any($event.target).value)"
+  /></label>
+</div>
+@if (loading()) {
+  <p role="status">Загружаем локальный снимок 1С…</p>
+}
+@if (error()) {
+  <p class="editor-error" role="alert">{{ error() }}</p>
+  <button class="text-button" type="button" [disabled]="loading()" (click)="load()">
+    Обновить снимок
+  </button>
+}
+@if (candidate(); as c) {
+  <dl class="onec-facts">
+    <div>
+      <dt>Код 1С</dt>
+      <dd>{{ c.onec_code || '—' }}</dd>
+    </div>
+    <div>
+      <dt>Артикул 1С</dt>
+      <dd>{{ c.sku_1c }}</dd>
+    </div>
+    <div>
+      <dt>Номенклатура 1С</dt>
+      <dd>{{ c.onec_name }}</dd>
+    </div>
+    <div>
+      <dt>Физический остаток · складов {{ c.warehouse_count }}</dt>
+      <dd>{{ c.available }} ед.</dd>
+    </div>
+    <div>
+      <dt>Можно продать при упаковке ×{{ unitsValue() || '—' }}</dt>
+      <dd>{{ sellable() ?? '—' }} поз.</dd>
+    </div>
+    <div>
+      <dt>Себестоимость для расчёта</dt>
+      <dd>{{ money(packageCost()) }}</dd>
+    </div>
+  </dl>
+} @else {
+  <p class="onec-empty">
+    Выберите точный код из последнего локального снимка 1С. Одинаковые артикулы могут относиться к
+    разным товарам.
+  </p>
+}
+<p class="section-note">
+  Если продаётся упаковка из 5 единиц 1С, укажите 5. Остаток к продаже округляется вниз; текущая
+  себестоимость API всей позиции повторно на квант не умножается.
+</p>
+<button
+  class="button primary"
+  type="button"
+  [disabled]="
+    loading() ||
+    busy() ||
+    !candidate()?.is_verified ||
+    !unitsValue() ||
+    !canManage() ||
+    !localPreview() ||
+    !localSnapshot()
+  "
+  (click)="save()"
+>
+  {{ busy() ? 'Сохраняем связь…' : 'Сохранить связь и продолжить' }}
+</button>

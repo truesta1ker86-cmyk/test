@@ -1,0 +1,86 @@
+<dialog #dialog class="order-dialog" (cancel)="close($event)" aria-labelledby="order-detail-title">
+  <header>
+    <div>
+      <h2 id="order-detail-title">
+        {{ data()?.order?.scheme === 'fbo' ? 'Информация по FBO-заказу' : 'Обработка заказа' }}
+      </h2>
+      <p>Отправление {{ posting() }} · локальный макет</p>
+    </div>
+    <button type="button" class="icon-button" aria-label="Закрыть отправление" (click)="close()">
+      <app-icon name="close" />
+    </button>
+  </header>
+  <div class="order-dialog-body">
+    @if (error()) {
+      <p class="editor-error" role="alert">{{ error() }}</p>
+      <button class="button" (click)="load()">Повторить загрузку</button>
+    }
+    @if (loading()) {
+      <p role="status">Открываем состав отправления…</p>
+    }
+    @if (data(); as detail) {
+      <dl class="order-facts">
+        <dt>Схема</dt>
+        <dd>{{ detail.order.scheme?.toUpperCase() || '—' }}</dd>
+        <dt>Статус</dt>
+        <dd>{{ status(detail.order.status, detail.order.scheme) }}</dd>
+        <dt>Создано</dt>
+        <dd>{{ date(detail.order.in_process_at) }}</dd>
+        <dt>Отгрузить до</dt>
+        <dd>{{ date(detail.order.shipment_date) }}</dd>
+        <dt>Сумма</dt>
+        <dd>{{ currency(detail.order.total_price, detail.order.currency) }}</dd>
+      </dl>
+      <h3>Состав</h3>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Товар</th>
+              <th class="numeric">Количество</th>
+              <th class="numeric">Цена позиции</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of detail.order.items; track $index) {
+              <tr>
+                <td>
+                  <strong [appProductName]="item">{{
+                    item.name || item.offer_id || 'Товар'
+                  }}</strong
+                  ><small>{{ item.offer_id }} · SKU {{ item.sku || '—' }}</small>
+                  @if (item.offer_id) {
+                    <a routerLink="/products/card" [queryParams]="{ offer_id: item.offer_id }"
+                      >Открыть карточку</a
+                    >
+                  }
+                </td>
+                <td class="numeric">{{ quantity(item.quantity) }}</td>
+                <td class="numeric">{{ currency(item.price, detail.order.currency) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <h3>Работа с отправлением</h3>
+      <p class="order-notice">{{ detail.notice }}</p>
+      @for (action of detail.actions; track action.code) {
+        <div class="order-action">
+          <div>
+            <strong>{{ action.label }}</strong>
+            <p>{{ action.description }}</p>
+          </div>
+          @if (action.code === 'prepare_for_shipment' && canPack()) {
+            <button class="button primary" type="button" [disabled]="saving()" (click)="prepare()">
+              {{ saving() ? 'Сохраняем макет…' : 'Подтвердить упаковку' }}
+            </button>
+          } @else {
+            <span class="status-pill">Только просмотр</span>
+          }
+        </div>
+      } @empty {
+        <p>Для текущего статуса ручных шагов нет.</p>
+      }
+    }
+  </div>
+</dialog>

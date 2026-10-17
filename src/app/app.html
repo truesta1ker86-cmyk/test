@@ -1,0 +1,232 @@
+@if (context.status() === 'ready') {
+  <div class="layout" [class.collapsed]="collapsed()" [class.menu-open]="mobileMenu()">
+    <aside class="sidebar" aria-label="Навигация">
+      <div class="sidebar-head">
+        <a class="logo" routerLink="/overview" aria-label="Ozon и 1С — рабочая панель">
+          <span class="logo-mark">O1</span>
+          <span class="logo-copy">Маркетплейс ↔ 1С<small>Рабочее пространство</small></span>
+        </a>
+        <button
+          class="icon-button collapse-button"
+          type="button"
+          (click)="collapsed.set(!collapsed())"
+          [attr.aria-expanded]="!collapsed()"
+          aria-label="Свернуть или развернуть меню"
+        >
+          <app-icon name="panel" />
+        </button>
+      </div>
+      <nav class="nav">
+        <a
+          routerLink="/overview"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Рабочая панель"
+          ><app-icon name="overview" /><span>Обзор</span></a
+        >
+        <a
+          routerLink="/orders"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Заказы"
+          ><app-icon name="products" /><span>Заказы</span></a
+        >
+        <a
+          routerLink="/returns"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Возвраты"
+          ><app-icon name="returns" /><span>Возвраты</span></a
+        >
+        <a
+          routerLink="/products"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Товары"
+          ><app-icon name="products" /><span>Товары</span></a
+        >
+        <a
+          routerLink="/mapping"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Сопоставление с 1С"
+          ><app-icon name="mapping" /><span>Сопоставление с 1С</span></a
+        >
+        <a
+          routerLink="/stocks"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Остатки и склады"
+          ><app-icon name="layers" /><span>Остатки и склады</span></a
+        >
+        @if (!collapsed()) {
+          <a
+            class="stock-subnav"
+            routerLink="/stocks"
+            [queryParams]="{ tab: 'reconciliation' }"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="mobileMenu.set(false)"
+            >Общий остаток</a
+          >
+          <a
+            class="stock-subnav"
+            routerLink="/stocks"
+            [queryParams]="{ tab: 'matrix' }"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="mobileMenu.set(false)"
+            >Распределение по складам</a
+          >
+        }
+        <span class="nav-label">Ценообразование</span>
+        <a
+          routerLink="/pricing"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{
+            paths: 'exact',
+            queryParams: 'ignored',
+            matrixParams: 'ignored',
+            fragment: 'ignored',
+          }"
+          (click)="mobileMenu.set(false)"
+          title="Расчёт цен"
+        >
+          <app-icon name="pricing" /><span>Расчёт цен</span>
+        </a>
+        <a
+          routerLink="/pricing/formula"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Формула и параметры"
+        >
+          <app-icon name="formula" /><span>Формула и параметры</span>
+        </a>
+        <a
+          routerLink="/promotions"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Акции"
+          ><app-icon name="pricing" /><span>Акции</span></a
+        >
+        <span class="nav-label">Отчёты и данные</span>
+        <a
+          routerLink="/finance"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Финансы"
+          ><app-icon name="overview" /><span>Финансы</span></a
+        >
+        <a
+          routerLink="/imports"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Импорт таблиц"
+          ><app-icon name="layers" /><span>Импорт Excel и CSV</span></a
+        >
+        <span class="nav-label">Рабочее пространство</span>
+        <a
+          routerLink="/account"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Настройки и доступ"
+          ><app-icon name="panel" /><span>Настройки и доступ</span></a
+        >
+        <span class="nav-label">Версии проекта</span>
+        <a
+          routerLink="/migration"
+          routerLinkActive="active"
+          (click)="mobileMenu.set(false)"
+          title="Этапы переноса"
+        >
+          <app-icon name="layers" /><span>Этапы переноса</span>
+        </a>
+      </nav>
+      <div class="sidebar-bottom">
+        @if (!context.databaseCopy()) {
+          <a href="/app" class="legacy-link" title="Открыть основную версию">
+            <app-icon name="arrow" /><span
+              >Основная версия<small>Все разделы и операции</small></span
+            >
+          </a>
+        }
+        <span class="sidebar-version">Версия 2 · изолированная копия</span>
+      </div>
+    </aside>
+    @if (mobileMenu()) {
+      <button
+        type="button"
+        class="menu-scrim"
+        aria-label="Закрыть меню"
+        (click)="mobileMenu.set(false)"
+      ></button>
+    }
+    <div class="main">
+      <header class="main-head">
+        <div class="head-leading">
+          <button
+            class="icon-button mobile-burger"
+            type="button"
+            aria-label="Открыть меню"
+            [attr.aria-expanded]="mobileMenu()"
+            (click)="mobileMenu.set(!mobileMenu())"
+          >
+            <app-icon name="menu" />
+          </button>
+          <span class="workspace-label">Ozon × 1С</span><span class="version-badge">Версия 2</span>
+        </div>
+        <div class="shop-context">
+          <span class="shop-dot" aria-hidden="true"></span>
+          <div>
+            <strong>{{ context.session()?.name }}</strong
+            ><small>{{ context.session()?.actor_name }}</small>
+          </div>
+          <a
+            routerLink="/account"
+            [queryParams]="{ tab: 'shops' }"
+            class="icon-button"
+            title="Магазины и настройки v2"
+            aria-label="Открыть управление магазинами"
+            ><app-icon name="arrow"
+          /></a>
+        </div>
+      </header>
+      <main id="main-content" class="page-content" appTableColumnHover appProductHoverPreview>
+        @if (context.databaseCopy()) {
+          <p class="database-copy-note" role="note">
+            Копия рабочей базы в Docker. Изменения сохраняются только в копии. Синхронизации, AI и
+            отправки отключены.
+          </p>
+        }
+        <router-outlet />
+      </main>
+    </div>
+  </div>
+} @else {
+  <main class="access-state" aria-live="polite">
+    <span class="logo-mark">O1</span>
+    @switch (context.status()) {
+      @case ('loading') {
+        <h1>Открываем рабочее пространство</h1>
+        <p>Проверяем ваш магазин и доступ.</p>
+      }
+      @case ('signed-out') {
+        <h1>Вход в версию 2</h1>
+        <p>Введите ключ доступа владельца или сотрудника.</p>
+        <app-login-panel (accepted)="context.accept($event)" />
+      }
+      @case ('changed') {
+        <h1>Магазин изменился</h1>
+        <p>Данные этой вкладки скрыты. Обновите страницу, чтобы продолжить в текущем магазине.</p>
+        <button class="button primary" type="button" (click)="reload()">Обновить страницу</button>
+      }
+      @case ('error') {
+        <h1>Не удалось открыть магазин</h1>
+        <p role="alert">{{ sessionError() }}</p>
+        <button class="button primary" type="button" (click)="loadSession()">
+          Повторить попытку
+        </button>
+      }
+    }
+  </main>
+}

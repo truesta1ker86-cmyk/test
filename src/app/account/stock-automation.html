@@ -1,0 +1,167 @@
+<section class="automation-panel" aria-labelledby="profile-stocks-title">
+  <header>
+    <h2 id="profile-stocks-title">Автоматические остатки</h2>
+    <p>Запуск после сохранения и проверки правил</p>
+  </header>
+  <div class="automation-body">
+    <div class="state-row">
+      <strong
+        class="state"
+        [class.running]="state().status === 'running'"
+        [class.stopped]="state().status === 'stopped'"
+      >
+        Макет:
+        {{
+          state().status === 'running'
+            ? 'запущен'
+            : state().status === 'stopped'
+              ? 'остановлен'
+              : 'выключен'
+        }}
+      </strong>
+      <span>Отправка в Ozon выключена</span>
+    </div>
+    @if (summary(); as stock) {
+      <dl>
+        <div>
+          <dt>Всего правил</dt>
+          <dd>{{ stock.rules_count }}</dd>
+        </div>
+        <div>
+          <dt>Включено</dt>
+          <dd>{{ stock.enabled_rules_count }}</dd>
+        </div>
+        <div>
+          <dt>Постоянный уровень</dt>
+          <dd>{{ stock.fixed_target_rules_count }}</dd>
+        </div>
+        <div>
+          <dt>Пауза между циклами</dt>
+          <dd>{{ stock.interval_seconds }} сек.</dd>
+        </div>
+      </dl>
+      <p class="hint">
+        Пауза начинается после завершения цикла; запросы занимают дополнительное время.
+      </p>
+      @if (!stock.enabled_rules_count) {
+        <p class="hint">Сначала сохраните включённые правила остатков.</p>
+      }
+    } @else {
+      <p class="hint">Снимок состояния автоматики пока не загружен.</p>
+    }
+    @if (state().status === 'running') {
+      <p class="mode">
+        Постоянный уровень: <strong>{{ state().fixed ? 'разрешён в макете' : 'выключен' }}</strong>
+      </p>
+    }
+    <p class="hint">
+      Это локальная проверка интерфейса. Фоновые циклы не выполняются. Состояние хранится отдельно
+      для каждого магазина до перезагрузки страницы.
+    </p>
+    @if (owner() && localPreview()) {
+      <div class="actions">
+        <button type="button" class="button primary" [disabled]="!canOpen()" (click)="open()">
+          Проверить и запустить
+        </button>
+        <button
+          type="button"
+          class="button stop"
+          [disabled]="state().status !== 'running'"
+          (click)="stop()"
+        >
+          Остановить
+        </button>
+        <button type="button" class="text-action" (click)="refreshState()">
+          Обновить состояние
+        </button>
+      </div>
+    } @else {
+      <p class="hint">
+        {{
+          !owner()
+            ? 'Режим может менять только владелец.'
+            : 'Управление доступно только в локальном макете.'
+        }}
+      </p>
+    }
+    @if (notice() && !opened()) {
+      <p class="notice" role="status">{{ notice() }}</p>
+    }
+    <div class="links">
+      <a routerLink="/stocks" [queryParams]="{ tab: 'matrix' }">Распределить остатки</a
+      ><a routerLink="/stocks" [queryParams]="{ tab: 'rules' }">Все правила</a>
+    </div>
+  </div>
+</section>
+@if (opened()) {
+  <dialog
+    #activationDialog
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="stock-activation-title"
+    class="automation-dialog"
+    appModalFocus
+    (modalEscape)="close()"
+    (cancel)="$event.preventDefault(); close()"
+  >
+    <header>
+      <div>
+        <h2 id="stock-activation-title">Запустить автоматические остатки</h2>
+        <p>Локальная имитация · без отправок</p>
+      </div>
+      <button
+        type="button"
+        class="text-action"
+        (click)="close()"
+        aria-label="Закрыть проверку запуска"
+      >
+        Закрыть
+      </button>
+    </header>
+    <p>
+      Будут отмечены как включённые в макете {{ summary()?.enabled_rules_count }} правил. Правил
+      постоянного уровня: {{ summary()?.fixed_target_rules_count }}. Товары без правил не
+      затрагиваются.
+    </p>
+    <p class="hint">
+      Реальные обращения к 1С и Ozon, запись в 1С и отправка остатков не выполняются.
+    </p>
+    <form (ngSubmit)="start()">
+      <label class="check"
+        ><input type="checkbox" name="saved" [(ngModel)]="saved" />
+        <span>Изменения правил сохранены</span></label
+      >
+      <label class="check"
+        ><input type="checkbox" name="reviewed" [(ngModel)]="reviewed" />
+        <span>Я проверил товары, склады и количества</span></label
+      >
+      <label class="check"
+        ><input type="checkbox" name="fixed" [(ngModel)]="fixed" />
+        <span
+          >Разрешаю постоянный уровень: восстанавливать заданное число после продаж, независимо от
+          физического остатка</span
+        ></label
+      >
+      @if (summary()?.fixed_target_rules_count) {
+        <p class="hint">
+          Подтверждение постоянного уровня обязательно: в сохранённых правилах есть этот режим.
+        </p>
+      }
+      <label class="confirmation"
+        >Для запуска введите ЗАПУСТИТЬ<input
+          name="confirmation"
+          [(ngModel)]="confirmation"
+          autocomplete="off"
+      /></label>
+      @if (notice()) {
+        <p class="notice" role="alert">{{ notice() }}</p>
+      }
+      <div class="actions">
+        <button type="button" class="button" (click)="close()">Отмена</button
+        ><button type="submit" class="button primary" [disabled]="!canStart()">
+          Запустить макет
+        </button>
+      </div>
+    </form>
+  </dialog>
+}

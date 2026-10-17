@@ -1,0 +1,99 @@
+<dialog
+  #dialog
+  class="catalog-dialog"
+  aria-labelledby="product-data-title"
+  (cancel)="close($event)"
+>
+  <div class="dialog-heading">
+    <div>
+      <span class="eyebrow">Данные товара · локальный снимок</span>
+      <h2 id="product-data-title" [appProductName]="data()?.product || null">
+        {{ data()?.product?.name || offer() }}
+      </h2>
+      <p>{{ offer() }} · период {{ days() }} дней</p>
+    </div>
+    <button class="icon-button" type="button" aria-label="Закрыть данные товара" (click)="close()">
+      <app-icon name="close" />
+    </button>
+  </div>
+  <div class="catalog-dialog-body">
+    @if (loading()) {
+      <p role="status">Загружаем данные товара…</p>
+    }
+    @if (error()) {
+      <p class="editor-error" role="alert">{{ error() }}</p>
+      <button type="button" class="button" (click)="load()">Повторить</button>
+    }
+    @if (data(); as item) {
+      <div class="product-facts">
+        @if (item.product.main_image) {
+          <img [src]="item.product.main_image" alt="Локальное изображение товара" />
+        }
+        <dl>
+          <dt>Бренд / категория</dt>
+          <dd>{{ item.product.brand || '—' }} · {{ item.product.category_name || '—' }}</dd>
+          <dt>Товар 1С</dt>
+          <dd>{{ item.product.onec_name || 'Связь не задана' }}</dd>
+          <dt>Код / артикул 1С</dt>
+          <dd>{{ item.product.onec_code || '—' }} / {{ item.product.sku_1c || '—' }}</dd>
+          <dt>Цена Ozon</dt>
+          <dd>{{ money(item.product.price) }}</dd>
+          <dt>Себестоимость</dt>
+          <dd>{{ money(item.product.package_cost) }} · {{ source(item.product.cost_source) }}</dd>
+        </dl>
+      </div>
+      <div class="sales-metrics">
+        <div>
+          <span>Доставлено</span><b>{{ item.total_units }} шт.</b>
+        </div>
+        <div>
+          <span>Выручка доставок</span><b>{{ money(item.total_revenue) }}</b>
+        </div>
+        <div>
+          <span>Средняя цена</span><b>{{ money(item.average_price) }}</b>
+        </div>
+      </div>
+      <p>
+        Как в v1: только доставленные заказы. Отмены и незавершённые отправления не учитываются;
+        возвраты отражаются в финрезультате отдельно.
+      </p>
+      <svg
+        class="sales-chart"
+        viewBox="0 0 600 170"
+        role="img"
+        aria-label="Доставленные продажи по дням"
+      >
+        <path d="M10 10V150H590" fill="none" stroke="#b9c3d2" />
+        <polyline [attr.points]="points()" fill="none" stroke="#005bff" stroke-width="3" />
+      </svg>
+      <table class="details-table">
+        <thead>
+          <tr>
+            <th>Дата доставки</th>
+            <th>Штук</th>
+            <th>Выручка</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (day of timeline(); track day.date) {
+            <tr>
+              <td>{{ day.date }}</td>
+              <td>{{ day.units }}</td>
+              <td>{{ money(day.revenue) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3">Доставок за этот период нет.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+  <footer class="dialog-footer">
+    <button class="button" type="button" (click)="close()">Закрыть</button
+    ><button class="button primary" type="button" (click)="edit.emit()">
+      Редактировать карточку
+    </button>
+  </footer>
+</dialog>

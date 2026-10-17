@@ -1,0 +1,62 @@
+:host {
+  display: block;
+}
+.section-note,
+.onec-empty {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+.onec-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+input,
+select {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  border: 1px solid #98a2b3;
+  border-radius: var(--control-radius);
+  padding: 8px 10px;
+  color: var(--text);
+  background: var(--surface);
+  font: inherit;
+}
+.onec-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+  margin: 0 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--control-radius);
+  background: var(--surface-2);
+}
+.onec-facts div {
+  min-width: 0;
+}
+dt {
+  color: var(--muted);
+  font-size: 10px;
+}
+dd {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .onec-fields,
+  .onec-facts {
+    grid-template-columns: 1fr;
+  }
+}
