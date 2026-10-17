@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { TableColumnHover, tableColumnRanges } from './table-column-hover';
+import { TableColumnHover, tableColumnRanges } from './table-column-hover.directive';
 @Component({
   imports: [TableColumnHover],
   template: `<main appTableColumnHover>

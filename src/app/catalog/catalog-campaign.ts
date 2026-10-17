@@ -14,13 +14,13 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ProductName } from '../shared/product-name';
-import { Icon } from '../shared/icon';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import {
-  FinanceColumnFilter,
-  FinanceColumnChange,
-  FinanceColumnRules,
-} from '../finance/finance-column-filter';
+  ColumnFilterComponent,
+  ColumnChange,
+  ColumnRules,
+} from '../shared/directives/filter-panel/filter-panel';
 import { PromotionsApi } from '../promotions/api';
 import {
   PromoWorkspace,
@@ -35,7 +35,7 @@ import { errorMessage } from '../core/api';
 
 @Component({
   selector: 'app-catalog-campaign',
-  imports: [FormsModule, ProductName, Icon, FinanceColumnFilter],
+  imports: [FormsModule, ProductName, Icon, ColumnFilterComponent],
   templateUrl: './catalog-campaign.html',
   styleUrls: ['./catalog-dialog.css', './catalog-campaign.css'],
 })
@@ -51,7 +51,7 @@ export class CatalogCampaign implements OnInit, AfterViewInit, OnDestroy {
   readonly selected = signal(new Set<string>());
   readonly query = signal('');
   readonly status = signal('');
-  readonly rules = signal<FinanceColumnRules>({});
+  readonly rules = signal<ColumnRules>({});
   readonly sorting = signal({ key: 'offer_id', desc: false });
   readonly now = signal(Date.now());
   readonly api = inject(PromotionsApi);
@@ -276,7 +276,7 @@ export class CatalogCampaign implements OnInit, AfterViewInit, OnDestroy {
         ? 'Правило категории'
         : 'Не назначена';
   }
-  columnChanged(e: FinanceColumnChange) {
+  columnChanged(e: ColumnChange) {
     this.rules.update((r) => {
       const n = { ...r };
       e.rule ? (n[e.field] = e.rule) : delete n[e.field];

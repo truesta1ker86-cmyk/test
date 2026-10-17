@@ -4,9 +4,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Api, errorMessage } from './core/api';
 import { SessionContext } from './core/session-context';
 import { LoginPanel } from './account/login-panel';
-import { Icon } from './shared/icon';
-import { TableColumnHover } from './shared/table-column-hover';
-import { ProductHoverPreview } from './shared/product-hover-preview';
+import { Icon } from './shared/icons-sprite/icons-sprite/icons-sprite.component';
+import { TableColumnHover } from './shared/data-table/directives/table-column-hover.directive';
+import { ProductHoverPreview } from './shared/product-preview/directives/product-hover-preview.directive';
 
 @Component({
   imports: [

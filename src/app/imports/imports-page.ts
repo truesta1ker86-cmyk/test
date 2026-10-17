@@ -1,7 +1,7 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { ProductName } from '../shared/product-name';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { errorMessage, downloadErrorMessage } from '../core/api';

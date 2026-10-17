@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ProductName, ProductPreviewData } from './product-name';
-import { ProductHoverPreview } from './product-hover-preview';
+import { ProductName, ProductPreviewData } from './product-name.directive';
+import { ProductHoverPreview } from './product-hover-preview.directive';
 @Component({
   imports: [ProductName, ProductHoverPreview],
   template: `<main appProductHoverPreview>

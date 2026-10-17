@@ -9,14 +9,14 @@ import { CatalogCampaign } from '../catalog/catalog-campaign';
 import { errorMessage } from '../core/api';
 import { date } from '../core/format';
 import { currency } from '../workspace/format';
-import { Icon } from '../shared/icon';
-import { ProductName } from '../shared/product-name';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
 import { StockChoiceFilter } from '../stocks/stock-choice';
 import {
-  FinanceColumnFilter,
-  FinanceColumnChange,
-  FinanceColumnRules,
-} from '../finance/finance-column-filter';
+  ColumnFilterComponent,
+  ColumnChange,
+  ColumnRules,
+} from '../shared/directives/filter-panel/filter-panel';
 import { PromotionsApi } from './api';
 import {
   CategoryRule,
@@ -64,7 +64,7 @@ interface Filter {
     ProductName,
     Icon,
     StockChoiceFilter,
-    FinanceColumnFilter,
+    ColumnFilterComponent,
     CatalogCampaign,
     PromotionModelEditor,
   ],
@@ -99,7 +99,7 @@ export class PromotionsPage {
     participating: 'all',
     models: [],
   });
-  readonly columnState = signal<Record<string, FinanceColumnRules>>({});
+  readonly columnState = signal<Record<string, ColumnRules>>({});
   readonly sorting = signal({ key: '', desc: false });
   readonly columnRules = computed(() => this.columnState()[this.tab()] || {});
   readonly canWrite = computed(
@@ -364,7 +364,7 @@ export class PromotionsPage {
       decision: (this.decisions[r.decision] || r.decision) + ' ' + r.reason,
     };
   }
-  columnChanged(e: FinanceColumnChange) {
+  columnChanged(e: ColumnChange) {
     const rules = { ...this.columnRules() };
     e.rule ? (rules[e.field] = e.rule) : delete rules[e.field];
     this.columnState.update((s) => ({ ...s, [this.tab()]: rules }));

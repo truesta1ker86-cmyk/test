@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ModalFocus } from '../shared/modal-focus';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
 import { Account } from './contracts';
 import { LocalStockAutomation } from './local-stock-automation';
 

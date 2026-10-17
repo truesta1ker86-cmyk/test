@@ -3,13 +3,13 @@ import { RouterLink } from '@angular/router';
 import { CatalogRow, ActionKind } from './contracts';
 import { money, percent, source } from '../core/format';
 import {
-  FinanceColumnFilter,
-  FinanceColumnChange,
-  FinanceColumnRules,
-} from '../finance/finance-column-filter';
+  ColumnFilterComponent,
+  ColumnChange,
+  ColumnRules,
+} from '../shared/directives/filter-panel/filter-panel';
 @Component({
   selector: 'app-catalog-product-grid',
-  imports: [RouterLink, FinanceColumnFilter],
+  imports: [RouterLink, ColumnFilterComponent],
   templateUrl: './catalog-product-grid.html',
   styleUrls: [
     '../pricing/pricing-workflow.css',
@@ -25,12 +25,12 @@ export class CatalogProductGrid {
   readonly loading = input(false);
   readonly sort = input('offer_id');
   readonly direction = input('asc');
-  readonly columnRules = input<FinanceColumnRules>({});
+  readonly columnRules = input<ColumnRules>({});
   readonly columnOptions = input<Record<string, string[]>>({});
   readonly toggled = output<string>();
   readonly filteredSelected = output<boolean>();
   readonly sorted = output<string>();
-  readonly columnChanged = output<FinanceColumnChange>();
+  readonly columnChanged = output<ColumnChange>();
   readonly edited = output<{ kind: ActionKind; row: CatalogRow; field?: string }>();
   readonly card = output<CatalogRow>();
   readonly details = output<CatalogRow>();

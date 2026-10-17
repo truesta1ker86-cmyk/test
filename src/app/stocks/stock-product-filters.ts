@@ -9,8 +9,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ModalFocus } from '../shared/modal-focus';
-import { Icon } from '../shared/icon';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import { stockFacetFields } from './filter-state';
 import { StockChoice, StockChoiceFilter } from './stock-choice';
 

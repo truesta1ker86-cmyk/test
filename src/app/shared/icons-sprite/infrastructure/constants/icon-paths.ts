@@ -1,6 +1,4 @@
-import { Component, input } from '@angular/core';
-
-const paths = {
+export const iconPaths = {
   printer:
     'M6 9V3h12v6 M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2 M6 14h12v7H6z M18 12h1',
   shield: 'M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3z',
@@ -26,35 +24,4 @@ const paths = {
   save: 'M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8',
 } as const;
 
-@Component({
-  selector: 'app-icon',
-  template: `<svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    [attr.stroke-width]="['filter', 'refresh', 'save'].includes(name()) ? 1.5 : 1.7"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-  >
-    <path [attr.d]="path()" />
-  </svg>`,
-  styles: `
-    :host {
-      display: inline-flex;
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-    }
-    svg {
-      width: 100%;
-      height: 100%;
-    }
-  `,
-})
-export class Icon {
-  readonly name = input<keyof typeof paths>('arrow');
-  path(): string {
-    return paths[this.name()];
-  }
-}
+export type IconName = keyof typeof iconPaths;

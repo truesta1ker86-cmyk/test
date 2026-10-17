@@ -12,7 +12,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Api, errorMessage } from '../core/api';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import { EditorConfig } from './editor-contracts';
 import { SessionContext } from '../core/session-context';
 import { EditorDrafts } from './editor-drafts';

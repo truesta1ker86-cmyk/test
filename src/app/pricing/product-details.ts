@@ -1,4 +1,4 @@
-import { ProductName } from '../shared/product-name';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
 import {
   AfterViewInit,
   Component,
@@ -15,7 +15,7 @@ import { Api, errorMessage } from '../core/api';
 import { Calculation, PricingRow, PricingSalesSnapshot } from '../core/contracts';
 import { date, money, percent, source } from '../core/format';
 import { PricingCalculationTrace } from './calculation-trace';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 
 @Component({
   selector: 'app-product-details',

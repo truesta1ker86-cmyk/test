@@ -13,8 +13,8 @@ import {
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Api, errorMessage } from '../core/api';
-import { ModalFocus } from '../shared/modal-focus';
-import { Icon } from '../shared/icon';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import { StockChoiceFilter } from '../stocks/stock-choice';
 import { PricingQuery, parsePricingQuery, pricingFacetFields, facetValues } from './pricing-query';
 import { editorFields } from './editor-fields';

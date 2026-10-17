@@ -1,14 +1,17 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import {
-  FinanceColumnFilter,
-  FinanceColumnChange,
-  FinanceColumnRules,
-} from './finance-column-filter';
+  ColumnFilterComponent,
+  ColumnChange,
+  ColumnRules,
+} from '../shared/directives/filter-panel/filter-panel';
 import { RouterLink } from '@angular/router';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import { currency, quantity } from '../workspace/format';
-import { ProductName, ProductPreviewData } from '../shared/product-name';
+import {
+  ProductName,
+  ProductPreviewData,
+} from '../shared/product-preview/directives/product-name.directive';
 export interface Column {
   group?: string;
   groupLabel?: string;
@@ -32,7 +35,7 @@ export interface ReportRow {
 }
 @Component({
   selector: 'app-report-table',
-  imports: [RouterLink, Icon, NgTemplateOutlet, FinanceColumnFilter, ProductName],
+  imports: [RouterLink, Icon, NgTemplateOutlet, ColumnFilterComponent, ProductName],
   templateUrl: './report-table.html',
   styles: `
     :host {
@@ -192,9 +195,9 @@ export interface ReportRow {
   `,
 })
 export class ReportTable {
-  readonly columnRules = input<FinanceColumnRules>({});
+  readonly columnRules = input<ColumnRules>({});
   readonly columnOptions = input<Record<string, string[]>>({});
-  readonly columnChanged = output<FinanceColumnChange>();
+  readonly columnChanged = output<ColumnChange>();
   readonly columns = input.required<Column[]>();
   readonly rows = input.required<ReportRow[]>();
   readonly label = input('Товар / статья');

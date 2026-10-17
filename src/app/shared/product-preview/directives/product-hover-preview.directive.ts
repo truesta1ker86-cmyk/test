@@ -1,5 +1,5 @@
 import { Directive, ElementRef, HostListener, inject, OnDestroy, Renderer2 } from '@angular/core';
-import { SessionContext } from '../core/session-context';
+import { SessionContext } from '../../../core/session-context';
 
 /** Uses rendered metadata only. Public CDN photos are opt-in for the database copy. */
 export function localProductImage(raw: string | null, databaseCopy = false): string | null {

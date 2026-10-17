@@ -1,4 +1,4 @@
-import { ProductName } from '../shared/product-name';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
 import { Component, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';

@@ -4,7 +4,10 @@ import { StockAllocation } from './stock-allocation';
 import { StockDrafts } from './stock-drafts';
 import type { MatrixCell } from './contracts';
 import { estimateCell } from './matrix-state';
-import { ProductHoverPreview, localProductImage } from '../shared/product-hover-preview';
+import {
+  ProductHoverPreview,
+  localProductImage,
+} from '../shared/product-preview/directives/product-hover-preview.directive';
 describe('Warehouse allocation editing', () => {
   it('does not resurrect drafts when bulk fill is cancelled between animation frames', async () => {
     const { fixture, component } = setup();

@@ -12,7 +12,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Api, errorMessage } from '../core/api';
-import { ModalFocus } from '../shared/modal-focus';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
 import { PricingQuery, pricingScopeFilters } from './pricing-query';
 export interface PriceColumnFilter {
   values: string[];

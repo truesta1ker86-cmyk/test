@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ProductHoverPreview, localProductImage } from './product-hover-preview';
-import { TableColumnHover } from './table-column-hover';
+import { ProductHoverPreview, localProductImage } from './product-hover-preview.directive';
+import { TableColumnHover } from '../../data-table/directives/table-column-hover.directive';
 @Component({
   imports: [ProductHoverPreview, TableColumnHover],
   template: `<main appProductHoverPreview appTableColumnHover>

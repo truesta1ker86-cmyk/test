@@ -1,6 +1,6 @@
-import { FinanceColumnRules } from '../finance/finance-column-filter';
+import { ColumnRules } from '../shared/directives/filter-panel/filter-panel';
 export type TableValues = Record<string, string | number | null | undefined>;
-export function matchesColumns(values: TableValues, rules: FinanceColumnRules) {
+export function matchesColumns(values: TableValues, rules: ColumnRules) {
   return Object.entries(rules).every(([key, rule]) => {
     const v = values[key],
       text = v == null ? '' : String(v);

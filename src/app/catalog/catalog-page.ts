@@ -7,7 +7,7 @@ import { CatalogApi } from './api';
 import { MappingWorkspace } from './mapping-workspace';
 import { MappingMore } from './mapping-more';
 import { MappingModal } from './mapping-modal';
-import { ModalFocus } from '../shared/modal-focus';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
 import { mappingReasons } from './mapping-logic';
 import {
   ActionKind,
@@ -27,8 +27,8 @@ import { CatalogActions } from './catalog-actions';
 import { AttributeBulk } from '../cards/attribute-bulk';
 import { StockChoiceFilter } from '../stocks/stock-choice';
 import { StockDrafts } from '../stocks/stock-drafts';
-import { FinanceColumnChange, FinanceColumnRules } from '../finance/finance-column-filter';
-import { Icon } from '../shared/icon';
+import { ColumnChange, ColumnRules } from '../shared/directives/filter-panel/filter-panel';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import { CatalogProductGrid } from './catalog-product-grid';
 import { CatalogProductDetails } from './product-details';
 import { CatalogCampaign } from './catalog-campaign';
@@ -95,7 +95,7 @@ export class CatalogPageComponent {
     () =>
       !!this.filteredIds()?.length && this.filteredIds()!.every((id) => this.selected().has(id)),
   );
-  readonly columnRules = computed<FinanceColumnRules>(() => {
+  readonly columnRules = computed<ColumnRules>(() => {
     try {
       return JSON.parse(this.query().column_filters || '{}');
     } catch {
@@ -329,7 +329,7 @@ export class CatalogPageComponent {
   setFacet(key: string, values: string[]) {
     this.form.controls[key].setValue(values.length ? JSON.stringify(values) : '');
   }
-  columnChanged(change: FinanceColumnChange) {
+  columnChanged(change: ColumnChange) {
     const columns = { ...this.columnRules() };
     if (change.rule) columns[change.field] = change.rule;
     else delete columns[change.field];

@@ -177,7 +177,7 @@ describe('v1 orders and returns', () => {
     expect(root.querySelectorAll('[role=tab]').length).toBe(2);
     expect(root.querySelector('.list-total')?.textContent).toContain('3 из 3');
     expect(root.querySelectorAll('thead th').length).toBe(8);
-    expect(root.querySelectorAll('app-finance-column-filter').length).toBe(6);
+    expect(root.querySelectorAll('app-column-filter').length).toBe(6);
     expect(root.textContent).toContain('Собрать заказ');
     expect(root.textContent).not.toContain('Отгрузить до');
     expect(

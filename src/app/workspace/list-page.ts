@@ -1,4 +1,4 @@
-import { ProductName } from '../shared/product-name';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -20,12 +20,12 @@ import { OrderDetails } from './order-detail';
 import { date } from '../core/format';
 import { errorMessage, downloadErrorMessage } from '../core/api';
 import { currency, quantity, status, download } from './format';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import {
-  FinanceColumnFilter,
-  FinanceColumnChange,
-  FinanceColumnRules,
-} from '../finance/finance-column-filter';
+  ColumnFilterComponent,
+  ColumnChange,
+  ColumnRules,
+} from '../shared/directives/filter-panel/filter-panel';
 import {
   canLabel,
   completedStatuses,
@@ -36,7 +36,14 @@ import {
 
 @Component({
   selector: 'app-operational-list',
-  imports: [RouterLink, ReactiveFormsModule, OrderDetails, ProductName, Icon, FinanceColumnFilter],
+  imports: [
+    RouterLink,
+    ReactiveFormsModule,
+    OrderDetails,
+    ProductName,
+    Icon,
+    ColumnFilterComponent,
+  ],
   templateUrl: './list-page.html',
   styleUrl: './list-page.css',
 })
@@ -95,7 +102,7 @@ export class OperationalList {
       ].map((k) => [k, new FormControl('', { nonNullable: true })]),
     ),
   );
-  readonly columnRules = computed<FinanceColumnRules>(() => {
+  readonly columnRules = computed<ColumnRules>(() => {
     try {
       const v = JSON.parse(this.query().column_filters || '{}');
       return v && typeof v === 'object' && !Array.isArray(v) ? v : {};
@@ -255,7 +262,7 @@ export class OperationalList {
       .querySelector<HTMLButtonElement>('[data-lifecycle="' + value + '"]')
       ?.focus();
   }
-  columnChanged(change: FinanceColumnChange) {
+  columnChanged(change: ColumnChange) {
     const rules = { ...this.columnRules() };
     if (change.rule) rules[change.field] = change.rule;
     else delete rules[change.field];

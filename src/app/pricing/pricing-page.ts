@@ -33,7 +33,7 @@ import { editorFields, editorValue, displayInput } from './editor-fields';
 import { EditorDrafts } from './editor-drafts';
 import { SessionContext } from '../core/session-context';
 import { PriceColumnChange, priceColumns } from './pricing-column-filter';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 
 @Component({
   selector: 'app-pricing-page',

@@ -3,7 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Api, errorMessage } from '../core/api';
 import { BulkEditor } from './bulk-editor';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import { editorValue } from './editor-fields';
 @Component({
   selector: 'app-margin-rules',

@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { CatalogProductGrid } from './catalog-product-grid';
-import { ProductHoverPreview } from '../shared/product-hover-preview';
+import { ProductHoverPreview } from '../shared/product-preview/directives/product-hover-preview.directive';
 @Component({
   imports: [CatalogProductGrid, ProductHoverPreview],
   template: `<main appProductHoverPreview>

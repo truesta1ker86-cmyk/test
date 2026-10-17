@@ -58,7 +58,7 @@
             <div class="finance-column-heading">
               <button type="button" (click)="sort(c[0])">
                 {{ c[1] }} {{ sortKey() === c[0] ? (descending() ? '↓' : '↑') : '' }}</button
-              ><app-finance-column-filter
+              ><app-column-filter
                 [field]="c[0]"
                 [label]="c[1]"
                 [numeric]="!['report_category', 'report_type', 'product_name'].includes(c[0])"

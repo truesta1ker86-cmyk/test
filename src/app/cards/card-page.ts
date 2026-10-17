@@ -1,4 +1,4 @@
-import { ProductName } from '../shared/product-name';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
 import {
   Component,
   DestroyRef,

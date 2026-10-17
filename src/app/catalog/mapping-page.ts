@@ -5,9 +5,9 @@ import { MappingConnection } from './mapping-connection';
 import { MappingWorkspace } from './mapping-workspace';
 import { MappingMore } from './mapping-more';
 import { MappingModal } from './mapping-modal';
-import { ModalFocus } from '../shared/modal-focus';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
 import { StockChoiceFilter } from '../stocks/stock-choice';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import { CatalogProductDetails } from './product-details';
 
 /** The v1 mapping screen has its own layout; catalog query and operation logic is shared. */

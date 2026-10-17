@@ -8,7 +8,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { ModalFocus } from '../shared/modal-focus';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
 import type { StockWarehouse } from './contracts';
 
 @Component({

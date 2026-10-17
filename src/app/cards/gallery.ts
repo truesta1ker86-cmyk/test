@@ -3,7 +3,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CardsApi } from './api';
 import { MediaItem } from './contracts';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import { errorMessage } from '../core/api';
 @Component({
   selector: 'app-card-gallery',

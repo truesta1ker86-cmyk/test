@@ -1,4 +1,4 @@
-import { ModalFocus } from '../shared/modal-focus';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -6,14 +6,18 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, combineLatest, catchError, map, of, switchMap, tap } from 'rxjs';
 import { Column, ReportRow, ReportTable } from './report-table';
-import { ProductPreviewData } from '../shared/product-name';
+import { ProductPreviewData } from '../shared/product-preview/directives/product-name.directive';
 import { errorMessage, downloadErrorMessage } from '../core/api';
 import { date } from '../core/format';
 import { currency, download } from '../workspace/format';
-import { FinanceColumnChange, FinanceColumnRule, financeRules } from './finance-column-filter';
+import {
+  ColumnChange,
+  ColumnRule,
+  parseColumnRules,
+} from '../shared/directives/filter-panel/filter-panel';
 import { FinanceCellSelection, FinanceSelectionStats } from './finance-cell-selection';
 import { StockChoiceFilter } from '../stocks/stock-choice';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import { ProfitSummary } from './profit-summary';
 type Entry = Record<string, unknown>;
 interface FinanceData {
@@ -93,7 +97,7 @@ export class FinancePage {
     );
   }
   readonly columnRules = computed(
-    () => financeRules(this.query().column_filters)[this.view()] || {},
+    () => parseColumnRules(this.query().column_filters)[this.view()] || {},
   );
   readonly columnOptions = computed(
     () => (this.data()?.report['_column_options'] || {}) as Record<string, string[]>,
@@ -185,8 +189,8 @@ export class FinancePage {
     this.product = '';
     this.navigate();
   }
-  changeColumn(change: FinanceColumnChange) {
-    const filters = financeRules(this.query().column_filters),
+  changeColumn(change: ColumnChange) {
+    const filters = parseColumnRules(this.query().column_filters),
       view = { ...(filters[this.view()] || {}) };
     if (change.rule) view[change.field] = change.rule;
     else delete view[change.field];
@@ -202,7 +206,7 @@ export class FinancePage {
     this.q = '';
     this.operationType = '';
     this.facets = '{}';
-    const filters = financeRules(this.columnsFilter);
+    const filters = parseColumnRules(this.columnsFilter);
     delete filters[this.view()];
     this.columnsFilter = JSON.stringify(filters);
     this.navigate();

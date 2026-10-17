@@ -7,14 +7,14 @@ import { SessionContext } from '../core/session-context';
 import { errorMessage } from '../core/api';
 import { money, date } from '../core/format';
 import {
-  FinanceColumnFilter,
-  FinanceColumnRules,
-  FinanceColumnChange,
-} from '../finance/finance-column-filter';
-import { ModalFocus } from '../shared/modal-focus';
-import { ProductName } from '../shared/product-name';
+  ColumnFilterComponent,
+  ColumnRules,
+  ColumnChange,
+} from '../shared/directives/filter-panel/filter-panel';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
 import { MappingModal } from './mapping-modal';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import {
   MappingCandidate,
   MappingComparison,
@@ -30,7 +30,7 @@ import {
 
 @Component({
   selector: 'app-mapping-workspace',
-  imports: [FormsModule, FinanceColumnFilter, ModalFocus, MappingModal, Icon, ProductName],
+  imports: [FormsModule, ColumnFilterComponent, ModalFocus, MappingModal, Icon, ProductName],
   templateUrl: './mapping-workspace.html',
   styleUrls: [
     '../pricing/pricing-workflow.css',
@@ -48,11 +48,11 @@ export class MappingWorkspace {
   readonly allSelected = input(false);
   readonly canManage = input(false);
   readonly loading = input(false);
-  readonly columnRules = input<FinanceColumnRules>({});
+  readonly columnRules = input<ColumnRules>({});
   readonly columnOptions = input<Record<string, string[]>>({});
   readonly toggled = output<string>();
   readonly filteredSelected = output<boolean>();
-  readonly columnChanged = output<FinanceColumnChange>();
+  readonly columnChanged = output<ColumnChange>();
   readonly sorted = output<string>();
   readonly details = output<CatalogRow>();
   readonly card = output<CatalogRow>();

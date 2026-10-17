@@ -1,6 +1,6 @@
-@import './app/shared/workspace.css';
-@import './app/shared/table-column-hover.css';
-@import './app/shared/product-hover-preview.css';
+@import './app/shared/page/styles/workspace.css';
+@import './app/shared/data-table/styles/table-column-hover.css';
+@import './app/shared/product-preview/styles/product-hover-preview.css';
 :root {
   --bg: #fafafb;
   --surface: #fff;

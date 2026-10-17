@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Onec } from '../account/contracts';
 import { CatalogApi } from './api';
 import { errorMessage } from '../core/api';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 
 @Component({
   selector: 'app-mapping-connection',

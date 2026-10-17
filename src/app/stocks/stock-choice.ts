@@ -11,7 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ModalFocus } from '../shared/modal-focus';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
 export type StockChoice = { value: string; label: string };
 @Component({
   selector: 'app-stock-choice',

@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { FinanceColumnFilter, financeRules } from './finance-column-filter';
+import { ColumnFilterComponent, parseColumnRules } from '../../filter-panel';
 describe('Financial column selection', () => {
   function setup() {
-    const fixture = TestBed.createComponent(FinanceColumnFilter);
+    const fixture = TestBed.createComponent(ColumnFilterComponent);
     fixture.componentRef.setInput('field', 'cost');
     fixture.componentRef.setInput('label', 'Себестоимость');
     fixture.componentRef.setInput('options', ['100', '300']);
@@ -40,7 +40,7 @@ describe('Financial column selection', () => {
     expect(component.error()).toContain('диапазон');
   });
   it('keeps a malformed URL from crashing the table', () => {
-    expect(financeRules('{')).toEqual({});
-    expect(financeRules('null')).toEqual({});
+    expect(parseColumnRules('{')).toEqual({});
+    expect(parseColumnRules('null')).toEqual({});
   });
 });

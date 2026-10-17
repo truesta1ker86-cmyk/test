@@ -16,7 +16,7 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Api, errorMessage } from '../core/api';
 import { BulkPreview, Scope } from './editor-contracts';
 import { editorFields, editorValue } from './editor-fields';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 import { date } from '../core/format';
 @Component({
   selector: 'app-bulk-editor',

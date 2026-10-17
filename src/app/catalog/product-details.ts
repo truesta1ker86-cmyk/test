@@ -1,4 +1,4 @@
-import { ProductName } from '../shared/product-name';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
 import {
   AfterViewInit,
   Component,
@@ -16,7 +16,7 @@ import { CatalogApi } from './api';
 import { ProductDetailsData } from './contracts';
 import { money, source } from '../core/format';
 import { errorMessage } from '../core/api';
-import { Icon } from '../shared/icon';
+import { Icon } from '../shared/icons-sprite/icons-sprite/icons-sprite.component';
 @Component({
   selector: 'app-catalog-product-details',
   imports: [ProductName, Icon],

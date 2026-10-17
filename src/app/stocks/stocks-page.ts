@@ -1,5 +1,5 @@
-import { ProductName } from '../shared/product-name';
-import { ModalFocus } from '../shared/modal-focus';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
+import { ModalFocus } from '../shared/directives/modal-focus/modal-focus.directive';
 import {
   Component,
   computed,
@@ -36,7 +36,7 @@ import { changedCell, shareToPercentage } from './matrix-state';
 import { StockAllocation } from './stock-allocation';
 import { normalizedRule } from './rule-input';
 import { StockDrafts } from './stock-drafts';
-import { AnimatedCount } from '../shared/animated-count';
+import { AnimatedCount } from '../shared/ui/animated-count/components/animated-count/animated-count.component';
 import { expectedItems } from './expected-receipts';
 import {
   stockFacetFields,

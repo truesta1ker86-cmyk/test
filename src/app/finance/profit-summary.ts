@@ -2,12 +2,12 @@ import { Component, computed, effect, input, output, signal } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { currency } from '../workspace/format';
 import {
-  FinanceColumnFilter,
-  FinanceColumnChange,
-  FinanceColumnRules,
-} from './finance-column-filter';
+  ColumnFilterComponent,
+  ColumnChange,
+  ColumnRules,
+} from '../shared/directives/filter-panel/filter-panel';
 import { date } from '../core/format';
-import { ProductName } from '../shared/product-name';
+import { ProductName } from '../shared/product-preview/directives/product-name.directive';
 
 export type ProfitItem = Record<string, unknown>;
 const number = (value: unknown): number => (Number.isFinite(Number(value)) ? Number(value) : 0);
@@ -15,7 +15,7 @@ const text = (value: unknown): string => (value == null ? '' : String(value));
 
 @Component({
   selector: 'app-profit-summary',
-  imports: [FormsModule, FinanceColumnFilter, ProductName],
+  imports: [FormsModule, ColumnFilterComponent, ProductName],
   templateUrl: './profit-summary.html',
   styleUrl: './profit-summary.css',
 })
@@ -23,9 +23,9 @@ export class ProfitSummary {
   readonly report = input.required<Record<string, unknown>>();
   readonly query = input('');
   readonly externalFilters = input(false);
-  readonly columnRules = input<FinanceColumnRules>({});
+  readonly columnRules = input<ColumnRules>({});
   readonly columnOptions = input<Record<string, string[]>>({});
-  readonly columnChanged = output<FinanceColumnChange>();
+  readonly columnChanged = output<ColumnChange>();
   readonly category = signal('');
   readonly productType = signal('');
   readonly expanded = signal(new Set<ProfitItem>());
