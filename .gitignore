@@ -61,3 +61,4 @@ Thumbs.db
 /logs/
 __pycache__/
 *.py[cod]
+/dev-api-access.json
