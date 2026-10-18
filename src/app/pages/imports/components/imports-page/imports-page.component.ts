@@ -31,7 +31,10 @@ import type {
   selector: 'app-imports-page',
 
   templateUrl: './imports-page.component.html',
-  styleUrl: '../../../stocks/components/stocks-page/stocks-page.component.css',
+  styleUrls: [
+    '../../../stocks/components/stocks-page/stocks-page.component.css',
+    './imports-page.component.css',
+  ],
 })
 export class ImportsPage {
   tableColumns7(): DataTableColumn[] {

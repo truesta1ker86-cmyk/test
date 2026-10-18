@@ -34,7 +34,7 @@ import { key } from './infrastructure/utils/stock-allocation.utils';
   selector: 'app-allocation-matrix',
 
   templateUrl: './allocation-matrix.component.html',
-  styleUrl: './allocation-matrix.component.css',
+  styleUrls: ['./allocation-matrix.component.css', './allocation-matrix.tables.css'],
 })
 export class AllocationMatrixComponent {
   readonly visibleTableSelection = selectionComputed(() =>

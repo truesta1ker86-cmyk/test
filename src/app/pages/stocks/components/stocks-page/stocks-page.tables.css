@@ -1,0 +1,18 @@
+:host(app-stocks-page) ::ng-deep app-data-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+:host(app-stocks-page) ::ng-deep app-data-table th {
+  background: var(--surface-2);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+:host(app-stocks-page) ::ng-deep app-data-table :is(th, td) {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}

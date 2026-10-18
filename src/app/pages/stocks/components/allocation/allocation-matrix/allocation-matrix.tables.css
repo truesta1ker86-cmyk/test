@@ -1,0 +1,9 @@
+:host(app-allocation-matrix) ::ng-deep app-data-table :is(th, td) {
+  padding: 8px 10px;
+  text-align: left;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  font-size: 11px;
+  line-height: 1.35;
+}

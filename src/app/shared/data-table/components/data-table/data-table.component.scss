@@ -120,7 +120,6 @@
   [data-o1c-cell-content] {
     display: contents;
   }
-  [data-o1c-cell-content][data-finance-value],
   [data-o1c-cell-content].text-cell {
     display: block;
   }
@@ -146,44 +145,4 @@
   .p-datatable-table-container {
     overflow: visible;
   }
-}
-
-:host-context(app-stocks-page) ::ng-deep table,
-:host-context(app-imports-page) ::ng-deep table,
-:host-context(app-account-page) ::ng-deep table,
-:host-context(app-finance-page) ::ng-deep table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-:host-context(app-stocks-page) ::ng-deep th,
-:host-context(app-imports-page) ::ng-deep th,
-:host-context(app-account-page) ::ng-deep th,
-:host-context(app-finance-page) ::ng-deep th {
-  background: var(--surface-2);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-2);
-  white-space: nowrap;
-}
-
-:host-context(app-stocks-page) ::ng-deep :is(th, td),
-:host-context(app-imports-page) ::ng-deep :is(th, td),
-:host-context(app-account-page) ::ng-deep :is(th, td),
-:host-context(app-finance-page) ::ng-deep :is(th, td) {
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-
-:host-context(app-allocation-matrix) ::ng-deep :is(th, td) {
-  padding: 8px 10px;
-  text-align: left;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-  font-size: 11px;
-  line-height: 1.35;
 }

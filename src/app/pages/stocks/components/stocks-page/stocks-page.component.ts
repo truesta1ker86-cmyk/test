@@ -71,7 +71,11 @@ import type { StockTextFilterChange } from '../inventory/inventory-filter/infras
   selector: 'app-stocks-page',
 
   templateUrl: './stocks-page.component.html',
-  styleUrls: ['./stocks-page.component.css', '../../infrastructure/styles/stock-workflow.css'],
+  styleUrls: [
+    './stocks-page.component.css',
+    '../../infrastructure/styles/stock-workflow.css',
+    './stocks-page.tables.css',
+  ],
 })
 export class StocksPage {
   tableColumns10(): DataTableColumn[] {
