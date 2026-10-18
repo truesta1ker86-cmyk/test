@@ -1,0 +1,53 @@
+:host {
+  display: block;
+}
+
+.skeleton-table {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  gap: 12px;
+}
+
+.skeleton-table__head,
+.skeleton-table__row {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
+  gap: 14px;
+  align-items: center;
+}
+
+.skeleton-table__head {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.skeleton-table__row {
+  padding: 6px 0;
+}
+
+:host ::ng-deep .p-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 0%,
+    var(--surface-3) 50%,
+    var(--surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host ::ng-deep .p-skeleton {
+    animation: none;
+  }
+}

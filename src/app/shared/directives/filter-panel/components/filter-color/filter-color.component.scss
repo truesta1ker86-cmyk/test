@@ -1,0 +1,90 @@
+.filter-control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+
+  .filter-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 2px;
+
+    .required {
+      color: #d32f2f;
+      margin-left: 2px;
+    }
+  }
+
+  .color-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+
+    :deep(.p-colorpicker) {
+      width: 100%;
+
+      .p-colorpicker-preview {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        border: 2px solid #d0d0d0;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+
+    .color-preview {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      border: 2px solid #d0d0d0;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .color-hex {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+      font-family: 'Courier New', monospace;
+      padding: 4px 8px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      min-width: 70px;
+      text-align: center;
+    }
+  }
+
+  .p-error {
+    color: #f44336;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  &.has-error {
+    :deep(.p-colorpicker-preview) {
+      border-color: #f44336 !important;
+    }
+
+    .color-preview {
+      border-color: #f44336 !important;
+    }
+  }
+
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    :deep(.p-colorpicker-preview) {
+      cursor: not-allowed;
+    }
+  }
+}

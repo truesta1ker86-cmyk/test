@@ -1,0 +1,88 @@
+<app-icons-sprite></app-icons-sprite>
+
+<div class="layout" [class.collapsed]="isSidebarCollapsed" [class.menu-open]="mobileMenu">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" aria-label="Навигация">
+    <div class="sidebar-head">
+      <div class="logo">
+        <div class="logo-mark">O1</div>
+        <div class="logo-text">Маркетплейс ↔ 1С<small>Интеграция</small></div>
+      </div>
+      <button
+        class="sidebar-collapse"
+        id="sidebarCollapse"
+        type="button"
+        [attr.aria-label]="isSidebarCollapsed ? 'Развернуть боковое меню' : 'Свернуть боковое меню'"
+        [attr.aria-expanded]="!isSidebarCollapsed"
+        data-sidebar-tooltip="Свернуть боковое меню"
+        (click)="toggleSidebarCollapsed()"
+        title="Свернуть боковое меню"
+      >
+        <svg class="icon-sm" aria-hidden="true">
+          <!-- Динамическая иконка или разворот CSS-стилями -->
+          <use href="#i-panel-toggle"></use>
+        </svg>
+      </button>
+    </div>
+
+    <app-navigation [collapsed]="isSidebarCollapsed" (navigated)="closeMenu()"></app-navigation>
+  </aside>
+
+  @if (mobileMenu) {
+    <button
+      type="button"
+      class="menu-scrim"
+      aria-label="Закрыть меню"
+      (click)="closeMenu()"
+    ></button>
+  }
+  <!-- MAIN -->
+  <div class="main">
+    <div class="main-head">
+      <div class="main-head-leading">
+        <button
+          class="mobile-burger"
+          type="button"
+          aria-label="Открыть меню"
+          [attr.aria-expanded]="mobileMenu"
+          (click)="mobileMenu = !mobileMenu"
+        >
+          <svg class="icon-sm"><use href="#i-menu"></use></svg>
+        </button>
+        <div class="main-head-copy">
+          <h2>{{ currentTitle }}</h2>
+          @if (currentSubtitle) {
+            <div class="sub">{{ currentSubtitle }}</div>
+          }
+        </div>
+      </div>
+      <div class="main-head-right">
+        <div id="pageActions"></div>
+        <div class="shop-context">
+          <span class="shop-dot" aria-hidden="true"></span>
+          <div>
+            <strong>{{ context.session()?.name }}</strong
+            ><small>{{ context.session()?.actor_name }}</small>
+          </div>
+          <a
+            routerLink="/account"
+            [queryParams]="{ tab: 'shops' }"
+            class="icon-button"
+            aria-label="Открыть управление магазинами"
+            >↗</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <main id="main-content" class="page-content" appProductHoverPreview>
+      @if (context.databaseCopy()) {
+        <p class="database-copy-note" role="note">
+          Копия рабочей базы в Docker. Изменения сохраняются только в копии. Синхронизации, AI и
+          отправки отключены.
+        </p>
+      }
+      <ng-content></ng-content>
+    </main>
+  </div>
+</div>

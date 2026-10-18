@@ -1,0 +1,94 @@
+<section class="panel">
+  <h2>Автоматическая отправка цен</h2>
+  <p>Локальный режим: можно проверить готовность цен. Отправки и фоновый запуск отключены.</p>
+  <div class="button-row">
+    <label><input type="checkbox" disabled />Боевая отправка цен в Ozon</label
+    ><label><input type="checkbox" disabled />Автоматическая отправка</label>
+  </div>
+  <div class="button-row">
+    <button class="button primary" type="button" (click)="inspect()" [disabled]="busy()">
+      Проверить готовность по отбору</button
+    ><button class="button" type="button" (click)="load()" [disabled]="busy()">
+      Обновить историю проверок</button
+    ><button class="button" type="button" (click)="repair.emit()">Исправить нерассчитанные</button>
+  </div>
+  @if (error()) {
+    <p class="workflow-error" role="alert">{{ error() }}</p>
+  }
+  <div class="filter-bar">
+    <label
+      >Проверка<app-filter-select
+        [ngModel]="selected()"
+        (ngModelChange)="selected.set($event)"
+        [options]="selectedOptions()"
+        label="Проверка готовности цен"
+        key="selected__"
+        [showLabel]="false"
+      ></app-filter-select
+    ></label>
+    <label
+      >Результат<app-filter-select
+        [ngModel]="status"
+        [options]="statusOptions()"
+        label="Результат проверки"
+        key="status"
+        [showLabel]="false"
+        (ngModelChange)="status = $event"
+      ></app-filter-select
+    ></label>
+  </div>
+  @if (current(); as run) {
+    <p>Проверено: {{ run.items.length }} · отправлено: 0</p>
+    <div class="table-scroll">
+      <app-data-table
+        [columns]="tableColumns1()"
+        [data]="publicationRows(run.items)"
+        [headerTemplate]="tableHeader1"
+        selectionMode="none"
+        [rowClickable]="false"
+        [lazy]="false"
+        [scrollable]="false"
+        tableStyleClass="operation-table price-workflow-table"
+        dataKey="offer_id"
+        emptyMessage="Нет данных"
+      >
+        <ng-template #tableHeader1>
+          <tr>
+            <th>Товар</th>
+            <th>Сейчас</th>
+            <th>Цена</th>
+            <th>Минималка</th>
+            <th>До скидки</th>
+            <th>Результат</th>
+          </tr>
+        </ng-template>
+        <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+          @switch (column.cellTemplate.slot) {
+            @case ('cell1') {
+              <span data-o1c-cell-content>
+                {{ row.offer_id }}<small [appProductName]="row">{{ row.name }}</small>
+              </span>
+            }
+            @case ('cell2') {
+              <span data-o1c-cell-content>{{ money(row.current_price) }}</span>
+            }
+            @case ('cell3') {
+              <span data-o1c-cell-content>{{ money(row.price) }}</span>
+            }
+            @case ('cell4') {
+              <span data-o1c-cell-content>{{ money(row.min_price) }}</span>
+            }
+            @case ('cell5') {
+              <span data-o1c-cell-content>{{ money(row.old_price) }}</span>
+            }
+            @case ('cell6') {
+              <span data-o1c-cell-content>
+                {{ labels[row.status] }}<small>{{ row.reason }}</small>
+              </span>
+            }
+          }
+        </ng-template>
+      </app-data-table>
+    </div>
+  }
+</section>

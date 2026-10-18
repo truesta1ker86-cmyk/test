@@ -1,0 +1,198 @@
+<div
+  class="table-scroll"
+  tabindex="0"
+  [attr.aria-label]="
+    entity() === 'orders' ? 'Таблица заказов с прокруткой' : 'Таблица возвратов с прокруткой'
+  "
+  [attr.aria-busy]="loading()"
+>
+  <app-data-table
+    id="operational-table"
+    [class.orders-table]="entity() === 'orders'"
+    [class.returns-table]="entity() === 'returns'"
+    [columns]="tableColumns1()"
+    [selection]="visibleTableSelection()"
+    [data]="loading() ? [] : rows()"
+    [headerTemplate]="tableHeader1"
+    selectionMode="none"
+    [rowClickable]="false"
+    [lazy]="false"
+    [scrollable]="false"
+    tableStyleClass="operation-table operational-table"
+    emptyMessage="Нет данных"
+  >
+    <ng-template #tableHeader1>
+      <tr>
+        @if (entity() === 'orders') {
+          <th class="order-select-cell" aria-label="Выбор для этикеток"></th>
+        }
+        @for (col of columns(); track col.key) {
+          <th
+            [attr.data-column-label]="col.label"
+            [attr.aria-sort]="
+              headingSort().field === col.key
+                ? headingSort().desc
+                  ? 'descending'
+                  : 'ascending'
+                : 'none'
+            "
+          >
+            <div class="column-heading">
+              @if (['posting_number', 'offer_id', 'amount', 'date', 'status'].includes(col.key)) {
+                <button class="heading-sort" (click)="sortChange.emit(col.key)">
+                  {{ col.label }}
+                  <span aria-hidden="true">{{
+                    headingSort().field === col.key ? (headingSort().desc ? '↓' : '↑') : '↕'
+                  }}</span>
+                </button>
+              } @else {
+                <span>{{ col.label }}</span>
+              }
+              <app-column-filter
+                [field]="col.key"
+                [label]="col.label"
+                [numeric]="!!col.numeric"
+                [rule]="columnRules()[col.key]"
+                [options]="data()?.column_values?.[col.key] || []"
+                (changed)="columnChange.emit($event)"
+              />
+            </div>
+          </th>
+        }
+        @if (entity() === 'orders') {
+          <th>Действия</th>
+        }
+      </tr>
+    </ng-template>
+    <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+      @switch (column.cellTemplate.slot) {
+        @case ('cell1') {
+          @let r = returned(row);
+          <span data-o1c-cell-content>{{ r.posting_number || '—' }}</span>
+        }
+        @case ('cell2') {
+          @let r = returned(row);
+          <span data-o1c-cell-content>
+            @if (r.offer_id) {
+              <a
+                [appProductName]="r"
+                routerLink="/products/card"
+                [queryParams]="{ offer_id: r.offer_id }"
+                >{{ r.offer_id }}</a
+              >
+            } @else {
+              —
+            }
+          </span>
+        }
+        @case ('cell3') {
+          @let r = returned(row);
+          <span data-o1c-cell-content class="numeric">{{
+            currency(r.returns_amount, r.currency)
+          }}</span>
+        }
+        @case ('cell4') {
+          @let r = returned(row);
+          <span data-o1c-cell-content>{{ date(r.returned_at).split(',')[0] }}</span>
+        }
+        @case ('cell5') {
+          @let r = returned(row);
+          <span data-o1c-cell-content>
+            <span class="status-pill">{{ status(r.status) }}</span>
+          </span>
+        }
+        @case ('cell6') {
+          @let o = order(row);
+          <span data-o1c-cell-content class="order-select-cell">
+            <input
+              type="checkbox"
+              [checked]="selected().has(o.posting_number)"
+              [disabled]="!canLabel(o) || labelsBusy()"
+              [attr.aria-label]="
+                canLabel(o)
+                  ? 'Выбрать FBS-заказ ' + o.posting_number
+                  : o.scheme?.toLowerCase() === 'fbo'
+                    ? 'FBO-заказ ' + o.posting_number + ': выбор не требуется'
+                    : 'Заказ ' + o.posting_number + ': сначала соберите заказ'
+              "
+              (change)="toggle(o, $any($event.target).checked)"
+            />
+          </span>
+        }
+        @case ('cell7') {
+          @let o = order(row);
+          <span data-o1c-cell-content>
+            <button class="record-link" (click)="openDetail(o)">
+              {{ o.posting_number }}
+            </button>
+          </span>
+        }
+        @case ('cell8') {
+          @let o = order(row);
+          <span data-o1c-cell-content>
+            <span class="status-pill">{{
+              o.scheme?.toLowerCase() === 'rfbs' ? 'realFBS' : o.scheme?.toUpperCase() || '—'
+            }}</span>
+          </span>
+        }
+        @case ('cell9') {
+          @let o = order(row);
+          <span data-o1c-cell-content>
+            <span
+              class="status-pill"
+              [class.positive]="o.status === 'delivered'"
+              [class.cancelled]="o.status === 'cancelled'"
+              >{{ status(o.status, o.scheme) }}</span
+            >
+          </span>
+        }
+        @case ('cell10') {
+          @let o = order(row);
+          <span data-o1c-cell-content class="order-date">{{
+            date(o.in_process_at || o.created_at)
+          }}</span>
+        }
+        @case ('cell11') {
+          @let o = order(row);
+          <span data-o1c-cell-content class="order-items">
+            @for (item of o.items; track $index) {
+              <span
+                ><span [appProductName]="item">{{ item.name || item.offer_id || 'Товар' }}</span
+                ><small>{{ item.offer_id || '—' }} × {{ quantity(item.quantity) }}</small></span
+              >
+            }
+          </span>
+        }
+        @case ('cell12') {
+          @let o = order(row);
+          <span data-o1c-cell-content class="numeric">{{
+            currency(o.total_price, o.currency)
+          }}</span>
+        }
+        @case ('cell13') {
+          @let o = order(row);
+          <span data-o1c-cell-content class="order-row-actions">
+            <button class="button" (click)="openDetail(o)">
+              {{ actionLabel(o) }}
+            </button>
+            @if (o.scheme?.toLowerCase() === 'fbs') {
+              <button
+                class="button"
+                [disabled]="!canLabel(o) || labelsBusy() || !data()?.local_preview"
+                [class.downloaded]="!!o.label_downloaded_at"
+                (click)="downloadLabel(o)"
+              >
+                <app-icon name="printer" />{{
+                  o.label_downloaded_at ? 'Скачать повторно' : 'Этикетка PDF'
+                }}
+              </button>
+              @if (o.label_downloaded_at) {
+                <small class="label-downloaded">Скачана {{ date(o.label_downloaded_at) }}</small>
+              }
+            }
+          </span>
+        }
+      }
+    </ng-template>
+  </app-data-table>
+</div>

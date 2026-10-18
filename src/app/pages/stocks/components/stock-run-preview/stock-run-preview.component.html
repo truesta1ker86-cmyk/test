@@ -1,0 +1,88 @@
+<section class="run-panel" aria-label="Разовая проверка сохранённых правил">
+  <header>
+    <div>
+      <h2>Разовая проверка сохранённых правил</h2>
+      <p>Учтены склад-источник 1С из профиля, FBS-заказы после снимка и ожидаемые поставки.</p>
+    </div>
+    <button class="button" (click)="close.emit()">Закрыть проверку</button>
+  </header>
+  <div class="run-summary">
+    <span
+      >Товаров: <b>{{ plan().products }}</b></span
+    ><span
+      >Правил к расчёту: <b>{{ plan().rules }}</b></span
+    ><span
+      >Рассчитано: <b>{{ plan().ready }}</b></span
+    ><span
+      >Нет данных: <b>{{ plan().blocked }}</b></span
+    ><span
+      >Без правил: <b>{{ plan().without_rules }}</b></span
+    >
+  </div>
+  <p class="run-mode">Режим проверки · отправка в Ozon остановлена</p>
+  <div class="run-table">
+    <app-data-table
+      [columns]="tableColumns1()"
+      [data]="rows()"
+      [headerTemplate]="tableHeader1"
+      selectionMode="none"
+      [rowClickable]="false"
+      [lazy]="false"
+      [scrollable]="false"
+      tableStyleClass="operation-table"
+      emptyMessage="У выбранных товаров нет подходящих сохранённых правил."
+    >
+      <ng-template #tableHeader1>
+        <tr>
+          <th>Товар</th>
+          <th>Склад</th>
+          <th>Сейчас в Ozon</th>
+          <th>К показу</th>
+          <th>Источник расчёта</th>
+          <th>Заказы после снимка</th>
+        </tr>
+      </ng-template>
+      <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+        @switch (column.cellTemplate.slot) {
+          @case ('cell1') {
+            <span data-o1c-cell-content>
+              <span [appProductName]="row">{{ row.name || row.offer_id }}</span
+              ><small>{{ row.offer_id }}</small>
+            </span>
+          }
+          @case ('cell2') {
+            <span data-o1c-cell-content>{{ warehouseName(row.warehouse_id) }}</span>
+          }
+          @case ('cell3') {
+            <span data-o1c-cell-content>{{ row.current_ozon_qty ?? '—' }}</span>
+          }
+          @case ('cell4') {
+            <span data-o1c-cell-content>
+              <strong>{{ row.qty ?? '—' }}</strong
+              ><small>{{
+                row.status === 'unchanged'
+                  ? 'Уже совпадает'
+                  : row.status === 'missing_1c'
+                    ? 'Нет данных 1С'
+                    : 'Результат проверки'
+              }}</small>
+            </span>
+          }
+          @case ('cell5') {
+            <span data-o1c-cell-content>{{ sources[row.source] || row.source }}</span>
+          }
+          @case ('cell6') {
+            <span data-o1c-cell-content>{{ row.protected_fbs_orders }}</span>
+          }
+        }
+      </ng-template>
+    </app-data-table>
+  </div>
+  <app-stock-pager
+    label="Страницы разовой проверки"
+    [page]="page()"
+    [size]="size()"
+    [total]="plan().items.length"
+    (pageChange)="page.set($event.page); size.set($event.size)"
+  />
+</section>

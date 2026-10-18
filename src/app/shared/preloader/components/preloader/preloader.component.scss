@@ -1,0 +1,78 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preloader__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--muted, #667085);
+}
+
+.preloader__label {
+  font-size: 12px;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+/* ─── Размеры ─────────────────────────────────────────────── */
+:host(.preloader--sm) ::ng-deep .p-progressspinner {
+  width: 18px;
+  height: 18px;
+}
+
+:host(.preloader--sm) .preloader__label {
+  font-size: 11px;
+}
+
+:host(.preloader--lg) ::ng-deep .p-progressspinner {
+  width: 48px;
+  height: 48px;
+}
+
+:host(.preloader--lg) .preloader__label {
+  font-size: 14px;
+}
+
+/* ─── Кастомный цвет спиннера ─────────────────────────────── */
+:host ::ng-deep .p-progressspinner .p-progressspinner-circle {
+  stroke: var(--brand, #005bff);
+}
+
+/* ─── Overlay — поверх родителя ───────────────────────────── */
+:host(.preloader--overlay) {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, var(--preloader-opacity, 0.6));
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border-radius: inherit;
+}
+
+:host(.preloader--overlay) .preloader__inner {
+  position: sticky;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ─── Block — по центру с padding ─────────────────────────── */
+:host(.preloader--block) {
+  display: flex;
+  padding: 40px 20px;
+  min-height: 120px;
+}
+
+:host(.preloader--block) .preloader__inner {
+  flex-direction: column;
+}
+
+/* ─── Reduced motion ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :host ::ng-deep p-progressspinner-circle {
+    animation-duration: 1.6s !important;
+  }
+}

@@ -8,8 +8,11 @@ import {
   output,
 } from '@angular/core';
 
-/** Keyboard and return focus for the lightweight editor dialogs. */
-@Directive({ selector: '[appModalFocus]', host: { tabindex: '-1' } })
+@Directive({
+  standalone: false,
+  selector: '[appModalFocus]',
+  host: { tabindex: '-1' },
+})
 export class ModalFocus implements AfterViewInit, OnDestroy {
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private previous: HTMLElement | null = null;

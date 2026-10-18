@@ -1,4 +1,4 @@
-import { ColumnRules } from '../models/filter.model';
+import { ColumnRules } from '../types/column-rule.types';
 
 export function parseColumnRules(raw: string): Record<string, ColumnRules> {
   try {

@@ -1,0 +1,50 @@
+<div class="select">
+  @if (label()) {
+    <label class="select__label" [attr.for]="inputId()">
+      {{ label() }}
+      @if (required()) {
+        <span class="select__required" aria-hidden="true">*</span>
+      }
+    </label>
+  }
+
+  <p-select
+    styleClass="fld select__field"
+    [inputId]="inputId()"
+    [options]="options()"
+    [optionLabel]="optionLabel()"
+    [optionValue]="optionValue()"
+    [optionDisabled]="optionDisabled()"
+    [group]="group()"
+    [placeholder]="placeholder()"
+    [showClear]="showClear()"
+    [filter]="filter()"
+    [filterMatchMode]="filterMatchMode()"
+    [filterPlaceholder]="filterPlaceholder()"
+    [emptyMessage]="emptyMessage()"
+    [emptyFilterMessage]="emptyFilterMessage()"
+    [scrollHeight]="scrollHeight()"
+    [panelStyleClass]="panelStyleClass()"
+    [disabled]="isDisabled()"
+    [readonly]="readonly()"
+    [required]="required()"
+    [ngModel]="value()"
+    (ngModelChange)="onModelChange($event)"
+    (onFocus)="onFocus($event)"
+    (onBlur)="onBlur($event)"
+    (onShow)="opened.emit()"
+    (onHide)="closed.emit()"
+    (onClear)="onClear()"
+    (onFilter)="filterChanged.emit($event.filter)"
+    [attr.aria-label]="label() || null"
+    [attr.aria-invalid]="invalid() ? 'true' : null"
+  />
+
+  @if (errorMessage()) {
+    <small class="select__error" [id]="inputId() + '-desc'" role="alert">{{
+      errorMessage()
+    }}</small>
+  } @else if (hint()) {
+    <small class="select__hint" [id]="inputId() + '-desc'">{{ hint() }}</small>
+  }
+</div>

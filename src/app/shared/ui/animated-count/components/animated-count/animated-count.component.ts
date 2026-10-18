@@ -1,5 +1,16 @@
-import { Component, effect, input, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
+
 @Component({
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+
   selector: 'app-animated-count',
   template: '{{ displayed().toLocaleString("ru-RU") }}',
 })

@@ -1,0 +1,983 @@
+<div class="workspace-surface stocks-page">
+  <header class="page-header">
+    <div>
+      <h1>{{ pageTitle() }}</h1>
+      @if (context()?.fact_sync; as sync) {
+        <p [attr.title]="'Снимок исходного магазина: ' + date(sync.source_snapshot_at)">
+          {{
+            sync.status === 'error'
+              ? 'Обновление приостановлено. Последняя копия:'
+              : 'Копия обновлена из v1:'
+          }}
+          {{ date(sync.copied_at) }}
+        </p>
+      } @else {
+        <p>Сверка с 1С, правила распределения и планы поступлений.</p>
+      }
+    </div>
+    <span class="mode-note">{{
+      context()?.local_preview
+        ? 'Локальный макет · отправка в Ozon выключена'
+        : 'Отправка в Ozon выключена'
+    }}</span>
+  </header>
+  @if (facts()?.summary; as summary) {
+    <div class="stock-metrics" [class.compact]="tab() === 'matrix'">
+      <button
+        type="button"
+        class="stock-metric"
+        (click)="setChoice('rules_status', [])"
+        [attr.aria-pressed]="!filters['rules_status'].length"
+      >
+        <span>Всего по отбору</span
+        ><strong><app-animated-count [value]="summary['total'] || 0" /></strong
+        ><small>Все товары по остальным фильтрам</small>
+      </button>
+      <button
+        type="button"
+        class="stock-metric"
+        (click)="setChoice('rules_status', ['with_rules'])"
+        [attr.aria-pressed]="filters['rules_status'].includes('with_rules')"
+      >
+        <span>С правилами</span
+        ><strong><app-animated-count [value]="summary['with_rules'] || 0" /></strong
+        ><small>Включая нулевые и выключенные</small>
+      </button>
+      <button
+        type="button"
+        class="stock-metric"
+        (click)="setChoice('rules_status', ['without_rules'])"
+        [attr.aria-pressed]="filters['rules_status'].includes('without_rules')"
+      >
+        <span>Без правил</span
+        ><strong><app-animated-count [value]="summary['without_rules'] || 0" /></strong
+        ><small>Нет ни одной сохранённой записи</small>
+      </button>
+      <button
+        type="button"
+        class="stock-metric"
+        (click)="
+          setChoice(
+            'distribution_status',
+            filters['distribution_status'].length ? [] : ['distributed']
+          )
+        "
+        [attr.aria-pressed]="filters['distribution_status'].includes('distributed')"
+      >
+        <span>Распределены</span
+        ><strong><app-animated-count [value]="summary['distributed'] || 0" /></strong
+        ><small>Включённое положительное правило</small>
+      </button>
+    </div>
+  }
+  <nav class="tabs" aria-label="Разделы остатков">
+    @for (item of tabs; track item[0]) {
+      <button type="button" [class.active]="tab() === item[0]" (click)="navigate(item[0])">
+        {{ item[1] }}
+      </button>
+    }
+  </nav>
+  @if (error() && !editor()) {
+    <div class="error-message" role="alert">
+      {{ error() }} <button type="button" (click)="load()">Обновить данные</button>
+    </div>
+  }
+  @if (notice()) {
+    <div class="notice" role="status">{{ notice() }}</div>
+  }
+  @if (tab() === 'reconciliation' || tab() === 'matrix') {
+    <div class="stock-filter-toolbar">
+      <app-inventory-filter
+        [choices]="filterChoices()"
+        [values]="filters"
+        [reconciliation]="tab() === 'reconciliation'"
+        [article]="article"
+        [name]="name"
+        [articleOperator]="articleOperator"
+        [nameOperator]="nameOperator"
+        [busy]="busy() || loading()"
+        [selected]="selection().size"
+        (textChanged)="setTextFilter($event)"
+        (filterChanged)="setChoice($event.key, $event.values)"
+        (filtersReset)="resetFilters()"
+        (filtersApplied)="applyFilters()"
+        (selectFound)="selectAll()"
+        (clearSelection)="clearSelection()"
+      />
+    </div>
+    @if (tab() === 'reconciliation') {
+      <div class="selection-bar">
+        <span
+          >Выбрано: <strong>{{ selection().size }}</strong></span
+        ><button
+          aria-label="Выбрать все по фильтру"
+          type="button"
+          (click)="selectAll()"
+          [disabled]="busy() || loading()"
+        >
+          Все по фильтру</button
+        ><button
+          aria-label="Сбросить выделение"
+          type="button"
+          (click)="clearSelection()"
+          [disabled]="!selection().size"
+        >
+          Снять выделение
+        </button>
+        @if (canWrite()) {
+          @if (tab() !== 'matrix') {
+            <button class="button" (click)="toMatrix()" [disabled]="!selection().size">
+              Распределить по складам
+            </button>
+          }
+          <button
+            class="button"
+            aria-label="Ожидаемая поставка"
+            (click)="navigate('expected')"
+            [disabled]="!selection().size"
+          >
+            Поставка
+          </button>
+        }
+        <label class="sort-control"
+          ><app-filter-select
+            [ngModel]="sort"
+            (ngModelChange)="sort = $event; navigate()"
+            [options]="sortOptions()"
+            label="Сортировка товаров"
+            key="sort"
+            [showLabel]="false"
+          ></app-filter-select></label
+        ><button
+          type="button"
+          (click)="sortBy(sort)"
+          [attr.aria-label]="direction === 'asc' ? 'По убыванию' : 'По возрастанию'"
+        >
+          {{ direction === 'asc' ? '↑' : '↓' }}
+        </button>
+      </div>
+    }
+  }
+  @if (tab() === 'rules' || tab() === 'warehouses') {
+    <form class="toolbar" (ngSubmit)="applyFilters()">
+      <label class="search"
+        >Поиск<app-filter-text
+          name="q"
+          [ngModel]="q"
+          placeholder="Артикул или название склада"
+          label="Поиск"
+          key="q"
+          [showLabel]="false"
+          (ngModelChange)="q = $event"
+        ></app-filter-text
+      ></label>
+      @if (tab() === 'warehouses') {
+        <app-filter-multiselect
+          [key]="'facet-0'"
+          label="Источник"
+          [options]="filterChoices()['source']"
+          [ngModel]="filters['source']"
+          (ngModelChange)="setChoice('source', $event)"
+          [ngModelOptions]="{ standalone: true }"
+        />
+      }
+      @if (tab() === 'warehouses') {
+        <label
+          >Склад<app-filter-select
+            [ngModel]="detail().warehouse"
+            (ngModelChange)="detailWarehouse($event)"
+            [options]="detailWarehouseOptions()"
+            label="Склад источника"
+            key="detail___warehouse"
+            [showLabel]="false"
+          ></app-filter-select
+        ></label>
+      }
+      <button class="button primary" type="submit">Применить</button
+      ><button class="button" type="button" (click)="load()" [disabled]="loading()">
+        Обновить
+      </button>
+    </form>
+  }
+  @if (tab() === 'reconciliation') {
+    <app-inventory-reconciliation
+      [items]="facts()?.items || []"
+      [loading]="loading()"
+      [selected]="selection()"
+      (selectionChange)="toggle($event.offer, $event.checked)"
+    />
+    <p class="explanation">
+      Остаток 1С показан по общему пулу с учётом упаковки. У нескольких упаковок одного товара он
+      может повторяться — строки не суммируются. Заказы после снимка защищают от повторного
+      размещения.
+    </p>
+  }
+  @if (tab() === 'reconciliation') {
+    <details class="source-details">
+      <summary>Детализация по складам и источникам</summary>
+      <div class="toolbar detail-toolbar">
+        <label
+          >Склад<app-filter-select
+            [ngModel]="detail().warehouse"
+            (ngModelChange)="detailWarehouse($event)"
+            [options]="detailWarehouseOptions()"
+            label="Склад детализации"
+            key="detail___warehouse"
+            [showLabel]="false"
+          ></app-filter-select
+        ></label>
+      </div>
+      <app-inventory-detail [stocks]="raw()?.items || []" [loading]="loading()" />
+      <app-stock-pager
+        label="Страницы детализации складов"
+        [page]="detail().page"
+        [size]="detail().size"
+        [total]="raw()?.meta?.total || 0"
+        [busy]="busy() || loading()"
+        (pageChange)="changeDetail($event.page, $event.size)"
+      />
+    </details>
+  }
+  @if (tab() === 'rules') {
+    <div class="section-title">
+      <h2>Правила размещения</h2>
+      @if (canWrite()) {
+        <button class="button primary" (click)="newRule()">Новое правило</button>
+      }
+    </div>
+    <div class="table-wrap">
+      <app-data-table
+        [columns]="tableColumns3()"
+        [data]="rules()?.items || []"
+        [headerTemplate]="tableHeader3"
+        selectionMode="none"
+        [rowClickable]="false"
+        [lazy]="false"
+        [scrollable]="false"
+        tableStyleClass="operation-table"
+        dataKey="id"
+        emptyMessage="Правил по этому отбору нет."
+      >
+        <ng-template #tableHeader3>
+          <tr>
+            <th>Артикул</th>
+            <th>Склад Ozon</th>
+            <th>Режим</th>
+            <th>Доля / цель</th>
+            <th>Кратность</th>
+            <th>Состояние</th>
+            <th>Последняя отправка в снимке</th>
+            <th></th>
+          </tr>
+        </ng-template>
+        <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+          @switch (column.cellTemplate.slot) {
+            @case ('cell1') {
+              <span data-o1c-cell-content>{{ row.offer_id }}</span>
+            }
+            @case ('cell2') {
+              <span data-o1c-cell-content>{{ warehouseName(row.warehouse_id) }}</span>
+            }
+            @case ('cell3') {
+              <span data-o1c-cell-content>{{
+                row.maintain_target ? 'Заданный остаток' : 'По наличию 1С'
+              }}</span>
+            }
+            @case ('cell4') {
+              <span data-o1c-cell-content>
+                {{ row.maintain_target ? row.target_qty : shareToPercentage(row.share) + ' %' }}
+              </span>
+            }
+            @case ('cell5') {
+              <span data-o1c-cell-content>{{ row.quantum }}</span>
+            }
+            @case ('cell6') {
+              <span data-o1c-cell-content>{{ row.enabled ? 'Включено' : 'Выключено' }}</span>
+            }
+            @case ('cell7') {
+              <span data-o1c-cell-content>
+                {{ quantity(row.last_pushed_qty) }}<small>{{ date(row.last_applied_at) }}</small>
+              </span>
+            }
+            @case ('cell8') {
+              <span data-o1c-cell-content>
+                @if (canWrite()) {
+                  <button (click)="edit(row)">Изменить</button>
+                }
+              </span>
+            }
+          }
+        </ng-template>
+      </app-data-table>
+    </div>
+  }
+  @if (tab() === 'matrix') {
+    <app-allocation-matrix
+      #allocation
+      [rows]="facts()?.items || []"
+      [warehouses]="context()?.ozon_warehouses || []"
+      [rules]="context()?.rules || []"
+      [drafts]="matrix()"
+      [validation]="validation"
+      [selection]="selection()"
+      [defaults]="warehouseDefaults()"
+      [allPercent]="globalShare()"
+      [sort]="sort"
+      [direction]="direction"
+      (sortChange)="sortBy($event)"
+      [snapshotWarehouses]="context()?.warehouse_snapshot_ids || []"
+      (defaultsChange)="warehouseDefaults.set($event)"
+      (allPercentChange)="globalShare.set($event)"
+      [columns]="columns()"
+      [busy]="busy() || loading()"
+      [canWrite]="canWrite()"
+      (draftsChange)="updateMatrix($event)"
+      (selectionChange)="setSelection($event)"
+      (columnsChange)="columns.set($event)"
+      (validityChange)="setMatrixValidity($event)"
+    >
+      <div class="matrix-savebar" allocation-actions>
+        <span
+          >Выбрано: <strong>{{ selection().size }}</strong></span
+        >
+        <button
+          type="button"
+          aria-label="Сбросить выделение"
+          (click)="clearSelection()"
+          [disabled]="!selection().size"
+        >
+          Снять выделение
+        </button>
+        <span
+          >Изменено: <strong>{{ matrix().length }}</strong></span
+        >
+        <button
+          type="button"
+          aria-label="Выбрать все по фильтру"
+          (click)="selectAll()"
+          [disabled]="busy() || loading()"
+        >
+          Все по фильтру
+        </button>
+        @if (canWrite()) {
+          <button
+            class="button"
+            type="button"
+            aria-label="Ожидаемая поставка"
+            (click)="navigate('expected')"
+            [disabled]="!selection().size"
+          >
+            Поставка
+          </button>
+        }
+        <button
+          class="button"
+          aria-label="Сбросить изменения"
+          (click)="allocation.clearEdits()"
+          [disabled]="(!matrix().length && matrixValid()) || busy()"
+        >
+          Сбросить
+        </button>
+        <button
+          class="button primary"
+          aria-label="Рассчитать и проверить"
+          (click)="checkMatrix()"
+          [disabled]="
+            !matrix().length || busy() || matrixFilling() || !matrixValid() || !canWrite()
+          "
+        >
+          Рассчитать
+        </button>
+
+        <button
+          class="button"
+          aria-label="Разовая проверка сохранённых правил"
+          (click)="checkSavedRules()"
+          [disabled]="
+            !selection().size ||
+            matrix().length ||
+            !matrixValid() ||
+            busy() ||
+            loading() ||
+            !canWrite()
+          "
+          title="Сначала сохраните правки матрицы. Проверка не отправляет данные в Ozon."
+        >
+          Разовая проверка
+        </button>
+      </div>
+    </app-allocation-matrix>
+    @if (runPlan(); as plan) {
+      <app-stock-run-preview
+        #runPanel
+        [plan]="plan"
+        [warehouses]="context()?.ozon_warehouses || []"
+        (close)="runPlan.set(null)"
+      />
+    }
+    @if (preview(); as p) {
+      <section #previewPanel class="preview">
+        <h2>Перед сохранением</h2>
+        @if (p.rules > p.sample.length) {
+          <p class="explanation">
+            Ниже показаны первые {{ p.sample.length }} из {{ p.rules }} изменений.
+          </p>
+        }
+        @if (p.missing_inventory_products) {
+          <p class="explanation">
+            Нет физического снимка 1С для {{ p.missing_inventory_products }} товаров. Полный расчёт
+            количества для них пока недоступен.
+          </p>
+        }
+        @if (!p.physical_distribution_ready && !p.missing_inventory_products) {
+          <p class="explanation">
+            Распределение требует проверки: в расчёте есть отклонения от физического наличия 1С.
+          </p>
+        }
+        <p>Правил: {{ p.rules }} · новых: {{ p.creates }} · изменится: {{ p.updates }}</p>
+        <div class="table-wrap">
+          <app-data-table
+            [columns]="tableColumns4()"
+            [data]="p.sample"
+            [headerTemplate]="tableHeader4"
+            selectionMode="none"
+            [rowClickable]="false"
+            [lazy]="false"
+            [scrollable]="false"
+            tableStyleClass="operation-table"
+            emptyMessage="Нет данных"
+          >
+            <ng-template #tableHeader4>
+              <tr>
+                <th>Артикул</th>
+                <th>Склад</th>
+                <th>Доступно 1С</th>
+                <th>Результат, уп.</th>
+              </tr>
+            </ng-template>
+            <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+              @switch (column.cellTemplate.slot) {
+                @case ('cell1') {
+                  <span data-o1c-cell-content>{{ row.offer_id }}</span>
+                }
+                @case ('cell2') {
+                  <span data-o1c-cell-content>{{ warehouseName(row.warehouse_id) }}</span>
+                }
+                @case ('cell3') {
+                  <span data-o1c-cell-content>{{ quantity(row.available_1c) }}</span>
+                }
+                @case ('cell4') {
+                  <span data-o1c-cell-content>{{ quantity(row.calculated_qty) }}</span>
+                }
+              }
+            </ng-template>
+          </app-data-table>
+        </div>
+        @if (p.requires_fake_confirmation) {
+          <label class="check-label"
+            ><input type="checkbox" [(ngModel)]="confirmFake" />Подтверждаю заданный остаток в
+            правилах копии</label
+          >
+        }
+        <button
+          class="button primary"
+          (click)="applyMatrix()"
+          [disabled]="
+            busy() ||
+            loading() ||
+            !matrixValid() ||
+            !canWrite() ||
+            (p.requires_fake_confirmation && !confirmFake)
+          "
+        >
+          Сохранить правила в копии
+        </button>
+      </section>
+    }
+  }
+  @if (tab() === 'expected') {
+    <div class="section-title">
+      <h2>Ожидаемые поступления</h2>
+      <span>Выбрано товаров: {{ selection().size }}</span>
+    </div>
+    @if (canWrite()) {
+      <form class="toolbar" (ngSubmit)="checkExpected()">
+        <label
+          >Плановая дата<input
+            type="date"
+            name="arrival"
+            [ngModel]="arrival"
+            (ngModelChange)="setArrival($event)"
+            required /></label
+        ><label
+          >Количество на каждый товар<input
+            type="number"
+            name="qty"
+            (ngModelChange)="expectedPreview.set(null)"
+            [(ngModel)]="expectedQty"
+            min="1"
+            step="1"
+            required /></label
+        ><button class="button primary" type="submit" [disabled]="busy() || !selection().size">
+          Проверить поставку
+        </button>
+      </form>
+      <div class="button-row">
+        <button
+          class="button"
+          type="button"
+          (click)="fillExpectedQty()"
+          [disabled]="!selection().size || busy()"
+        >
+          Заполнить количество выбранным
+        </button>
+      </div>
+      @if (selection().size) {
+        <div class="table-wrap expected-quantity-table">
+          <app-data-table
+            [columns]="tableColumns5()"
+            [data]="expectedRows()"
+            [headerTemplate]="tableHeader5"
+            selectionMode="none"
+            [rowClickable]="false"
+            [lazy]="false"
+            [scrollable]="false"
+            tableStyleClass="operation-table"
+            emptyMessage="Нет данных"
+          >
+            <ng-template #tableHeader5>
+              <tr>
+                <th>Товар</th>
+                <th>Физический остаток 1С, ед.</th>
+                <th>Ожидаемое количество</th>
+                <th></th>
+              </tr>
+            </ng-template>
+            <ng-template #cellTemplate let-offer let-column="column" let-rowIndex="rowIndex">
+              @switch (column.cellTemplate.slot) {
+                @case ('cell1') {
+                  <span data-o1c-cell-content>
+                    <span
+                      [appProductName]="{ offer_id: offer, name: productNames()[offer] || offer }"
+                      >{{ productNames()[offer] || offer }}</span
+                    ><small>{{ offer }}</small>
+                  </span>
+                }
+                @case ('cell2') {
+                  @let arrived = (context()?.expected_physical_by_offer?.[offer] || 0) > 0;
+
+                  <span data-o1c-cell-content>
+                    {{ quantity(context()?.expected_physical_by_offer?.[offer] ?? null) }}
+                    @if (arrived) {
+                      <small>Уже в наличии, в ожидание не включаем</small>
+                    }
+                  </span>
+                }
+                @case ('cell3') {
+                  @let arrived = (context()?.expected_physical_by_offer?.[offer] || 0) > 0;
+
+                  <span data-o1c-cell-content>
+                    <input
+                      type="number"
+                      [attr.aria-label]="'Ожидаемое количество ' + offer"
+                      [ngModel]="
+                        expectedQuantities()[offer] === undefined
+                          ? expectedQty
+                          : expectedQuantities()[offer]
+                      "
+                      (ngModelChange)="setExpectedQty(offer, $event)"
+                      [disabled]="arrived || busy()"
+                      min="1"
+                      step="1"
+                    />
+                  </span>
+                }
+                @case ('cell4') {
+                  <span data-o1c-cell-content>
+                    <button (click)="toggle(offer, false)" [disabled]="busy()">
+                      Убрать из выбранных
+                    </button>
+                  </span>
+                }
+              }
+            </ng-template>
+          </app-data-table>
+        </div>
+        @if (selection().size > 0) {
+          <app-stock-pager
+            label="Страницы редактора поставки"
+            [page]="expectedRowPage()"
+            [size]="expectedPageSize()"
+            [total]="selection().size"
+            (pageChange)="expectedPage.set($event.page); expectedPageSize.set($event.size)"
+          />
+        }
+      }
+      <p class="explanation">
+        Для выбранных товаров нужны правила распределения. Поступившие в 1С товары повторно в
+        ожидаемую поставку не добавляются.
+      </p>
+    }
+    @if (expectedPreview(); as p) {
+      <section class="preview">
+        <h3>Распределение поступления</h3>
+        <p>
+          {{ p.products }} товаров · {{ p.expected_qty }} ед. · распределено
+          {{ p.distributed_qty }} · остаток {{ p.unallocated_qty }}
+        </p>
+        <div class="table-wrap">
+          <app-data-table
+            [columns]="tableColumns10()"
+            [data]="expectedAllocationRows(p.items)"
+            [headerTemplate]="tableHeader10"
+            selectionMode="none"
+            [rowClickable]="false"
+            [lazy]="false"
+            [scrollable]="false"
+            tableStyleClass="operation-table"
+            emptyMessage="Нет данных"
+          >
+            <ng-template #tableHeader10>
+              <tr>
+                <th>Товар</th>
+                <th>Ожидается, уп.</th>
+                <th>Склад</th>
+                <th>К показу, уп.</th>
+              </tr>
+            </ng-template>
+            <ng-template #cellTemplate let-entry let-column="column" let-rowIndex="rowIndex">
+              @switch (column.cellTemplate.slot) {
+                @case ('cell1') {
+                  @let row = entry.row;
+
+                  <span data-o1c-cell-content>
+                    <span [appProductName]="row">{{ row.name || row.offer_id }}</span
+                    ><small>{{ row.offer_id }}</small>
+                  </span>
+                }
+                @case ('cell2') {
+                  @let row = entry.row;
+
+                  <span data-o1c-cell-content>{{ quantity(row.expected_qty) }}</span>
+                }
+                @case ('cell3') {
+                  @let a = entry.allocation;
+
+                  <span data-o1c-cell-content>{{ warehouseName(a.warehouse_id) }}</span>
+                }
+                @case ('cell4') {
+                  @let a = entry.allocation;
+
+                  <span data-o1c-cell-content>{{ quantity(a.qty) }}</span>
+                }
+              }
+            </ng-template>
+          </app-data-table>
+        </div>
+        <button class="button primary" (click)="applyExpected()" [disabled]="busy()">
+          Сохранить план в копии
+        </button>
+      </section>
+    }
+    <div class="table-wrap">
+      <app-data-table
+        [columns]="tableColumns7()"
+        [data]="visiblePlans()"
+        [headerTemplate]="tableHeader7"
+        selectionMode="none"
+        [rowClickable]="false"
+        [lazy]="false"
+        [scrollable]="false"
+        tableStyleClass="operation-table"
+        dataKey="offer_id"
+        emptyMessage="Планов поставок нет."
+      >
+        <ng-template #tableHeader7>
+          <tr>
+            <th>Товар</th>
+            <th>Дата</th>
+            <th>Ожидается</th>
+            <th>Уже в 1С</th>
+            <th>Состояние</th>
+          </tr>
+        </ng-template>
+        <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+          @switch (column.cellTemplate.slot) {
+            @case ('cell1') {
+              <span data-o1c-cell-content>
+                <span [appProductName]="row">{{ row.name || row.offer_id }}</span
+                ><small>{{ row.offer_id }}</small>
+              </span>
+            }
+            @case ('cell2') {
+              <span data-o1c-cell-content>{{
+                row.arrival_date.split('-').reverse().join('.')
+              }}</span>
+            }
+            @case ('cell3') {
+              <span data-o1c-cell-content>{{ row.expected_qty }}</span>
+            }
+            @case ('cell4') {
+              <span data-o1c-cell-content>{{ row.physical_qty_1c }}</span>
+            }
+            @case ('cell5') {
+              <span data-o1c-cell-content>{{ labels[row.status] || row.status }}</span>
+            }
+          }
+        </ng-template>
+      </app-data-table>
+    </div>
+  }
+  @if (tab() === 'expected' && plans().length) {
+    <app-stock-pager
+      label="Страницы активных поставок"
+      [page]="planPage()"
+      [size]="planPageSize()"
+      [total]="plans().length"
+      (pageChange)="planPage.set($event.page); planPageSize.set($event.size)"
+    />
+  }
+  @if (tab() === 'warehouses') {
+    <div class="warehouse-grid">
+      <section>
+        <div class="section-title">
+          <h2>Склады Ozon</h2>
+          @if (canWrite()) {
+            <button class="button" (click)="refreshWarehouses()" [disabled]="busy()">
+              Прочитать список
+            </button>
+          }
+        </div>
+        @for (row of context()?.ozon_warehouses || []; track row.warehouse_id) {
+          <p>
+            {{ row.warehouse_name }}<small>{{ row.warehouse_id }}</small>
+          </p>
+        } @empty {
+          <p>В снимке нет складов Ozon.</p>
+        }
+      </section>
+      <section>
+        <h2>Склады 1С</h2>
+        @for (row of context()?.onec_warehouses || []; track row.warehouse_id) {
+          <p>
+            {{ row.warehouse_name || row.warehouse_id
+            }}<small
+              >{{ row.product_count }} товаров · доступно {{ row.available }} · резерв
+              {{ row.reserved }}</small
+            >
+          </p>
+        } @empty {
+          <p>В снимке нет складов 1С.</p>
+        }
+      </section>
+    </div>
+    <div class="table-wrap">
+      <app-data-table
+        [columns]="tableColumns8()"
+        [data]="raw()?.items || []"
+        [headerTemplate]="tableHeader8"
+        selectionMode="none"
+        [rowClickable]="false"
+        [lazy]="false"
+        [scrollable]="false"
+        tableStyleClass="operation-table"
+        emptyMessage="Исходных остатков нет."
+      >
+        <ng-template #tableHeader8>
+          <tr>
+            <th>Источник</th>
+            <th>Артикул / код</th>
+            <th>Склад</th>
+            <th>Доступно</th>
+            <th>Резерв</th>
+            <th>Обновлено</th>
+          </tr>
+        </ng-template>
+        <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+          @switch (column.cellTemplate.slot) {
+            @case ('cell1') {
+              <span data-o1c-cell-content>{{ row.source === '1c' ? '1С' : 'Ozon' }}</span>
+            }
+            @case ('cell2') {
+              <span data-o1c-cell-content>
+                <span [appProductName]="row">{{
+                  row.product_name || row.offer_id || row.sku_1c || row.sku
+                }}</span
+                ><small>{{ row.offer_id || row.sku_1c || row.sku }}</small>
+              </span>
+            }
+            @case ('cell3') {
+              <span data-o1c-cell-content>{{ row.warehouse_name || row.warehouse_id || '—' }}</span>
+            }
+            @case ('cell4') {
+              <span data-o1c-cell-content>{{ quantity(row.available) }}</span>
+            }
+            @case ('cell5') {
+              <span data-o1c-cell-content>{{ quantity(row.reserved) }}</span>
+            }
+            @case ('cell6') {
+              <span data-o1c-cell-content>{{ date(row.measured_at || row.updated_at) }}</span>
+            }
+          }
+        </ng-template>
+      </app-data-table>
+    </div>
+  }
+  @if (tab() === 'history') {
+    <h2>Операции в копии</h2>
+    <div class="table-wrap">
+      <app-data-table
+        [columns]="tableColumns9()"
+        [data]="operations()"
+        [headerTemplate]="tableHeader9"
+        selectionMode="none"
+        [rowClickable]="false"
+        [lazy]="false"
+        [scrollable]="false"
+        tableStyleClass="operation-table"
+        dataKey="operation_id"
+        emptyMessage="Операций в новой версии пока нет."
+      >
+        <ng-template #tableHeader9>
+          <tr>
+            <th>Время</th>
+            <th>Операция</th>
+            <th>Состояние</th>
+            <th>Результат</th>
+            <th></th>
+          </tr>
+        </ng-template>
+        <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+          @switch (column.cellTemplate.slot) {
+            @case ('cell1') {
+              <span data-o1c-cell-content>{{ date(row.created_at) }}</span>
+            }
+            @case ('cell2') {
+              <span data-o1c-cell-content>
+                {{ row.kind === 'stock_matrix' ? 'Матрица распределения' : 'Ожидаемая поставка'
+                }}<small>{{ row.operation_id }}</small>
+              </span>
+            }
+            @case ('cell3') {
+              <span data-o1c-cell-content>
+                {{
+                  row.status === 'applied'
+                    ? 'Сохранено'
+                    : row.status === 'undone'
+                      ? 'Отменено'
+                      : 'Предпросмотр'
+                }}
+              </span>
+            }
+            @case ('cell4') {
+              <span data-o1c-cell-content>
+                @if (row.result) {
+                  <span
+                    >Сохранено: {{ row.result.applied || 0 }} · отменено:
+                    {{ row.result.undone || 0 }} · конфликтов: {{ row.result.conflicts || 0 }}</span
+                  >
+                }
+              </span>
+            }
+            @case ('cell5') {
+              <span data-o1c-cell-content>
+                @if (row.kind === 'stock_matrix' && row.status === 'applied' && canWrite()) {
+                  <button class="button" (click)="undo(row)" [disabled]="busy()">
+                    Отменить изменение
+                  </button>
+                }
+              </span>
+            }
+          }
+        </ng-template>
+      </app-data-table>
+    </div>
+  }
+  @if (
+    tab() === 'reconciliation' || tab() === 'matrix' || tab() === 'rules' || tab() === 'warehouses'
+  ) {
+    <app-stock-pager
+      [page]="page"
+      [size]="pageSize"
+      [total]="currentPage()?.meta?.total ?? currentPage()?.total ?? 0"
+      [busy]="loading()"
+      (pageChange)="changePage($event)"
+    />
+  }
+  @if (editor(); as rule) {
+    <dialog
+      #ruleDialog
+      class="rule-dialog"
+      role="dialog"
+      appModalFocus
+      (modalEscape)="!busy() && editor.set(null)"
+      (cancel)="$event.preventDefault(); !busy() && editor.set(null)"
+      aria-modal="true"
+      aria-labelledby="rule-title"
+    >
+      <div class="section-title">
+        <h2 id="rule-title">{{ rule.id ? 'Правило склада' : 'Новое правило' }}</h2>
+        <button type="button" (click)="!busy() && editor.set(null)">Закрыть</button>
+      </div>
+      @if (error()) {
+        <div class="editor-error" role="alert">{{ error() }}</div>
+      }
+      <form (ngSubmit)="saveRule()">
+        <fieldset [disabled]="busy()">
+          <label
+            >Артикул<input
+              name="offer"
+              [(ngModel)]="rule.offer_id"
+              [readOnly]="!!rule.id"
+              required /></label
+          ><label
+            >Склад Ozon<select name="wh" [(ngModel)]="rule.warehouse_id">
+              <option [ngValue]="null">Все склады</option>
+              @for (row of context()?.ozon_warehouses || []; track row.warehouse_id) {
+                <option [value]="row.warehouse_id">{{ row.warehouse_name }}</option>
+              }
+            </select></label
+          ><label
+            >Режим<select name="mode" [(ngModel)]="rule.maintain_target">
+              <option [ngValue]="false">По наличию 1С</option>
+              <option [ngValue]="true">Заданный остаток</option>
+            </select></label
+          >
+          @if (rule.maintain_target) {
+            <label
+              >Целевое количество<input
+                name="target"
+                type="number"
+                min="0"
+                step="1"
+                [(ngModel)]="rule.target_qty"
+                required
+            /></label>
+          } @else {
+            <label
+              >Доля от наличия 1С<input
+                name="share"
+                type="text"
+                inputmode="decimal"
+                [(ngModel)]="rule.share"
+                required
+              /><small>1 = 100 %, 1,5 = 150 %</small></label
+            >
+          }
+          <label
+            >Кратность<input
+              name="quantum"
+              type="number"
+              min="1"
+              step="1"
+              [(ngModel)]="rule.quantum"
+              required /></label
+          ><label class="check-label"
+            ><input name="enabled" type="checkbox" [(ngModel)]="rule.enabled" />Правило
+            включено</label
+          ><button class="button primary" type="submit">Сохранить в копии</button>
+        </fieldset>
+      </form>
+    </dialog>
+  }
+</div>

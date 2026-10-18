@@ -1,0 +1,105 @@
+{
+  "baseline": "8d9f71e7551ac5c51352c4a3b33876fc109febdd",
+  "methods": {
+    "DataTableComponent.trackColumn": {
+      "hash": "997e08f810a73de0f2772c62c73c0f7108907fbd6785083d3f5003cc2b06e01b",
+      "reason": "Стабильный trackBy сохраняет ячейки PrimeNG и фокус при обновлении конфигураций колонок."
+    },
+    "FilterBaseComponent.ngOnInit": {
+      "hash": "ac00f89ffe3de7262d09f6f7e68f4922d70bb1b7b5390f408760b2554c9f9601",
+      "reason": "Исходный effect использует Injector и OnPush; конфигурация регистрируется в исходном FilterService, значения Angular Forms и асинхронные options синхронизируются без отдельного механизма фильтрации."
+    },
+    "FilterControlDirective.render": {
+      "hash": "ca9f599f8163e09f03030027e95fba59dc9c53d71c35d15d74769e0c75947d84",
+      "reason": "Обновление существующего embedded view сохраняет ввод и фокус при изменении фильтра."
+    },
+    "FilterPanelDirective.render": {
+      "hash": "ca9f599f8163e09f03030027e95fba59dc9c53d71c35d15d74769e0c75947d84",
+      "reason": "Обновление существующего embedded view сохраняет ввод и фокус при изменении фильтра."
+    },
+    "FilterService.setConfigs": {
+      "hash": "c2f751ae1668d0bd8635674ca4056c64be55501ebf8237f06c39a484bb7c5f3d",
+      "reason": "Сортировка копии массива сохраняет переданные константы и конфигурации других потребителей."
+    },
+    "FilterService.updateFilter": {
+      "hash": "c6f3100e613a35280afcb73b46fe08a0c443487148ef3f461466fa646e7f2ce5",
+      "reason": "Доступность и зависимости проверяются исходным isDisabled, единообразно для UI и обновления значения."
+    },
+    "FilterService.resetFilter": {
+      "hash": "3e15acdd6e85a7b13746fcce382b06b7ceb103100d5271188cc60b54d5f7e8a9",
+      "reason": "Удаление значения без defaultValue сохраняет различие пустого выбора и отсутствия ограничения."
+    },
+    "FilterService.isDisabled": {
+      "hash": "03cfeb38976ea781bff5e48acefa6bf9e6a061366daa8e62b94fc1aa2f12d666",
+      "reason": "Проверяются dependsOnValue и допустимые false, 0 и пустая строка, как в исходной проверке updateFilter."
+    },
+    "NavigationComponent.toggleGroup": {
+      "hash": "3e160ae16991fa84499a186921829a27a4f9679fc5d2fa68e183b729b2df10f9",
+      "reason": "Используется существующий URL v2 /stocks?tab=reconciliation вместо демонстрационного /stocks/inventory."
+    },
+    "PageComponent.listenToOutletEvents": {
+      "hash": "670b422373c5b08b59172684b5f022890576c5f34b2faf480a4628aaf0d791c1",
+      "reason": "Учитывается уже активированный RouterOutlet и обновление OnPush-представления оболочки."
+    },
+    "PageComponent.updatePageData": {
+      "hash": "bb5bf306e6ee81ef6d13d808d4d233cd02e241ced46fb2bdb815e0570994c1d7",
+      "reason": "Оболочка помечается для обновления; getter читают строковые и Signal-заголовки страниц v2."
+    },
+    "PageComponent.closeMenu": {
+      "hash": "7680c9a9485a5428a61a50a57776d4893ca3d2c2e5b622eb934522f3c5849e9f",
+      "reason": "Закрытие мобильного меню при переходе в раздел v2."
+    },
+    "FilterBaseComponent.updateValue": {
+      "hash": "2cbfc44b3e58e01cce4a2197c72647599f2365958f2f334783cbc34421d23f02",
+      "reason": "Изменение проходит через исходный FilterService, затем через ControlValueAccessor в бизнес-форму. userChange отделяет пользовательское действие от загрузки и сброса; readOnly и disabled сохраняются."
+    },
+    "FilterBaseComponent.ngOnChanges": {
+      "hash": "6a61ff51ff0f4c34a6ee760e7b9c1a362b13e8cff5aeaeaa8881bc52ac096bb9",
+      "reason": "Обновление динамических вариантов и доступности исходного контрола без потери введённых значений."
+    },
+    "FilterBaseComponent.registerConfig": {
+      "hash": "801798ab5b1e1c0f4dc113ccb78e58d5f926946a1cb48153b8f58f42e2767142",
+      "reason": "Регистрация декларации исходного контрола в локальном FilterService через его публичные setConfigs/updateFilters; сохранение остальных полей, выбранных значений вне текущего ответа API и значений по умолчанию."
+    },
+    "FilterBaseComponent.writeValue": {
+      "hash": "37fad50ef6f71f7dffd0f4b5560da041f9ba480db59dd3ca6468bd41402d8eb8",
+      "reason": "Стандартный ControlValueAccessor принимает значения существующих бизнес-форм, сохраняет ISO-даты API и не запускает пользовательские действия при программном обновлении."
+    },
+    "FilterBaseComponent.registerOnChange": {
+      "hash": "a89bdea5fdc6bcaf5aa4fdc7f219afed3be8d71c7dc7264faf943985f5a66b1b",
+      "reason": "Стандартный callback ControlValueAccessor для связи исходного контрола с Angular Forms."
+    },
+    "FilterBaseComponent.registerOnTouched": {
+      "hash": "47507a7e18ca40969af2d7c3678304d2d7ed5d972a7aad965354b78b7add2934",
+      "reason": "Стандартный callback ControlValueAccessor для состояния touched в Angular Forms."
+    },
+    "FilterBaseComponent.setDisabledState": {
+      "hash": "4ecda4a7ccb9844b1862047b3d4f4e164a9545fc5341f5c615d78fd7e03494d9",
+      "reason": "Стандартный ControlValueAccessor синхронизирует доступность Angular Forms с исходным FilterService."
+    },
+    "FilterBaseComponent.toModelValue": {
+      "hash": "25b98a4605f009a6defc2c278a732e53e8c2fcc6b063c395a98fbcab32875065",
+      "reason": "Преобразование значения исходного контрола в прежний контракт бизнес-формы: ISO-дата, пустой текст, массив или boolean."
+    }
+  },
+  "members": {
+    "PageComponent.currentTitle": {
+      "originalKind": "PropertyDeclaration",
+      "currentKind": "GetAccessor",
+      "hash": "1d061a3de5d5248ed918744149e3b0c8493edc2742b245604a54af0c7692fd5d",
+      "reason": "Getter поддерживает строки и Signal страниц v2; заголовок обновляется при смене вкладки без повторной активации маршрута."
+    },
+    "PageComponent.currentSubtitle": {
+      "originalKind": "PropertyDeclaration",
+      "currentKind": "GetAccessor",
+      "hash": "7898bdf781cace29e9cb4584f79b8c1e0521ffc3e06c99356537477aafdf3ce0",
+      "reason": "Getter поддерживает строки и Signal страниц v2; заголовок обновляется при смене вкладки без повторной активации маршрута."
+    }
+  },
+  "initializers": {
+    "FilterService.validValues": {
+      "hash": "c4dfdcaa0dcbdc313fd33031535ccef1dc100afd6b9cfc301a3512ae8970df35",
+      "reason": "Значения отключённых зависимых фильтров не передаются как активные фильтры после изменения родительского поля."
+    }
+  }
+}

@@ -1,0 +1,405 @@
+<dialog
+  #dialog
+  class="catalog-dialog"
+  (cancel)="close($event)"
+  aria-labelledby="catalog-action-title"
+>
+  <div class="dialog-heading">
+    <div>
+      <span class="eyebrow">Локальный макет · выбрано {{ offers().length }}</span>
+      <h2 id="catalog-action-title">
+        {{
+          kind() === 'mapping'
+            ? 'Сопоставление с 1С'
+            : kind() === 'cost'
+              ? 'Стоимость и квант'
+              : kind() === 'finance'
+                ? 'FIN-категория, тип и целевая маржа'
+                : kind() === 'promotion'
+                  ? 'Модель акций'
+                  : 'Поля товаров'
+        }}
+      </h2>
+      @if (row()) {
+        <p [appProductName]="row()">{{ row()?.name || row()?.offer_id }}</p>
+      }
+    </div>
+    <button
+      class="icon-button"
+      type="button"
+      aria-label="Закрыть редактор"
+      [disabled]="busy()"
+      (click)="close()"
+    >
+      ×
+    </button>
+  </div>
+  <div class="catalog-dialog-body">
+    @if (error()) {
+      <div class="editor-error" role="alert">{{ error() }}</div>
+    }
+    @if (loading()) {
+      <p role="status">Проверяем версию товара…</p>
+    }
+    <form [formGroup]="form" (ngSubmit)="check()">
+      <fieldset [disabled]="busy() || loading() || uncertain()">
+        @if (kind() === 'mapping') {
+          <label
+            >Действие<select formControlName="action" aria-label="Действие">
+              <option value="link">Связать с товаром 1С</option>
+              <option value="quant">Изменить только квант</option>
+              <option value="clear">Снять сопоставление</option>
+            </select></label
+          >
+          @if (form.controls.action.value === 'clear') {
+            <p class="workspace-note">
+              Будут очищены код, артикул и ссылка 1С у выбранных карточек. Квант останется прежним.
+            </p>
+          }
+          @if (form.controls.action.value !== 'clear') {
+            <label
+              >Физических штук в одной позиции Ozon<input
+                formControlName="units"
+                type="number"
+                min="1"
+                max="1000000"
+                step="1"
+            /></label>
+          }
+          @if (form.controls.action.value === 'link') {
+            <div class="candidate-search">
+              <label
+                >Найти номенклатуру 1С<app-filter-text
+                  [formControl]="search"
+                  (keydown.enter)="$event.preventDefault(); findCandidates()"
+                  placeholder="Код, артикул, наименование или GUID"
+                  label="Найти номенклатуру 1С"
+                  key="search"
+                  [showLabel]="false"
+                ></app-filter-text></label
+              ><button
+                class="button"
+                type="button"
+                [disabled]="candidateBusy()"
+                (click)="findCandidates()"
+              >
+                Найти в снимке
+              </button>
+            </div>
+            @if (candidate()) {
+              <div class="candidate-picked" role="status">
+                <strong
+                  [appProductName]="{ sku_1c: candidate()?.sku_1c, name: candidate()?.onec_name }"
+                  >Выбрано: {{ candidate()?.onec_name || candidate()?.sku_1c }}</strong
+                ><small
+                  >Код {{ candidate()?.onec_code || 'Не задан' }} · Артикул
+                  {{ candidate()?.sku_1c }}</small
+                >
+              </div>
+            }
+            @if (candidateError()) {
+              <p class="editor-error" role="alert">{{ candidateError() }}</p>
+            }
+            <div class="candidate-list" [attr.aria-busy]="candidateBusy()">
+              @for (item of candidates(); track item.onec_code || item.sku_1c) {
+                <button
+                  type="button"
+                  class="candidate-option"
+                  [class.picked]="candidate() === item"
+                  (click)="choose(item)"
+                >
+                  <span
+                    ><strong [appProductName]="{ sku_1c: item.sku_1c, name: item.onec_name }">{{
+                      item.onec_name || item.sku_1c
+                    }}</strong
+                    ><small
+                      >Код {{ item.onec_code || '—' }} · Артикул {{ item.sku_1c }}</small
+                    ></span
+                  ><span
+                    >Остаток {{ item.available
+                    }}<small>{{ money(item.selected_cost) }} / шт.</small></span
+                  >
+                </button>
+              } @empty {
+                <p>
+                  {{
+                    candidateBusy()
+                      ? 'Поиск…'
+                      : 'Совпадений в снимке нет. Измените поисковый запрос.'
+                  }}
+                </p>
+              }
+            </div>
+            <small>Показано до 100 записей. Одинаковые артикулы различайте по коду 1С.</small>
+            @if (offers().length === 1) {
+              <details class="compare-section">
+                <summary (click)="comparisons() === null && compare()">
+                  Подбор по характеристикам
+                </summary>
+                @for (item of comparisons() || []; track item.sku_1c) {
+                  <article class="comparison">
+                    <strong>{{ item.sku_1c }} · совпадение {{ item.score }}%</strong>
+                    <p
+                      [appProductName]="
+                        item.reference_name
+                          ? {
+                              offer_id: item.reference_offer_id || item.sku_1c,
+                              name: item.reference_name,
+                            }
+                          : null
+                      "
+                    >
+                      {{ item.reference_name || item.reference_offer_id }}
+                    </p>
+                    <dl>
+                      @for (comparison of item.comparisons; track comparison.field) {
+                        <dt>{{ comparisonLabel(comparison.field) }}</dt>
+                        <dd>
+                          {{ comparison.marketplace_value || '—' }} /
+                          {{ comparison.onec_value || '—' }}
+                        </dd>
+                      }
+                    </dl>
+                    @for (reason of item.blocked_reasons; track reason) {
+                      <p class="warning-text">{{ reason }}</p>
+                    }
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="!item.can_accept"
+                      (click)="chooseComparison(item)"
+                    >
+                      Выбрать эту связь
+                    </button>
+                  </article>
+                } @empty {
+                  <p>Нет надёжных подсказок по характеристикам в сохранённых данных.</p>
+                }
+              </details>
+            }
+          }
+        } @else if (kind() === 'cost') {
+          <p>
+            Стоимость одной физической штуки × квант = ручная стоимость упаковки. При смене только
+            кванта сохраняется прежняя ручная стоимость штуки.
+          </p>
+          @if (row()) {
+            <div class="cost-facts">
+              <span
+                >Сейчас за штуку<strong>{{ money(row()?.unit_cost) }}</strong></span
+              ><span
+                >За упаковку<strong>{{ money(row()?.package_cost) }}</strong></span
+              ><span
+                >Автоматически за штуку<strong>{{
+                  money(row()?.automatic_unit_cost)
+                }}</strong></span
+              >
+            </div>
+          }
+          <label
+            >Что изменить<select formControlName="costAction" aria-label="Что изменить">
+              <option value="unit_cost">Стоимость одной штуки</option>
+              <option value="units_per_item">Только квант</option>
+              <option value="both">Стоимость штуки и квант</option>
+              <option value="clear">Вернуть автоматическую себестоимость</option>
+            </select></label
+          >
+          @if (
+            form.controls.costAction.value === 'unit_cost' ||
+            form.controls.costAction.value === 'both'
+          ) {
+            <label
+              >Ручная стоимость одной штуки, ₽<input
+                formControlName="unitCost"
+                inputmode="decimal"
+                placeholder="Например, 123,45"
+            /></label>
+          }
+          @if (
+            form.controls.costAction.value === 'units_per_item' ||
+            form.controls.costAction.value === 'both'
+          ) {
+            <label
+              >Штук в позиции Ozon<input
+                formControlName="units"
+                type="number"
+                min="1"
+                max="1000000"
+                step="1"
+            /></label>
+          }
+        } @else if (kind() === 'finance') {
+          <p>
+            Изменятся только отмеченные поля. Пустое отмеченное поле очистит значение. Защищённые
+            товары пропускаются. Расчёт цен выполняется локально.
+          </p>
+          <label class="check-label"
+            ><input type="checkbox" formControlName="financeCategoryEnabled" />Изменить
+            FIN-категорию</label
+          >
+          <label
+            >FIN-категория<input
+              formControlName="financeCategory"
+              [readOnly]="!form.controls.financeCategoryEnabled.value"
+          /></label>
+          <label class="check-label"
+            ><input type="checkbox" formControlName="financeTypeEnabled" />Изменить FIN-тип</label
+          >
+          <label
+            >FIN-тип<input
+              formControlName="financeType"
+              [readOnly]="!form.controls.financeTypeEnabled.value"
+          /></label>
+          <label class="check-label"
+            ><input type="checkbox" formControlName="marginEnabled" />Изменить целевую маржу</label
+          >
+          <label
+            >Целевая маржа, %<input
+              formControlName="margin"
+              inputmode="decimal"
+              [readOnly]="!form.controls.marginEnabled.value"
+          /></label>
+        } @else if (kind() === 'promotion') {
+          <label
+            >Новое правило участия<select formControlName="promotionModel">
+              <option value="choose" disabled>Выберите правило…</option>
+              <option value="">По правилу категории</option>
+              <option value="0">Не участвовать</option>
+              <option value="1">Бустинг и цена Ozon</option>
+              <option value="2">По минимальной цене</option>
+            </select></label
+          >
+          <p>
+            Правило товара имеет приоритет над категорией. Возврат к категории снимает только
+            индивидуальную модель. Сохранение не меняет участие и цены Ozon.
+          </p>
+        } @else {
+          <label
+            >Поле<select formControlName="label" aria-label="Поле">
+              <option value="report_category">Категория отчёта</option>
+              <option value="report_type">Тип отчёта</option>
+              <option value="fin_type">Тип Фин</option>
+              <option value="brand">Бренд</option>
+              <option value="category">Категория в локальном каталоге</option>
+              <option value="locked">Блокировка расчёта</option>
+            </select></label
+          >
+          @if (form.controls.label.value === 'locked') {
+            <label
+              >Значение<select formControlName="labelValue" aria-label="Значение">
+                <option value="false">Разблокировать</option>
+                <option value="true">Заблокировать</option>
+              </select></label
+            >
+          } @else {
+            <label
+              >Новое значение<input
+                formControlName="labelValue"
+                [readOnly]="form.controls.clear.value" /></label
+            ><label class="check-label"
+              ><input formControlName="clear" type="checkbox" />Очистить поле</label
+            >
+          }
+        }
+        <button class="button" type="submit">
+          {{ busy() ? 'Проверяем…' : 'Предпросмотр изменения' }}
+        </button>
+      </fieldset>
+    </form>
+    @if (preview(); as current) {
+      <section class="catalog-preview" aria-label="Предпросмотр изменения">
+        <h3>Товаров для изменения: {{ current.eligible }}</h3>
+        <p>Защищённых пропущено: {{ current.skipped || 0 }}.</p>
+        <p>Состав отбора зафиксирован до {{ date(current.expires_at) }}.</p>
+        <dl>
+          @for (entry of entries(current.changes); track entry[0]) {
+            <dt>{{ fieldLabel(entry[0]) }}</dt>
+            <dd>{{ previewValue(entry[0], entry[1]) }}</dd>
+          }
+        </dl>
+        @if (current.selected_product) {
+          <p>
+            Товар 1С:
+            <strong
+              [appProductName]="{
+                sku_1c: current.selected_product.sku_1c,
+                name: current.selected_product.onec_name,
+              }"
+              >{{ current.selected_product.onec_name }}</strong
+            >
+            · код
+            {{ current.selected_product.onec_code }}
+          </p>
+          <small
+            >Уже связан с {{ current.shared_offer_count || 0 }} карточками. Остаток одной
+            номенклатуры используется совместно.</small
+          >
+        }
+        <div class="table-scroll">
+          <app-data-table
+            [columns]="tableColumns1()"
+            [data]="current.sample || []"
+            [headerTemplate]="tableHeader1"
+            selectionMode="none"
+            [rowClickable]="false"
+            [lazy]="false"
+            [scrollable]="false"
+            tableStyleClass="operation-table"
+            dataKey="offer_id"
+            emptyMessage="Нет данных"
+          >
+            <ng-template #tableHeader1>
+              <tr>
+                <th>Артикул</th>
+                <th>Было</th>
+                <th>Станет</th>
+              </tr>
+            </ng-template>
+            <ng-template #cellTemplate let-item let-column="column" let-rowIndex="rowIndex">
+              @switch (column.cellTemplate.slot) {
+                @case ('cell1') {
+                  <span data-o1c-cell-content>
+                    {{ item.offer_id }}<small [appProductName]="item">{{ item.name }}</small>
+                  </span>
+                }
+                @case ('cell2') {
+                  <span data-o1c-cell-content>
+                    @for (entry of entries(current.changes); track entry[0]) {
+                      <div>
+                        <b>{{ fieldLabel(entry[0]) }}:</b>
+                        {{
+                          item.before_values?.[entry[0]] == null
+                            ? '—'
+                            : previewValue(entry[0], item.before_values![entry[0]])
+                        }}
+                      </div>
+                    }
+                  </span>
+                }
+                @case ('cell3') {
+                  <span data-o1c-cell-content>
+                    @for (entry of entries(current.changes); track entry[0]) {
+                      <div>
+                        <b>{{ fieldLabel(entry[0]) }}:</b>
+                        {{ previewValue(entry[0], item.after_values?.[entry[0]]) }}
+                      </div>
+                    }
+                  </span>
+                }
+              }
+            </ng-template>
+          </app-data-table>
+        </div>
+        @if (uncertain()) {
+          <button class="button primary" [disabled]="busy()" (click)="checkResult()">
+            Проверить результат операции
+          </button>
+        } @else {
+          <button class="button primary" [disabled]="busy()" (click)="apply()">
+            {{ busy() ? 'Сохраняем…' : 'Применить в v2' }}
+          </button>
+        }
+      </section>
+    }
+  </div>
+</dialog>

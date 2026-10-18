@@ -1,0 +1,51 @@
+<div class="table-wrap">
+  <app-data-table
+    [columns]="detailColumns"
+    [data]="stocks"
+    [headerTemplate]="tableHeader2"
+    selectionMode="none"
+    [rowClickable]="false"
+    [lazy]="false"
+    [scrollable]="false"
+    tableStyleClass="operation-table"
+    emptyMessage="Исходных остатков нет."
+  >
+    <ng-template #tableHeader2>
+      <tr>
+        <th>Источник</th>
+        <th>Артикул / код</th>
+        <th>Склад</th>
+        <th>Доступно</th>
+        <th>Резерв</th>
+        <th>Обновлено</th>
+      </tr>
+    </ng-template>
+    <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+      @switch (column.cellTemplate.slot) {
+        @case ('cell1') {
+          <span data-o1c-cell-content>{{ row.source === '1c' ? '1С' : 'Ozon' }}</span>
+        }
+        @case ('cell2') {
+          <span data-o1c-cell-content>
+            <span [appProductName]="row">{{
+              row.product_name || row.offer_id || row.sku_1c || row.sku
+            }}</span
+            ><small>{{ row.offer_id || row.sku_1c || row.sku }}</small>
+          </span>
+        }
+        @case ('cell3') {
+          <span data-o1c-cell-content>{{ row.warehouse_name || row.warehouse_id || '—' }}</span>
+        }
+        @case ('cell4') {
+          <span data-o1c-cell-content>{{ quantity(row.available) }}</span>
+        }
+        @case ('cell5') {
+          <span data-o1c-cell-content>{{ quantity(row.reserved) }}</span>
+        }
+        @case ('cell6') {
+          <span data-o1c-cell-content>{{ date(row.measured_at || row.updated_at) }}</span>
+        }
+      }
+    </ng-template>
+  </app-data-table>
+</div>

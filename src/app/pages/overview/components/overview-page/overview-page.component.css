@@ -1,0 +1,163 @@
+:host {
+  display: block;
+}
+.overview-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 22px;
+}
+.overview-totals {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+.overview-totals > a,
+.overview-totals > div {
+  padding: 16px 20px;
+  border-right: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+}
+.overview-totals > :last-child {
+  border-right: 0;
+}
+.overview-totals span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.overview-totals strong {
+  display: block;
+  font-size: 24px;
+  font-weight: 600;
+  margin-top: 7px;
+  font-variant-numeric: tabular-nums;
+}
+.overview-totals a:hover {
+  background: var(--brand-soft);
+}
+.overview-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+}
+.panel-heading h2 {
+  font-size: 15px;
+  margin: 0;
+}
+.panel-heading > a,
+.panel-heading > span {
+  font-size: 12px;
+}
+.overview-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+:host ::ng-deep .overview-layout .table-scroll table {
+  min-width: 660px;
+}
+.overview-page small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.task-links > a {
+  display: block;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 550;
+}
+.task-links > a:last-child {
+  border-bottom: 0;
+}
+.task-links span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  margin-top: 5px;
+}
+.snapshot-facts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin: 0;
+  padding: 16px 18px;
+  font-size: 12px;
+}
+.snapshot-facts dt {
+  color: var(--muted);
+}
+.snapshot-facts dd {
+  margin: 0 0 10px;
+}
+.overview-history {
+  margin-top: 24px;
+}
+:host ::ng-deep .overview-history .table-scroll table {
+  min-width: 750px;
+}
+:host ::ng-deep .operation-error {
+  max-width: 350px;
+  white-space: normal;
+  color: var(--muted);
+}
+.failed {
+  color: var(--red);
+  background: #fef3f2;
+}
+.empty-row {
+  text-align: center;
+  padding: 35px 20px;
+  color: var(--muted);
+}
+.overview-loading {
+  padding: 30px;
+  color: var(--muted);
+}
+@media (max-width: 1150px) {
+  .overview-layout {
+    grid-template-columns: 1fr;
+  }
+  .overview-side {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .overview-totals {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .overview-totals > a,
+  .overview-totals > div {
+    border-bottom: 1px solid var(--border);
+  }
+}
+@media (max-width: 600px) {
+  .overview-totals {
+    grid-template-columns: 1fr 1fr;
+  }
+  .overview-totals > a,
+  .overview-totals > div {
+    padding: 14px;
+  }
+  .overview-totals strong {
+    font-size: 21px;
+  }
+  .overview-side {
+    grid-template-columns: 1fr;
+  }
+  .overview-layout {
+    gap: 18px;
+  }
+}

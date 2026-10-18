@@ -1,15 +1,11 @@
-import { Component, input } from '@angular/core';
-
-import { iconPaths, IconName } from '../infrastructure/constants/icon-paths';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'app-icon',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+
+  selector: 'app-icons-sprite',
+  standalone: false,
+  styleUrl: './icons-sprite.component.scss',
   templateUrl: './icons-sprite.component.html',
-  styleUrl: './icons-sprite.component.css',
 })
-export class Icon {
-  readonly name = input<IconName>('arrow');
-  path(): string {
-    return iconPaths[this.name()];
-  }
-}
+export class IconsSpriteComponent {}

@@ -1,0 +1,119 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+:host ::ng-deep .operational-table .order-items {
+  min-width: 250px;
+  max-width: 360px;
+}
+
+:host ::ng-deep .order-items > span {
+  display: block;
+  line-height: 1.6;
+}
+
+:host ::ng-deep .order-items strong {
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.record-link {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--brand);
+  cursor: pointer;
+  font-weight: 550;
+  text-align: left;
+}
+
+.positive {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.cancelled {
+  color: var(--red);
+  background: #fef3f2;
+}
+
+.order-bulk-bar .button,
+:host ::ng-deep .order-row-actions .button {
+  font-size: 11px;
+  min-height: 32px;
+  padding: 6px 10px;
+}
+
+.column-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.column-heading .heading-sort {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.heading-sort span {
+  flex: none;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+:host ::ng-deep .operational-table th[aria-sort='ascending'] .heading-sort span,
+:host ::ng-deep .operational-table th[aria-sort='descending'] .heading-sort span {
+  color: var(--brand);
+}
+
+:host ::ng-deep .order-items > span {
+  margin-bottom: 5px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+:host ::ng-deep .order-items > span:last-child {
+  margin-bottom: 0;
+}
+
+:host ::ng-deep .order-items small {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+:host ::ng-deep .order-row-actions {
+  min-width: 180px;
+}
+
+:host ::ng-deep .order-row-actions .button {
+  display: flex;
+  margin-bottom: 6px;
+}
+
+:host ::ng-deep .order-row-actions .downloaded {
+  color: var(--green);
+  border-color: #b7e5ca;
+  background: var(--green-soft);
+}
+
+:host ::ng-deep .order-row-actions .label-downloaded {
+  color: var(--green);
+  font-size: 10px;
+}
+.table-scroll {
+  max-height: clamp(360px, calc(100dvh - 300px), 860px);
+  overscroll-behavior: contain;
+}

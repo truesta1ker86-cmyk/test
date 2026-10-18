@@ -1,0 +1,30 @@
+@if (context.status() === 'ready') {
+  <app-page><router-outlet appPageAttach /></app-page>
+} @else {
+  <main class="access-state" aria-live="polite">
+    <span class="logo-mark">O1</span>
+    @switch (context.status()) {
+      @case ('loading') {
+        <h1>Открываем рабочее пространство</h1>
+        <p>Проверяем ваш магазин и доступ.</p>
+      }
+      @case ('signed-out') {
+        <h1>Вход в версию 2</h1>
+        <p>Введите ключ доступа владельца или сотрудника.</p>
+        <app-login-panel (accepted)="context.accept($event)" />
+      }
+      @case ('changed') {
+        <h1>Магазин изменился</h1>
+        <p>Данные этой вкладки скрыты. Обновите страницу, чтобы продолжить в текущем магазине.</p>
+        <button class="button primary" type="button" (click)="reload()">Обновить страницу</button>
+      }
+      @case ('error') {
+        <h1>Не удалось открыть магазин</h1>
+        <p role="alert">{{ sessionError() }}</p>
+        <button class="button primary" type="button" (click)="loadSession()">
+          Повторить попытку
+        </button>
+      }
+    }
+  </main>
+}

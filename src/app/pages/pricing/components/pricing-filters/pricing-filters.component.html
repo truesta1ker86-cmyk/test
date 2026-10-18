@@ -1,0 +1,197 @@
+<button
+  class="button filter-trigger pricing-header-button"
+  type="button"
+  aria-haspopup="dialog"
+  [attr.aria-expanded]="opened()"
+  (click)="open()"
+>
+  <app-icon name="filter" />Фильтры
+  @if (activeCount()) {
+    <span class="filter-count">{{ activeCount() }}</span>
+  }
+</button>
+@if (opened()) {
+  <dialog
+    #drawer
+    class="stock-filter-panel"
+    aria-label="Фильтры расчёта цен"
+    appModalFocus
+    (modalEscape)="opened.set(false)"
+    (cancel)="$event.preventDefault(); opened.set(false)"
+  >
+    <header>
+      <div>
+        <h2>Фильтры</h2>
+        <p>Таблица и массовые действия используют один отбор.</p>
+      </div>
+      <button type="button" aria-label="Закрыть фильтры цен" (click)="opened.set(false)">×</button>
+    </header>
+    <div class="stock-filter-grid">
+      @if (error()) {
+        <p class="workflow-error full-width" role="alert">{{ error() }}</p>
+      }
+      @if (message()) {
+        <p class="full-width" role="status">{{ message() }}</p>
+      }
+      <label
+        >Артикул<app-filter-text
+          [ngModel]="draft().article"
+          (ngModelChange)="set('article', $event)"
+          label="Артикул"
+          key="draft___article"
+          [showLabel]="false"
+        ></app-filter-text
+      ></label>
+      <label
+        >Номенклатура<app-filter-text
+          [ngModel]="draft().name"
+          (ngModelChange)="set('name', $event)"
+          label="Номенклатура"
+          key="draft___name"
+          [showLabel]="false"
+        ></app-filter-text
+      ></label>
+      @for (field of fields; track field[0]) {
+        <app-filter-multiselect
+          [key]="field[0]"
+          [label]="field[1]"
+          [options]="options(field[0])"
+          [ngModel]="draft()[field[0]] | filterValues"
+          (ngModelChange)="choice(field[0], $event)"
+          [ngModelOptions]="{ standalone: true }"
+        />
+      }
+      <label
+        >Целевая маржа от, %<app-filter-text
+          [ngModel]="draft().margin_min"
+          (ngModelChange)="set('margin_min', $event)"
+          label="Целевая маржа от, %"
+          key="draft___margin_min"
+          [showLabel]="false"
+        ></app-filter-text
+      ></label>
+      <label
+        >Целевая маржа до, %<app-filter-text
+          [ngModel]="draft().margin_max"
+          (ngModelChange)="set('margin_max', $event)"
+          label="Целевая маржа до, %"
+          key="draft___margin_max"
+          [showLabel]="false"
+        ></app-filter-text
+      ></label>
+      <label class="full-width"
+        >Акционная цена ниже минималки<app-filter-select
+          [ngModel]="draft().promo_below_minimum"
+          (ngModelChange)="set('promo_below_minimum', $event)"
+          [options]="promoBelowMinimumOptions()"
+          label="Акционная цена ниже минималки"
+          key="draft___promo_below_minimum"
+          [showLabel]="false"
+        ></app-filter-select
+      ></label>
+      <details class="full-width">
+        <summary>Условия отбора строк</summary>
+        <label
+          >Соответствие<app-filter-select
+            [ngModel]="draft().logic"
+            (ngModelChange)="set('logic', $event)"
+            [options]="logicOptions()"
+            label="Логика условий"
+            key="draft___logic"
+            [showLabel]="false"
+          ></app-filter-select
+        ></label>
+        @for (c of conditions(); track $index; let i = $index) {
+          <div class="condition-row">
+            <app-filter-select
+              [ngModel]="c.field"
+              (ngModelChange)="changeCondition(i, 'field', $event)"
+              [options]="conditionFieldOptions()"
+              [label]="'Поле условия ' + (i + 1)"
+              [key]="'pricing-filters-c_field-' + $index"
+              [showLabel]="false"
+            ></app-filter-select>
+            <app-filter-select
+              [ngModel]="c.operator"
+              (ngModelChange)="changeCondition(i, 'operator', $event)"
+              [options]="conditionOperatorOptions()"
+              [label]="'Оператор условия ' + (i + 1)"
+              [key]="'pricing-filters-c_operator-' + $index"
+              [showLabel]="false"
+            ></app-filter-select>
+            @if (c.operator !== 'empty' && c.operator !== 'not_empty') {
+              <app-filter-text
+                [ngModel]="c.value"
+                (ngModelChange)="changeCondition(i, 'value', $event)"
+                [label]="'Значение условия ' + (i + 1)"
+                [key]="'pricing-filters-c_value-' + $index"
+                [showLabel]="false"
+              ></app-filter-text>
+            }
+            <button
+              type="button"
+              (click)="removeCondition(i)"
+              [attr.aria-label]="'Удалить условие ' + (i + 1)"
+            >
+              ×
+            </button>
+          </div>
+        }
+        <button type="button" class="button" (click)="addCondition()">Добавить условие</button>
+      </details>
+      <details class="full-width">
+        <summary>Сохранённые отборы</summary>
+        <label
+          >Отбор<app-filter-select
+            [ngModel]="viewId"
+            [options]="viewIdOptions()"
+            label="Сохранённый отбор"
+            key="viewId"
+            [showLabel]="false"
+            (ngModelChange)="viewId = $event; useView()"
+          ></app-filter-select
+        ></label>
+        @if (canManage()) {
+          <label
+            >Название<app-filter-text
+              key="viewName"
+              label="Название отбора"
+              [(ngModel)]="viewName"
+              [showLabel]="false"
+          /></label>
+          <label class="check-line"
+            ><app-filter-boolean
+              key="defaultView"
+              label="Открывать после входа"
+              [(ngModel)]="defaultView"
+              [showLabel]="false"
+            />Открывать после входа</label
+          >
+          <div class="button-row">
+            <button class="button" type="button" (click)="saveView()" [disabled]="busy()">
+              Сохранить отбор</button
+            ><button
+              class="button"
+              type="button"
+              (click)="saveView(true)"
+              [disabled]="busy() || !viewId"
+            >
+              Обновить отбор</button
+            ><button
+              class="button"
+              type="button"
+              (click)="deleteView()"
+              [disabled]="busy() || !viewId"
+            >
+              Удалить отбор
+            </button>
+          </div>
+        }
+      </details>
+    </div>
+    <footer>
+      <button class="button" type="button" (click)="reset()">Сбросить фильтры</button
+      ><button class="button primary" type="button" (click)="apply()">Применить</button>
+    </footer>
+  </dialog>
+}

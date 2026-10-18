@@ -1,0 +1,112 @@
+<div class="table-wrap" [attr.aria-busy]="loading">
+  <app-data-table
+    [columns]="reconciliationColumns"
+    [data]="items"
+    [headerTemplate]="tableHeader1"
+    selectionMode="none"
+    [rowClickable]="false"
+    [lazy]="false"
+    [scrollable]="false"
+    tableStyleClass="operation-table"
+    dataKey="offer_id"
+    emptyMessage="Нет данных"
+  >
+    <ng-template #tableHeader1>
+      <tr>
+        <th>Выбор</th>
+        <th>Товар</th>
+        <th>Физический 1С, уп.</th>
+        <th>Резерв 1С, уп.</th>
+        <th>Заказы FBS, уп.</th>
+        <th>Расчёт 1С, уп.</th>
+        <th>Безопасно, уп.</th>
+        <th>Ozon, уп.</th>
+        <th>Резерв Ozon</th>
+        <th>Разница</th>
+        <th>Состояние</th>
+      </tr>
+    </ng-template>
+    <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+      @switch (column.cellTemplate.slot) {
+        @case ('cell1') {
+          <span data-o1c-cell-content>
+            <input
+              type="checkbox"
+              [attr.aria-label]="'Выбрать ' + row.offer_id"
+              [checked]="selected.has(row.offer_id)"
+              (change)="
+                selectionChange.emit({ offer: row.offer_id, checked: $any($event.target).checked })
+              "
+            />
+          </span>
+        }
+        @case ('cell2') {
+          <span data-o1c-cell-content>
+            <div class="stock-product">
+              @if (row.main_image) {
+                <img [src]="row.main_image" alt="" loading="lazy" />
+              }
+              <div>
+                <a
+                  [appProductName]="row"
+                  routerLink="/products/card"
+                  [queryParams]="{ offer_id: row.offer_id }"
+                  >{{ row.product_name || row.offer_id }}</a
+                ><small
+                  >{{ row.offer_id }} · 1С
+                  {{ row.onec_code || row.sku_1c || 'не сопоставлен' }}</small
+                >
+              </div>
+            </div>
+          </span>
+        }
+        @case ('cell3') {
+          <span data-o1c-cell-content>
+            <strong>{{ quantity(row.physical_1c) }}</strong
+            ><small
+              >{{ quantity(row.physical_1c_base) }} ед. ·
+              {{ row.units_per_item || 1 }} ед./уп.</small
+            ><small>{{ date(row.one_c_measured_at) }}</small>
+          </span>
+        }
+        @case ('cell4') {
+          <span data-o1c-cell-content>
+            {{ quantity(row.reserved_1c)
+            }}<small>{{ quantity(row.reserved_1c_base) }} базовых ед.</small>
+          </span>
+        }
+        @case ('cell5') {
+          <span data-o1c-cell-content>
+            {{ quantity(row.protected_fbs_orders)
+            }}<small>После снимка · активных {{ row.active_fbs_orders || 0 }}</small
+            ><small>Требуют сверки: {{ row.ambiguous_fbs_orders || 0 }}</small>
+          </span>
+        }
+        @case ('cell6') {
+          <span data-o1c-cell-content>{{ quantity(row.calculated_publishable) }}</span>
+        }
+        @case ('cell7') {
+          <span data-o1c-cell-content>{{ quantity(row.safe_publishable) }}</span>
+        }
+        @case ('cell8') {
+          <span data-o1c-cell-content>
+            {{ quantity(row.ozon_fbs_available) }}<small>{{ date(row.ozon_updated_at) }}</small>
+          </span>
+        }
+        @case ('cell9') {
+          <span data-o1c-cell-content>{{ quantity(row.ozon_fbs_reserved) }}</span>
+        }
+        @case ('cell10') {
+          <span data-o1c-cell-content>{{ quantity(row.difference) }}</span>
+        }
+        @case ('cell11') {
+          <span data-o1c-cell-content>
+            <span class="stock-status" [attr.data-status]="row.status">{{
+              labels[row.status] || row.status
+            }}</span>
+          </span>
+        }
+      }
+    </ng-template>
+  </app-data-table>
+</div>

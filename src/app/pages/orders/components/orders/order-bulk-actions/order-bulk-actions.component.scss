@@ -1,0 +1,33 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.order-bulk-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+}
+
+.order-bulk-bar > div:first-child {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.order-bulk-bar small {
+  margin: 0;
+}
+
+.order-bulk-bar .button,
+:host ::ng-deep .order-row-actions .button {
+  font-size: 11px;
+  min-height: 32px;
+  padding: 6px 10px;
+}

@@ -1,0 +1,224 @@
+<div class="table-scroll" tabindex="0" aria-label="Товары, таблица с горизонтальной прокруткой">
+  <app-data-table
+    [columns]="tableColumns1()"
+    [selection]="visibleTableSelection()"
+    [data]="loading() ? [] : rows()"
+    [headerTemplate]="tableHeader1"
+    selectionMode="none"
+    [rowClickable]="false"
+    [lazy]="false"
+    [scrollable]="false"
+    tableStyleClass="operation-table price-workflow-table"
+    dataKey="offer_id"
+    emptyMessage="Товары не найдены. Измените отбор."
+  >
+    <ng-template #tableHeader1>
+      <tr>
+        <th class="check-cell">
+          <input
+            type="checkbox"
+            aria-label="Выбрать все товары текущего фильтра"
+            [checked]="allSelected()"
+            [disabled]="loading()"
+            (change)="filteredSelected.emit($any($event.target).checked)"
+          />
+        </th>
+        @for (col of columns; track col.key) {
+          <th
+            [attr.data-column-label]="col.label"
+            [class.name-cell]="col.key === 'name'"
+            [attr.aria-sort]="
+              sort() === col.sort ? (direction() === 'asc' ? 'ascending' : 'descending') : 'none'
+            "
+          >
+            <div class="pricing-column-heading">
+              @if (col.sort) {
+                <button type="button" (click)="sorted.emit(col.sort)">
+                  {{ col.label }}
+                  <span class="sort-indicator">{{
+                    sort() === col.sort ? (direction() === 'asc' ? '↑' : '↓') : '↕'
+                  }}</span>
+                </button>
+              } @else {
+                <span>{{ col.label }}</span>
+              }
+              <app-column-filter
+                [field]="col.key"
+                [label]="col.label"
+                [numeric]="!!col.numeric"
+                [options]="columnOptions()[col.key] || []"
+                [rule]="columnRules()[col.key]"
+                (changed)="columnChanged.emit($event)"
+              />
+            </div>
+          </th>
+        }
+        <th>Действия</th>
+      </tr>
+    </ng-template>
+    <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
+      @switch (column.cellTemplate.slot) {
+        @case ('cell1') {
+          <span data-o1c-cell-content>
+            <input
+              type="checkbox"
+              [attr.aria-label]="'Выбрать ' + row.offer_id"
+              [checked]="selected().has(row.offer_id)"
+              (change)="toggled.emit(row.offer_id)"
+            />
+          </span>
+        }
+        @case ('cell2') {
+          <span data-o1c-cell-content class="offer-cell">
+            <button
+              type="button"
+              [attr.data-product-preview]="row.offer_id"
+              [attr.data-product-preview-name]="row.name || row.offer_id"
+              [attr.data-product-preview-image]="row.main_image"
+              data-product-preview-pin
+            >
+              {{ row.offer_id }}
+            </button>
+          </span>
+        }
+        @case ('cell3') {
+          <span data-o1c-cell-content class="name-cell">
+            <button
+              type="button"
+              data-product-preview-anchor
+              [attr.data-product-preview]="row.offer_id"
+              [attr.data-product-preview-name]="row.name || row.offer_id"
+              [attr.data-product-preview-image]="row.main_image"
+              data-product-preview-pin
+            >
+              {{ row.name || row.offer_id }}
+            </button>
+            @if (row.draft_version) {
+              <small>Черновик v{{ row.draft_version }} · не опубликован</small>
+            }
+            @if (row.marketplace_name && row.marketplace_name !== row.name) {
+              <small>Снимок Ozon: {{ row.marketplace_name }}</small>
+            }
+          </span>
+        }
+        @case ('cell4') {
+          <span data-o1c-cell-content>
+            {{ row.category_name || 'Не задана' }}<small>Из карточки · только чтение</small>
+          </span>
+        }
+        @case ('cell5') {
+          <span data-o1c-cell-content>
+            {{ row.type_name || 'Не задан' }}<small>Статус: {{ row.state || 'не получен' }}</small>
+          </span>
+        }
+        @case ('cell6') {
+          <span data-o1c-cell-content>
+            <button
+              type="button"
+              [disabled]="!canManage()"
+              [attr.aria-label]="'Изменить FIN-категорию ' + row.offer_id"
+              (click)="edited.emit({ kind: 'finance', row, field: 'report_category' })"
+            >
+              {{ row.report_category || 'Без категории' }}</button
+            ><small>{{
+              row.report_category_source === 'manual'
+                ? 'FIN · ручное значение'
+                : 'FIN · изменить вручную'
+            }}</small>
+          </span>
+        }
+        @case ('cell7') {
+          <span data-o1c-cell-content>
+            <button
+              type="button"
+              [disabled]="!canManage()"
+              [attr.aria-label]="'Изменить FIN-тип ' + row.offer_id"
+              (click)="edited.emit({ kind: 'finance', row, field: 'report_type' })"
+            >
+              {{ row.report_type || 'Без типа' }}</button
+            ><small>{{
+              row.report_type_source === 'manual'
+                ? 'FIN · ручное значение'
+                : 'FIN · изменить вручную'
+            }}</small>
+          </span>
+        }
+        @case ('cell8') {
+          <span data-o1c-cell-content>
+            <button
+              type="button"
+              [disabled]="!canManage()"
+              [attr.aria-label]="'Изменить целевую маржу ' + row.offer_id"
+              (click)="edited.emit({ kind: 'finance', row, field: 'fixed_margin' })"
+            >
+              {{ row.fixed_margin == null ? 'Без цели' : percent(row.fixed_margin) }}</button
+            ><small>Цель для минимальной цены</small>
+          </span>
+        }
+        @case ('cell9') {
+          <span data-o1c-cell-content>
+            {{ row.units_sold || 0 }} шт.<small>{{ money(row.revenue) }} · только доставки</small>
+          </span>
+        }
+        @case ('cell10') {
+          <span data-o1c-cell-content>
+            {{ money(row.price) }}<small>Сейчас на Ozon</small
+            ><strong>{{ money(row.calculated_price) }}</strong
+            ><small>Расчётная цена</small>
+          </span>
+        }
+        @case ('cell11') {
+          <span data-o1c-cell-content>
+            {{ money(row.unit_cost) }} × {{ row.units_per_item || 1 }} =
+            <b>{{ money(row.package_cost) }}</b
+            ><small>{{ source(row.cost_source) }}</small
+            ><button
+              type="button"
+              class="cost-button"
+              [disabled]="!canManage()"
+              (click)="edited.emit({ kind: 'cost', row })"
+            >
+              Себес и квант
+            </button>
+          </span>
+        }
+        @case ('cell12') {
+          <span data-o1c-cell-content>
+            <button
+              type="button"
+              [disabled]="!canManage()"
+              [attr.aria-label]="'Модель акций для ' + row.offer_id"
+              (click)="edited.emit({ kind: 'promotion', row })"
+            >
+              {{ row.promotion_model_title || 'Не назначена' }}</button
+            ><small>{{
+              row.promotion_model_source === 'product'
+                ? 'Правило товара'
+                : row.promotion_model_source === 'category'
+                  ? 'Правило категории'
+                  : 'Правило не назначено'
+            }}</small
+            ><button type="button" class="cost-button" (click)="campaign.emit([row.offer_id])">
+              Акция для товара…
+            </button>
+          </span>
+        }
+        @case ('cell13') {
+          <span data-o1c-cell-content class="row-actions">
+            <button type="button" class="button" (click)="details.emit(row)">Данные</button
+            ><button type="button" class="button primary" (click)="card.emit(row)">
+              Редактировать</button
+            ><button
+              type="button"
+              class="button"
+              [disabled]="!canManage()"
+              (click)="edited.emit({ kind: 'mapping', row })"
+            >
+              Связь 1С</button
+            ><a routerLink="/pricing" [queryParams]="{ search: row.offer_id }">Расчёт цен</a>
+          </span>
+        }
+      }
+    </ng-template>
+  </app-data-table>
+</div>

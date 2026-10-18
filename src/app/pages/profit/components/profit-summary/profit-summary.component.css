@@ -1,0 +1,136 @@
+:host {
+  display: block;
+}
+.profit-formula {
+  padding: 14px 16px;
+  background: var(--brand-soft);
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.profit-filters {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+.profit-filters label {
+  min-width: 180px;
+  font-size: 11px;
+}
+.profit-filters span {
+  color: var(--muted);
+  font-size: 11px;
+  padding-bottom: 10px;
+}
+.profit-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  border: 1px solid var(--border);
+  background: var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.profit-metrics > div {
+  flex: 1 0 175px;
+  background: var(--surface);
+  padding: 14px;
+}
+.profit-metrics span,
+.profit-breakdown span {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.profit-metrics strong {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.negative {
+  color: var(--red);
+}
+.incomplete {
+  padding: 12px;
+  background: var(--amber-soft);
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.profit-scroll {
+  overflow: auto;
+  max-height: 70dvh;
+  margin: 18px 0;
+  border: 1px solid var(--table-grid);
+  border-radius: var(--panel-radius);
+}
+:host ::ng-deep table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 11px;
+}
+:host ::ng-deep th,
+:host ::ng-deep td {
+  padding: 10px;
+  border-bottom: 1px solid var(--table-row-line);
+  border-right: 1px solid var(--table-grid);
+  text-align: right;
+  white-space: nowrap;
+}
+:host ::ng-deep th {
+  position: sticky;
+  top: 0;
+  background: var(--table-heading-bg);
+  z-index: 1;
+}
+:host ::ng-deep th button,
+:host ::ng-deep td button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+:host ::ng-deep th:nth-child(-n + 3),
+:host ::ng-deep td:nth-child(-n + 3) {
+  text-align: left;
+}
+:host ::ng-deep .product {
+  min-width: 220px;
+  max-width: 280px;
+  white-space: normal;
+}
+small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+}
+.profit-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+  padding: 14px;
+  text-align: left;
+  white-space: normal;
+}
+@media (max-width: 500px) {
+  .profit-filters label {
+    flex: 1;
+  }
+  .profit-metrics > div {
+    flex-basis: calc(50% - 1px);
+    min-width: 0;
+  }
+  .profit-metrics strong {
+    font-size: 15px;
+  }
+}
+
+.finance-column-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}

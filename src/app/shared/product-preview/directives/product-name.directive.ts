@@ -1,17 +1,10 @@
 import { Directive, ElementRef, inject, input } from '@angular/core';
+import type { ProductPreviewData } from '../infrastructure/interfaces/product-name.interfaces';
+import { string } from '../infrastructure/utils/product-name.utils';
 
-export interface ProductPreviewData {
-  offer_id?: unknown;
-  sku_1c?: unknown;
-  sku?: unknown;
-  name?: unknown;
-  product_name?: unknown;
-  main_image?: unknown;
-}
-const string = (value: unknown) =>
-  typeof value === 'string' || typeof value === 'number' ? String(value) : '';
-/** Marks a real product name, without changing its click or navigation behavior. */
 @Directive({
+  standalone: false,
+
   selector: '[appProductName]',
   host: {
     '[attr.data-product-preview]': 'article() || null',

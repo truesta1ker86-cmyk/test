@@ -1,0 +1,184 @@
+:host ::ng-deep .table-scroll {
+  max-width: 100%;
+  overflow: auto;
+  max-height: 72vh;
+  border: 0;
+  border-top: 1px solid var(--table-grid);
+  border-radius: 0;
+}
+:host ::ng-deep .price-workflow-table {
+  width: max-content;
+  font-size: 12px;
+}
+:host ::ng-deep .price-workflow-table th {
+  min-width: 210px;
+  height: auto;
+  padding: 9px 12px;
+  vertical-align: middle;
+  background: #f4f5f7;
+  color: #667085;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-color: #b9c3d2;
+  border-bottom: 2px solid #9eabbf;
+}
+.pricing-column-heading {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.pricing-column-heading app-pricing-column-filter {
+  display: block;
+  flex: 0 0 30px;
+  margin-left: auto;
+}
+:host ::ng-deep .price-workflow-table td {
+  vertical-align: middle;
+  height: auto;
+  padding: 10px 12px;
+  max-width: 360px;
+  font-weight: 400;
+  border-color: #b9c3d2;
+  border-bottom-color: #dce2eb;
+}
+:host ::ng-deep .price-workflow-table .name-cell {
+  min-width: 280px;
+  width: 340px;
+  max-width: 380px;
+}
+:host ::ng-deep .price-workflow-table .check-cell {
+  min-width: 38px;
+  width: 38px;
+}
+:host ::ng-deep .price-workflow-table th button {
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+.sort-indicator {
+  color: #98a2b3;
+  margin-left: 5px;
+}
+:host ::ng-deep th[aria-sort='ascending'],
+:host ::ng-deep th[aria-sort='descending'] {
+  color: var(--text);
+}
+:host ::ng-deep th[aria-sort='ascending'] .sort-indicator,
+:host ::ng-deep th[aria-sort='descending'] .sort-indicator {
+  color: var(--brand);
+}
+:host ::ng-deep .price-workflow-table button:not(.button) {
+  background: transparent;
+  border: 0;
+  padding: 2px 0;
+  cursor: pointer;
+  font: inherit;
+}
+:host ::ng-deep .price-workflow-table button:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+:host ::ng-deep .price-workflow-table th:first-child,
+:host ::ng-deep .price-workflow-table td:first-child {
+  position: sticky;
+  left: 0;
+  width: 46px;
+  min-width: 46px;
+  padding: 12px;
+  background: var(--surface);
+  z-index: 2;
+}
+:host ::ng-deep .price-workflow-table th:nth-child(2),
+:host ::ng-deep .price-workflow-table td:nth-child(2) {
+  position: sticky;
+  left: 46px;
+  min-width: 240px;
+  background: var(--surface);
+  z-index: 2;
+}
+:host ::ng-deep .price-workflow-table th:nth-child(-n + 2),
+:host ::ng-deep .price-workflow-table td:nth-child(-n + 2) {
+  box-shadow:
+    inset -1px 0 #a4adbb,
+    inset 0 -1px #a4adbb;
+}
+:host ::ng-deep .price-workflow-table thead th:first-child,
+:host ::ng-deep .price-workflow-table thead th:nth-child(2) {
+  z-index: 4;
+  background: #f4f5f7;
+}
+:host ::ng-deep .price-workflow-table tr.selected td:first-child,
+:host ::ng-deep .price-workflow-table tr.selected td:nth-child(2) {
+  background: var(--brand-soft);
+}
+:host ::ng-deep .offer-cell button {
+  color: #526077;
+  font-weight: 600;
+  font-family: var(--font-ui) !important;
+}
+:host ::ng-deep .name-cell button {
+  text-align: left;
+  line-height: 1.4;
+}
+:host ::ng-deep .price-workflow-table small {
+  font-weight: 400;
+  font-size: 11px;
+}
+/* The v1 pricing grid emphasizes values; catalog and mapping share geometry only. */
+:host(app-pricing-grid) ::ng-deep .price-workflow-table th {
+  font-weight: 800;
+}
+:host(app-pricing-grid) ::ng-deep .price-workflow-table td {
+  font-weight: 700;
+}
+:host(app-pricing-grid) ::ng-deep .price-workflow-table small {
+  font-weight: 400;
+}
+:host ::ng-deep .price-workflow-table input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--brand);
+}
+:host ::ng-deep .row-actions {
+  min-width: 180px;
+}
+:host ::ng-deep .row-actions button {
+  display: block;
+  margin: 0 0 4px;
+  font-size: 11px;
+}
+:host ::ng-deep .row-actions .button {
+  min-height: 28px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+:host ::ng-deep .price-workflow-table tr.selected {
+  background: var(--brand-soft);
+}
+
+.pricing-load-more {
+  position: sticky;
+  left: 0;
+  width: calc(100vw - 360px);
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  background: var(--surface);
+  font-size: 12px;
+}
+@media (max-width: 720px) {
+  .pricing-load-more {
+    width: calc(100vw - 64px);
+  }
+}

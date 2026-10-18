@@ -1,0 +1,191 @@
+<dialog
+  #dialog
+  class="attribute-bulk workspace-surface"
+  (cancel)="close($event)"
+  aria-labelledby="attribute-bulk-title"
+>
+  <header>
+    <div>
+      <h2 id="attribute-bulk-title">
+        {{ offers().length ? 'Массовая правка характеристик' : 'История характеристик' }}
+      </h2>
+      <p>
+        {{
+          offers().length ? 'Карточек в отборе: ' + offers().length : 'Локальные изменения и отмена'
+        }}
+        · только в v2
+      </p>
+    </div>
+    <button
+      class="icon-button"
+      type="button"
+      aria-label="Закрыть массовую правку"
+      [disabled]="busy()"
+      (click)="close()"
+    >
+      ×
+    </button>
+  </header>
+  <div class="attribute-bulk-body">
+    @if (error()) {
+      <p class="editor-error" role="alert">{{ error() }}</p>
+    }
+    @if (message()) {
+      <p class="editor-success" role="status">{{ message() }}</p>
+    }
+    @if (offers().length > 500) {
+      <p class="editor-error">
+        Для одной операции можно выбрать до 500 карточек. Уточните отбор в таблице.
+      </p>
+    }
+    @if (offers().length) {
+      <fieldset [disabled]="busy() || uncertain() || !canManage()">
+        <div class="category-search">
+          <label
+            >Поиск категории<app-filter-text
+              [formControl]="search"
+              label="Поиск категории"
+              key="search"
+              [showLabel]="false"
+            ></app-filter-text></label
+          ><button class="button" type="button" (click)="findCategories()">Найти</button>
+        </div>
+        <label
+          >Категория и тип<select
+            [formControl]="categoryValue"
+            aria-label="Категория массовой правки"
+          >
+            <option value="">Выберите категорию</option>
+            @for (c of categories(); track c.description_category_id + ':' + c.type_id) {
+              <option [value]="c.description_category_id + ':' + c.type_id">
+                {{ c.path || c.category_name }} · {{ c.type_name }}
+              </option>
+            }
+          </select></label
+        ><label
+          >Характеристика<select [formControl]="field" aria-label="Массовая характеристика">
+            <option value="">Выберите поле</option>
+            @for (d of definitions(); track d.attribute_id) {
+              <option [value]="d.attribute_id">
+                {{ d.name }}{{ d.is_required ? ' · обязательное' : '' }}
+              </option>
+            }
+          </select></label
+        >
+        <label class="check-label"
+          ><input type="checkbox" [formControl]="clear" />Снять значение у выбранных карточек</label
+        >
+        @if (!clear.value && definition(); as d) {
+          <app-card-attribute
+            [definition]="d"
+            [value]="value()"
+            [category]="category()!.description_category_id"
+            [type]="category()!.type_id"
+            (changed)="changed($event)"
+          />
+        }
+        <label class="check-label"
+          ><input type="checkbox" [formControl]="includeLocked" />Включить заблокированные
+          карточки</label
+        ><button class="button" type="button" [disabled]="offers().length > 500" (click)="check()">
+          Предпросмотр изменений
+        </button>
+      </fieldset>
+    }
+    @if (offers().length) {
+      <div class="source-copy">
+        <label
+          >Скопировать из товара<select [formControl]="sourceOffer">
+            <option value="">Выберите источник</option>
+            @for (offer of offers(); track offer) {
+              <option [value]="offer">{{ offer }}</option>
+            }
+          </select></label
+        ><button
+          class="button"
+          type="button"
+          [disabled]="busy() || !definition()"
+          (click)="copyFromSource()"
+        >
+          Взять значение
+        </button>
+      </div>
+    }
+    @if (preview(); as p) {
+      <section class="bulk-preview">
+        <h3>{{ p.attribute.name }} · будет изменено {{ p.eligible }} карточек</h3>
+        <p>
+          Пропущено заблокированных: {{ p.skipped }}. Проверка действует до
+          {{ date(p.expires_at) }}.
+        </p>
+        <div class="table-scroll">
+          <app-data-table
+            [columns]="tableColumns1()"
+            [data]="p.sample"
+            [headerTemplate]="tableHeader1"
+            selectionMode="none"
+            [rowClickable]="false"
+            [lazy]="false"
+            [scrollable]="false"
+            tableStyleClass="operation-table"
+            dataKey="offer_id"
+            emptyMessage="Нет данных"
+          >
+            <ng-template #tableHeader1>
+              <tr>
+                <th>Карточка</th>
+                <th>Сейчас</th>
+                <th>После изменения</th>
+              </tr>
+            </ng-template>
+            <ng-template #cellTemplate let-item let-column="column" let-rowIndex="rowIndex">
+              @switch (column.cellTemplate.slot) {
+                @case ('cell1') {
+                  <span data-o1c-cell-content>
+                    {{ item.offer_id }}<small [appProductName]="item">{{ item.name }}</small>
+                  </span>
+                }
+                @case ('cell2') {
+                  <span data-o1c-cell-content>{{ values(item.before) }}</span>
+                }
+                @case ('cell3') {
+                  <span data-o1c-cell-content>{{ values(item.after) }}</span>
+                }
+              }
+            </ng-template>
+          </app-data-table>
+        </div>
+        @if (uncertain()) {
+          <button class="button primary" [disabled]="busy()" (click)="checkResult()">
+            Проверить результат операции
+          </button>
+        } @else {
+          <button class="button primary" [disabled]="busy()" (click)="apply()">
+            Применить в v2
+          </button>
+        }
+      </section>
+    }
+    <details [open]="!offers().length">
+      <summary>История массовых характеристик</summary>
+      <button class="text-button" (click)="loadHistory()">Обновить</button>
+      @for (op of history(); track op.operation_id) {
+        <div class="history-row">
+          <span
+            >{{ op.attribute.name
+            }}<small>{{ date(op.created_at) }} · {{ op.eligible }} карточек</small></span
+          ><span>{{
+            op.status === 'applied'
+              ? 'Применено'
+              : op.status === 'undone'
+                ? 'Отменено'
+                : 'Предпросмотр'
+          }}</span>
+          @if (op.status === 'applied' && canManage()) {
+            <button class="text-button" [disabled]="busy()" (click)="undo(op)">Отменить</button>
+          }
+        </div>
+      }
+    </details>
+  </div>
+</dialog>

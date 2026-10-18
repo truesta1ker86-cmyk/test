@@ -1,0 +1,20 @@
+<div class="skeleton-list" role="status" aria-live="polite" aria-label="Загрузка списка">
+  @for (item of array(count()); track $index) {
+    <div class="skeleton-list__item">
+      @if (withAvatar()) {
+        <p-skeleton shape="circle" size="40px" />
+      }
+
+      <div class="skeleton-list__body">
+        <p-skeleton width="55%" height="12px" borderRadius="6px" />
+        @if (withSecondary()) {
+          <p-skeleton width="35%" height="10px" borderRadius="4px" />
+        }
+      </div>
+
+      <div class="skeleton-list__right">
+        <p-skeleton width="72px" height="20px" borderRadius="6px" />
+      </div>
+    </div>
+  }
+</div>

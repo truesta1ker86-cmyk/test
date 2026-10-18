@@ -1,0 +1,102 @@
+<div class="attribute-heading">
+  <label [for]="'attribute-' + definition().attribute_id">{{ definition().name }}</label>
+  @if (definition().is_required) {
+    <span class="required">Обязательное</span>
+  }
+</div>
+@if (definition().description) {
+  <p class="attribute-description">{{ definition().description }}</p>
+}
+@if (definition().dictionary_id) {
+  <div class="attribute-selected">
+    @for (item of value()?.values || []; track $index) {
+      <span class="attribute-value"
+        >{{ item.value || 'Значение ' + item.dictionary_value_id
+        }}<button
+          type="button"
+          [disabled]="readonly()"
+          [attr.aria-label]="'Убрать значение ' + item.value"
+          (click)="remove($index)"
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" /></svg></button
+      ></span>
+    }
+  </div>
+  <div class="dictionary-control">
+    <app-filter-text
+      role="combobox"
+      [id]="'attribute-' + definition().attribute_id"
+      [formControl]="search"
+      [readOnly]="readonly()"
+      [attr.aria-expanded]="open()"
+      [aria-controls]="'dictionary-' + definition().attribute_id"
+      (focus)="find()"
+      (keydown.escape)="open.set(false)"
+      placeholder="Найти значение в справочнике"
+      label="Найти значение в справочнике"
+      key="search"
+      [showLabel]="false"
+    ></app-filter-text>
+    @if (open()) {
+      <div
+        class="dictionary-options"
+        role="listbox"
+        [id]="'dictionary-' + definition().attribute_id"
+      >
+        @if (loading()) {
+          <div class="dictionary-state" role="status">Поиск значений…</div>
+        } @else {
+          @for (item of values(); track item.id) {
+            <button type="button" role="option" (click)="choose(item)">
+              {{ item.value }}
+              @if (item.info) {
+                <small>{{ item.info }}</small>
+              }
+            </button>
+          } @empty {
+            <div class="dictionary-state">Совпадений нет. Измените запрос.</div>
+          }
+        }
+        <button type="button" class="dictionary-close" (click)="open.set(false)">
+          Закрыть список
+        </button>
+      </div>
+    }
+  </div>
+} @else if (definition().type?.toLowerCase() === 'boolean') {
+  <select
+    [id]="'attribute-' + definition().attribute_id"
+    [formControl]="text"
+    [attr.disabled]="readonly() ? true : null"
+  >
+    <option value="">Не задано</option>
+    <option value="true">Да</option>
+    <option value="false">Нет</option>
+  </select>
+} @else if (definition().is_collection) {
+  <textarea
+    [id]="'attribute-' + definition().attribute_id"
+    [formControl]="text"
+    [readOnly]="readonly()"
+    rows="2"
+    placeholder="Одно значение на строке"
+  ></textarea
+  ><small>До {{ maxValues() }} значений, каждое с новой строки.</small>
+} @else {
+  <input
+    [id]="'attribute-' + definition().attribute_id"
+    [formControl]="text"
+    [readOnly]="readonly()"
+    [attr.inputmode]="
+      ['integer', 'decimal', 'number'].includes(definition().type?.toLowerCase() || '')
+        ? 'decimal'
+        : null
+    "
+  />
+}
+@if (error()) {
+  <p class="field-error" role="alert">{{ error() }}</p>
+}
+@if (warning()) {
+  <p class="field-hint">{{ warning() }}</p>
+}

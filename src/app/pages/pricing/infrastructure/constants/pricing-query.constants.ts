@@ -1,0 +1,31 @@
+export const sortColumns = [
+  'offer_id',
+  'name',
+  'fin_type',
+  'ozon_type',
+  'ship_method',
+  'last_cost',
+  'last_margin',
+  'last_min_price',
+  'last_price',
+  'last_old_price',
+  'last_commission',
+  'last_logistics',
+  'updated_at',
+] as const;
+
+export const pricingFacetFields = [
+  ['category', 'Категория маркетплейса'],
+  ['ozon_type', 'Тип маркетплейса'],
+  ['report_category', 'Категория в отчёте'],
+  ['report_type', 'Тип в отчёте'],
+  ['fin_type', 'Тип Фин'],
+  ['product_group', 'Подгруппа'],
+  ['brand', 'Бренд'],
+  ['series', 'Серия'],
+  ['length_mm', 'Длина, мм'],
+  ['color', 'Цвет'],
+  ['units_per_item', 'Штук в одной позиции'],
+  ['plan_ship_method', 'Метод минималки'],
+  ['ship_method', 'Схема маржи API'],
+] as const;

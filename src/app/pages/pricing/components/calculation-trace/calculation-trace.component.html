@@ -1,0 +1,168 @@
+@if (trace().actual_margin; as actual) {
+  <details class="history-entry">
+    <summary>Пошаговый расчёт фактической маржи Ozon API</summary>
+    <div class="history-body">
+      <p>
+        Схема: {{ actual['shipping_scheme'] || 'не определена' }}. Используется снимок Seller API.
+        Цена сайта и ручная себестоимость в фактическую маржу не подставляются.
+      </p>
+      <app-data-table
+        [columns]="tableColumns1()"
+        [data]="actualFields"
+        [headerTemplate]="tableHeader1"
+        selectionMode="none"
+        [rowClickable]="false"
+        [lazy]="false"
+        [scrollable]="false"
+        tableStyleClass="operation-table price-workflow-table trace-table"
+        emptyMessage="Нет данных"
+      >
+        <ng-template #tableHeader1>
+          <tr>
+            <th>Показатель</th>
+            <th>Значение снимка</th>
+          </tr>
+        </ng-template>
+        <ng-template #cellTemplate let-field let-column="column" let-rowIndex="rowIndex">
+          @switch (column.cellTemplate.slot) {
+            @case ('cell1') {
+              <span data-o1c-cell-content>{{ field[1] }}</span>
+            }
+            @case ('cell2') {
+              <span data-o1c-cell-content>
+                {{
+                  field[2] === 'rate'
+                    ? percent(amount(actual, field[0]))
+                    : money(amount(actual, field[0]))
+                }}
+              </span>
+            }
+          }
+        </ng-template>
+      </app-data-table>
+      @if (actual['has_negative_profit']) {
+        <p class="workflow-error">В диапазоне расходов API есть убыточный сценарий.</p>
+      }
+      @if (hasAdditional()) {
+        <p>
+          Дополнительные настроенные расходы вне снимка API:
+          {{ percent(amount(actual, 'additional_rate_outside_api_snapshot')) }} =
+          {{ money(amount(actual, 'additional_amount_outside_api_snapshot')) }}.
+        </p>
+        <p>
+          После всех настроенных расходов: прибыль
+          {{ money(amount(actual, 'profit_after_all_configured_expenses_low')) }}, маржа от цены
+          {{ percent(amount(actual, 'margin_on_sale_price_after_all_configured_expenses_low')) }}.
+        </p>
+      }
+    </div>
+  </details>
+}
+@if (trace().minimum_price; as minimum) {
+  <details class="history-entry" open>
+    <summary>Расшифровка минимальной цены</summary>
+    <div class="history-body">
+      <code class="formula-expression">{{ minimum.expression }}</code>
+      <app-data-table
+        [columns]="tableColumns2()"
+        [data]="variables()"
+        [headerTemplate]="tableHeader2"
+        selectionMode="none"
+        [rowClickable]="false"
+        [lazy]="false"
+        [scrollable]="false"
+        tableStyleClass="operation-table price-workflow-table trace-table"
+        emptyMessage="Нет данных"
+      >
+        <ng-template #tableHeader2>
+          <tr>
+            <th>Вход формулы</th>
+            <th>Значение</th>
+          </tr>
+        </ng-template>
+        <ng-template #cellTemplate let-variable let-column="column" let-rowIndex="rowIndex">
+          @switch (column.cellTemplate.slot) {
+            @case ('cell1') {
+              <span data-o1c-cell-content>{{ variableLabels[variable[0]] || variable[0] }}</span>
+            }
+            @case ('cell2') {
+              <span data-o1c-cell-content>{{ variable[1] ?? '—' }}</span>
+            }
+          }
+        </ng-template>
+      </app-data-table>
+      <p>
+        Результат формулы: {{ money(minimum.formula_result) }} · рабочая минималка:
+        {{ money(minimum.working_result) }}.
+      </p>
+      <p>
+        Источник логистики: {{ sourceLabel(minimum['logistics_source']) }}. Сравнение с диапазоном
+        API не заменяет плановую логистику в формуле.
+      </p>
+      @if (scenarios().length) {
+        <details class="history-entry">
+          <summary>Сравнение сценариев логистики</summary>
+          <div class="table-scroll">
+            <app-data-table
+              [columns]="tableColumns3()"
+              [data]="scenarios()"
+              [headerTemplate]="tableHeader3"
+              selectionMode="none"
+              [rowClickable]="false"
+              [lazy]="false"
+              [scrollable]="false"
+              tableStyleClass="operation-table price-workflow-table trace-table"
+              dataKey="label"
+              emptyMessage="Нет данных"
+            >
+              <ng-template #tableHeader3>
+                <tr>
+                  <th>Сценарий</th>
+                  <th>Минималка</th>
+                  <th>Цена</th>
+                  <th>Цена до скидки</th>
+                </tr>
+              </ng-template>
+              <ng-template #cellTemplate let-scenario let-column="column" let-rowIndex="rowIndex">
+                @switch (column.cellTemplate.slot) {
+                  @case ('cell1') {
+                    <span data-o1c-cell-content>{{ scenario.label }}</span>
+                  }
+                  @case ('cell2') {
+                    <span data-o1c-cell-content>{{
+                      money(amount(scenario.values, 'min_price'))
+                    }}</span>
+                  }
+                  @case ('cell3') {
+                    <span data-o1c-cell-content>{{ money(amount(scenario.values, 'price')) }}</span>
+                  }
+                  @case ('cell4') {
+                    <span data-o1c-cell-content>{{
+                      money(amount(scenario.values, 'old_price'))
+                    }}</span>
+                  }
+                }
+              </ng-template>
+            </app-data-table>
+          </div>
+        </details>
+      }
+    </div>
+  </details>
+}
+@if (trace().working_price; as working) {
+  <details class="history-entry">
+    <summary>Расчёт цены и цены до скидки</summary>
+    <div class="history-body">
+      <code class="formula-expression">{{ working['expression'] }}</code>
+      <p>
+        Делитель {{ working['price_divisor'] }} · результат {{ money(amount(working, 'result')) }}.
+      </p>
+      <code class="formula-expression">{{ working['old_price_expression'] }}</code>
+      <p>
+        Делитель {{ working['old_price_divisor'] }} · цена до скидки
+        {{ money(amount(working, 'old_price_result')) }}.
+      </p>
+    </div>
+  </details>
+}

@@ -1,41 +1,10 @@
 import { Directive, ElementRef, HostListener, inject, OnDestroy, Renderer2 } from '@angular/core';
+import { tableColumnRanges } from '../infrastructure/utils/table-column-hover.utils';
 
-export interface TableColumnRange {
-  start: number;
-  end: number;
-}
-/** Physical columns, including the grouped headers used by financial reports. */
-export function tableColumnRanges(
-  table: HTMLTableElement,
-): Map<HTMLTableCellElement, TableColumnRange> {
-  const rows = Array.from(table.rows),
-    occupied: boolean[][] = [],
-    ranges = new Map<HTMLTableCellElement, TableColumnRange>();
-  rows.forEach((row, index) => {
-    occupied[index] ??= [];
-    let column = 0;
-    for (const cell of Array.from(row.cells)) {
-      while (occupied[index][column]) column++;
-      const width = Math.max(1, cell.colSpan),
-        remaining = rows.length - index;
-      const height = Math.min(
-        remaining,
-        cell.rowSpan === 0
-          ? (row.parentElement?.children.length || remaining) - row.sectionRowIndex
-          : Math.max(1, cell.rowSpan),
-      );
-      ranges.set(cell, { start: column, end: column + width });
-      for (let r = index; r < index + height; r++) {
-        occupied[r] ??= [];
-        for (let c = column; c < column + width; c++) occupied[r][c] = true;
-      }
-      column += width;
-    }
-  });
-  return ranges;
-}
-
-@Directive({ selector: '[appTableColumnHover]' })
+@Directive({
+  standalone: false,
+  selector: '[appTableColumnHover]',
+})
 export class TableColumnHover implements OnDestroy {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly renderer = inject(Renderer2);
@@ -81,6 +50,11 @@ export class TableColumnHover implements OnDestroy {
     if (!(target instanceof Element)) return null;
     const cell = target.closest<HTMLTableCellElement>('th,td');
     if (!cell || !this.host.nativeElement.contains(cell)) return null;
+    const table =
+      this.host.nativeElement.tagName === 'TABLE'
+        ? this.host.nativeElement
+        : this.host.nativeElement.querySelector('table');
+    if (cell.closest('table') !== table) return null;
     // A filter dialog may be nested in a th, but is not part of the table.
     if (target.closest('dialog') !== cell.closest('table')?.closest('dialog')) return null;
     return cell;

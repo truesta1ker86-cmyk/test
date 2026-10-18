@@ -58,3 +58,6 @@ Thumbs.db
 /backups/
 /outputs/
 /.tmp/
+/logs/
+__pycache__/
+*.py[cod]

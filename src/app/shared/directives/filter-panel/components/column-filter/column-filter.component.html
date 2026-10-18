@@ -24,51 +24,23 @@
         ×
       </button>
     </header>
-    <label
-      >Условие<select [(ngModel)]="draft.operator" aria-label="Условие текста">
-        <option value="contains">Содержит</option>
-        <option value="not_contains">Не содержит</option>
-      </select></label
-    >
-    <input [(ngModel)]="draft.text" aria-label="Текст условия" placeholder="Текст условия" />
+    <app-filter-select key="operator" />
+    <app-filter-text key="text" />
     @if (numeric()) {
-      <div class="bounds">
-        <label
-          >От<input [(ngModel)]="draft.min" aria-label="Значение от" inputmode="decimal" /></label
-        ><label
-          >До<input [(ngModel)]="draft.max" aria-label="Значение до" inputmode="decimal"
-        /></label>
-      </div>
+      <div class="bounds"><app-filter-text key="min" /><app-filter-text key="max" /></div>
     }
-    <input
-      [(ngModel)]="search"
-      type="search"
-      aria-label="Поиск значений"
-      placeholder="Найти значение"
-    />
     <div class="choices-actions">
-      <button type="button" (click)="chosen.set(allValues())">Выбрать все</button
-      ><button type="button" (click)="chosen.set([])">Снять все</button>
+      <button type="button" (click)="filters.updateFilter('values', allValues())">
+        Выбрать все
+      </button>
+      <button type="button" (click)="filters.updateFilter('values', [])">Снять все</button>
     </div>
-    <div class="choices">
-      @for (value of visibleValues(); track value) {
-        <label class="choice"
-          ><input type="checkbox" [checked]="chosen().includes(value)" (change)="toggle(value)" />{{
-            value === '__empty__' ? '(Пусто / нет данных)' : value
-          }}</label
-        >
-      }
-    </div>
+    <app-filter-multiselect key="values" />
     @if (error()) {
       <p role="alert">{{ error() }}</p>
     }
     <footer>
-      <button
-        type="button"
-        class="button"
-        (click)="changed.emit({ field: field(), rule: null }); opened.set(false)"
-      >
-        Сбросить</button
+      <button type="button" class="button" (click)="reset()">Сбросить</button
       ><button type="button" class="button primary" (click)="apply()">Применить</button>
     </footer>
   </dialog>

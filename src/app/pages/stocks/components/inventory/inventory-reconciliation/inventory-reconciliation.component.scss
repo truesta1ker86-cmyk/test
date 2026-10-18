@@ -1,0 +1,30 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.stock-product {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.stock-product img {
+  width: 36px;
+  height: 44px;
+  object-fit: contain;
+}
+.stock-status {
+  font-size: 11px;
+  line-height: 1.5;
+  display: inline-block;
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+.stock-status[data-status='matched'] {
+  background: #ecf8f1;
+  color: #177344;
+}
+.stock-status[data-status='decrease_required'] {
+  background: #fff0ee;
+  color: #b13733;
+}

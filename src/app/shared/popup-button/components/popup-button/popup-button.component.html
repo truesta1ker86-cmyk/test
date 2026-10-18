@@ -1,0 +1,29 @@
+<div class="popup-button-wrapper">
+  <button
+    type="button"
+    [class]="triggerClass + ' popup-button-trigger'"
+    [attr.aria-label]="ariaLabel"
+    [attr.aria-expanded]="open"
+    (click)="toggle($event)"
+  >
+    <svg aria-hidden="true"><use [attr.href]="'#' + icon"></use></svg>
+    <span *ngIf="label" class="popup-button-label">{{ label }}</span>
+    <span
+      *ngIf="showCount && count > 0"
+      class="popup-button-count"
+      [attr.aria-label]="'Активных: ' + count"
+      >{{ count }}</span
+    >
+    <span class="popup-button-caret" *ngIf="icon !== 'i-filter'"></span>
+  </button>
+
+  <div
+    #popover
+    [class]="popoverClass + ' popup-button-popover is-' + position"
+    [style.width]="popupWidth"
+    [hidden]="!open"
+    role="dialog"
+  >
+    <ng-content></ng-content>
+  </div>
+</div>

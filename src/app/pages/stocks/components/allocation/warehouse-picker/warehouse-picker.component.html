@@ -1,0 +1,55 @@
+<div class="stock-matrix-warehouse-picker">
+  <div class="picker-actions">
+    <button
+      type="button"
+      class="picker-trigger"
+      [disabled]="!hasWarehouses || disabled"
+      [attr.aria-expanded]="popoverOpen"
+      (click)="togglePopover()"
+    >
+      <span class="picker-copy">{{ triggerLabel }}</span
+      ><small>{{ triggerMeta }}</small>
+    </button>
+    <button
+      type="button"
+      class="button"
+      (click)="addSelectedWarehouses()"
+      [disabled]="disabled || isAddButtonDisabled"
+    >
+      Добавить выбранные · {{ selectedCount }}
+    </button>
+  </div>
+  @if (popoverOpen) {
+    <section
+      class="warehouse-menu"
+      aria-label="Склады маркетплейса"
+      appModalFocus
+      (modalEscape)="closePopover()"
+    >
+      <header>
+        <strong>Склады маркетплейса</strong
+        ><button type="button" aria-label="Закрыть выбор складов" (click)="closePopover()">
+          ×
+        </button>
+      </header>
+      <app-filter-multiselect
+        key="warehouses"
+        label="Склады маркетплейса"
+        [options]="warehouseOptions()"
+        [ngModel]="tempSelected"
+        (ngModelChange)="selectionChanged($event)"
+      />
+      <footer>
+        <small>{{ statusText }}</small
+        ><button
+          type="button"
+          class="button primary"
+          [disabled]="disabled || isAddButtonDisabled"
+          (click)="addSelectedWarehouses()"
+        >
+          Добавить · {{ selectedCount }}
+        </button>
+      </footer>
+    </section>
+  }
+</div>

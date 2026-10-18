@@ -1,0 +1,21 @@
+<div class="order-bulk-bar bulk-bar" role="region" aria-label="Массовые действия с заказами">
+  <div>
+    <strong>{{ selectedCount }} выбрано</strong
+    ><small>{{
+      hiddenCount ? hiddenCount + ' скрыто текущим фильтром' : readyCount + ' доступно в таблице'
+    }}</small>
+  </div>
+  <div class="button-row">
+    <button class="button" [disabled]="busy || !readyCount" (click)="selectAvailable.emit()">
+      Выбрать доступные</button
+    ><button class="button" [disabled]="!selectedCount" (click)="clearSelection.emit()">
+      Снять</button
+    ><button
+      class="button primary"
+      [disabled]="busy || !selectedCount || !labelsAllowed"
+      (click)="printLabels.emit()"
+    >
+      Этикетки PDF
+    </button>
+  </div>
+</div>

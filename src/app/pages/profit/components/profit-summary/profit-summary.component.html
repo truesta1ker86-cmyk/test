@@ -1,0 +1,213 @@
+<p class="profit-formula">
+  Продажи и возвраты = доставки − возвраты. Итого маркетплейса = продажи и возвраты − расходы +
+  положительные начисления + распределение. Валовая прибыль = итог маркетплейса − себестоимость.
+  Чистая = валовая − налог. Себестоимость — текущий снимок Ozon API; плановые проценты расчёта цен
+  здесь не используются.
+</p>
+@if (!externalFilters()) {
+  <div class="profit-filters">
+    <label
+      >Категория<app-filter-select
+        [ngModel]="category()"
+        (ngModelChange)="setCategory($event)"
+        [options]="categoryOptions()"
+        label="Категория"
+        key="category__"
+        [showLabel]="false"
+      ></app-filter-select
+    ></label>
+    <label
+      >Тип<app-filter-select
+        [ngModel]="productType()"
+        (ngModelChange)="productType.set($event)"
+        [options]="productTypeOptions()"
+        label="Тип"
+        key="productType__"
+        [showLabel]="false"
+      ></app-filter-select
+    ></label>
+    <button class="button" type="button" (click)="setCategory('')">Сбросить категории и типы</button
+    ><span>Товаров по отбору: {{ visible().length }}</span>
+  </div>
+}
+<div class="profit-metrics">
+  @for (m of metrics(); track m.label) {
+    <div>
+      <span>{{ m.label }}</span
+      ><strong [class.negative]="m.value < 0">{{ money(m.value) }}</strong>
+    </div>
+  }
+</div>
+<p class="profit-formula" role="status">{{ reconciliation() }}</p>
+@if (incomplete()) {
+  <p class="incomplete" role="status">
+    Финансовый результат предварительный: нет текущей себестоимости Ozon или полного распределения у
+    {{ incomplete() }} товаров в текущем фильтре.
+  </p>
+}
+<div
+  class="profit-scroll"
+  tabindex="0"
+  aria-label="Финрезультат по товарам, таблица прокручивается"
+>
+  <app-data-table
+    [columns]="tableColumns1()"
+    [data]="sorted()"
+    [headerTemplate]="tableHeader1"
+    selectionMode="none"
+    [rowClickable]="false"
+    [lazy]="false"
+    [scrollable]="false"
+    tableStyleClass="operation-table"
+    emptyMessage="Нет товаров по выбранным фильтрам."
+  >
+    <ng-template #tableHeader1>
+      <tr>
+        @for (c of columns; track c[0]) {
+          <th
+            [attr.aria-sort]="
+              sortKey() === c[0] ? (descending() ? 'descending' : 'ascending') : 'none'
+            "
+          >
+            <div class="finance-column-heading">
+              <button type="button" (click)="sort(c[0])">
+                {{ c[1] }} {{ sortKey() === c[0] ? (descending() ? '↓' : '↑') : '' }}</button
+              ><app-column-filter
+                [field]="c[0]"
+                [label]="c[1]"
+                [numeric]="!['report_category', 'report_type', 'product_name'].includes(c[0])"
+                [rule]="columnRules()[c[0]]"
+                [options]="filterOptions()[c[0]] || []"
+                (changed)="columnChanged.emit($event)"
+              />
+            </div>
+          </th>
+        }
+        <th>Расшифровка</th>
+      </tr>
+    </ng-template>
+    <ng-template #cellTemplate let-i let-column="column" let-rowIndex="rowIndex">
+      @switch (column.cellTemplate.slot) {
+        @case ('cell1') {
+          <span data-o1c-cell-content>{{ categoryName(i) }}</span>
+        }
+        @case ('cell2') {
+          <span data-o1c-cell-content>{{ typeName(i) }}</span>
+        }
+        @case ('cell3') {
+          <span data-o1c-cell-content class="product">
+            <span
+              [appProductName]="{
+                offer_id: i['offer_id'],
+                name: name(i),
+                main_image: i['main_image'],
+              }"
+              >{{ name(i) }}</span
+            ><small>{{ i['offer_id'] || 'Общие операции' }}</small>
+          </span>
+        }
+        @case ('cell4') {
+          <span
+            data-o1c-cell-content
+            [attr.data-finance-value]="i['units_sold']"
+            data-finance-unit="number"
+            tabindex="0"
+          >
+            {{ i['units_sold'] ?? '—' }}
+          </span>
+        }
+        @case ('cell5') {
+          <span
+            data-o1c-cell-content
+            [attr.data-finance-value]="i['revenue']"
+            data-finance-unit="money"
+            tabindex="0"
+          >
+            {{ money($any(i['revenue'])) }}
+          </span>
+        }
+        @case ('cell6') {
+          <span
+            data-o1c-cell-content
+            [attr.data-finance-value]="i['ozon_accrual']"
+            data-finance-unit="money"
+            tabindex="0"
+          >
+            {{ money($any(i['ozon_accrual'])) }}
+          </span>
+        }
+        @case ('cell7') {
+          <span
+            data-o1c-cell-content
+            [attr.data-finance-value]="costValue(i)"
+            data-finance-unit="money"
+            [attr.tabindex]="costValue(i) !== null ? 0 : null"
+          >
+            @if (costValue(i) !== null) {
+              {{ money(costValue(i)) }}
+            } @else {
+              <small>{{ !i['offer_id'] ? 'не применяется' : 'нет себестоимости Ozon' }}</small>
+            }
+          </span>
+        }
+        @case ('cell8') {
+          <span
+            data-o1c-cell-content
+            [attr.data-finance-value]="i['gross_profit']"
+            data-finance-unit="money"
+            tabindex="0"
+          >
+            {{ money($any(i['gross_profit'])) }}
+          </span>
+        }
+        @case ('cell9') {
+          <span
+            data-o1c-cell-content
+            [attr.data-finance-value]="expense(i['tax'])"
+            data-finance-unit="money"
+            tabindex="0"
+          >
+            {{ money(expense(i['tax'])) }}
+          </span>
+        }
+        @case ('cell10') {
+          <span
+            data-o1c-cell-content
+            [attr.data-finance-value]="i['profit']"
+            data-finance-unit="money"
+            tabindex="0"
+          >
+            {{ money($any(i['profit'])) }}
+          </span>
+        }
+        @case ('cell11') {
+          <span
+            data-o1c-cell-content
+            [attr.data-finance-value]="marginValue(i)"
+            data-finance-unit="percent"
+            tabindex="0"
+          >
+            {{ formatMargin(marginValue(i)) }}
+          </span>
+        }
+        @case ('cell12') {
+          <span data-o1c-cell-content>
+            <button type="button" [attr.aria-expanded]="expanded().has(i)" (click)="toggle(i)">
+              {{ expanded().has(i) ? 'Скрыть' : 'Расшифровка' }}
+            </button>
+            @if (expanded().has(i)) {
+              <div class="profit-breakdown">
+                @for (part of breakdown(i); track part.label) {
+                  <div>
+                    <span>{{ part.label }}</span
+                    ><strong [class.negative]="part.value < 0">{{ money(part.value) }}</strong>
+                  </div>
+                }
+              </div>
+            }
+          </span>
+        }
+      }
+    </ng-template>
+  </app-data-table>
+</div>

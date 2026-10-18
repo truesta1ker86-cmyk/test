@@ -1,0 +1,59 @@
+:host ::ng-deep .price-workflow-table td {
+  min-width: 210px;
+  font-size: 13px;
+  padding: 13px 12px;
+}
+:host ::ng-deep .price-workflow-table td:first-child {
+  min-width: 46px;
+}
+:host ::ng-deep .price-workflow-table small {
+  font-size: 10px;
+}
+:host ::ng-deep .price-workflow-table .row-actions .button {
+  min-height: 28px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+:host ::ng-deep .price-workflow-table .name-cell {
+  min-width: 310px;
+  max-width: 380px;
+}
+:host ::ng-deep .price-workflow-table :is(th, td):nth-child(2) {
+  min-width: 150px;
+  width: 150px;
+}
+:host ::ng-deep .price-workflow-table th:nth-child(2) button {
+  white-space: nowrap;
+}
+:host ::ng-deep .price-workflow-table th:nth-child(2) .pricing-column-heading {
+  gap: 8px;
+}
+:host ::ng-deep .price-workflow-table th {
+  border-bottom-width: 1px;
+}
+:host ::ng-deep .table-scroll {
+  border: 0;
+  border-top: 1px solid var(--table-grid);
+  border-radius: 0;
+}
+:host ::ng-deep .price-workflow-table td button:not(.button) {
+  text-align: left;
+  color: var(--text);
+}
+:host ::ng-deep .price-workflow-table td button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+:host ::ng-deep .price-workflow-table td button.cost-button {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+:host ::ng-deep .table-state {
+  padding: 36px !important;
+  text-align: center;
+  color: var(--muted);
+}
