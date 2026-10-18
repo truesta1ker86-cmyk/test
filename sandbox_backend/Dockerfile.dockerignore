@@ -1,0 +1,5 @@
+**
+!sandbox_backend/
+!sandbox_backend/**
+sandbox_backend/**/__pycache__/
+sandbox_backend/**/.pytest_cache/

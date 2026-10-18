@@ -1,0 +1,4 @@
+# Apply only to the o1c-angular-sandbox project, with --no-deps api.
+services:
+  api:
+    image: o1c-angular-sandbox-pricing:20261017
