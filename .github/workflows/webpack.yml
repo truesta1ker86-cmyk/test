@@ -31,7 +31,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           port: ${{ secrets.SERVER_PORT }}
-          source: "dist/o1c_panel/*"
+          source: "dist/ozon1c-v2/browser/*"
           target: "/var/www/o1c_panel"
           overwrite: true
           # rm: true  ← пока не включай, пока не настроишь права на сервере
