@@ -41,6 +41,21 @@ const row: Order = {
 
 const ready: Order = { ...row, posting_number: 'QA-10', status: 'awaiting_delivering' };
 
+const originalShowModal = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'showModal');
+beforeAll(() =>
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.setAttribute('open', '');
+    },
+  }),
+);
+afterAll(() =>
+  originalShowModal
+    ? Object.defineProperty(HTMLDialogElement.prototype, 'showModal', originalShowModal)
+    : Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal'),
+);
+
 function response(): ListPage {
   return {
     local_preview: true,
@@ -113,6 +128,43 @@ function setup(entity = 'orders') {
 }
 
 describe('v1 orders and returns', () => {
+  it('offers Excel from a database copy and keeps unavailable shipment actions disabled', async () => {
+    const { fixture, page, http } = setup();
+    page.data.set({ ...response(), local_preview: false });
+    await fixture.whenStable();
+    const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    expect(buttons.find((button) => button.textContent?.includes('Скачать Excel'))!.disabled).toBe(
+      false,
+    );
+    expect(buttons.some((button) => button.textContent?.includes('Собрать заказ'))).toBe(false);
+    expect(page.readyRows()).toEqual([]);
+    http.verify();
+  });
+  it('opens compact filters and applies the chosen period without changing selection', async () => {
+    const { fixture, navigate, page, http } = setup();
+    await fixture.whenStable();
+    const host = fixture.debugElement.query(By.directive(OrderFilterComponent));
+    const trigger = [...host.nativeElement.querySelectorAll('button')].find((button: any) =>
+      button.textContent.includes('Фильтры'),
+    ) as HTMLButtonElement | undefined;
+    expect(trigger).toBeDefined();
+    trigger!.click();
+    await fixture.whenStable();
+    const filter = host.componentInstance as OrderFilterComponent;
+    Object.assign(filter, { start: '2026-10-01', end: '2026-10-17', search: 'A-001' });
+    page.selected.set(new Set(['HIDDEN']));
+    filter.applyFilter();
+    await fixture.whenStable();
+    expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({
+      start: '2026-10-01',
+      end: '2026-10-17',
+      q: 'A-001',
+      page: 1,
+    });
+    expect([...page.selected()]).toEqual(['HIDDEN']);
+    expect(trigger!.getAttribute('aria-expanded')).toBe('false');
+    http.verify();
+  });
   it('resets column rules and dates together with the original filter controls', () => {
     const { fixture, params, navigate, http } = setup();
     params.next(
@@ -137,10 +189,37 @@ describe('v1 orders and returns', () => {
     });
     http.verify();
   });
+  it('keeps an invalid period open and lets Escape close it without applying', async () => {
+    const { fixture, navigate, http } = setup('returns');
+    await fixture.whenStable();
+    const host = fixture.debugElement.query(By.directive(OrderFilterComponent));
+    (host.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    const filter = host.componentInstance as OrderFilterComponent;
+    Object.assign(filter, { start: '2026-10-17', end: '2026-10-01' });
+    host.nativeElement
+      .querySelector('form')
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await fixture.whenStable();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(host.nativeElement.querySelector('[role="alert"]').textContent).toContain('Дата начала');
+    host.nativeElement
+      .querySelector('dialog')
+      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await fixture.whenStable();
+    expect(host.nativeElement.querySelector('dialog')).toBeNull();
+    http.verify();
+  });
   it('preserves unfinished search while the original status options refresh', async () => {
     const { fixture, page, navigate, http } = setup();
     await fixture.whenStable();
     const filter = fixture.debugElement.query(By.directive(OrderFilterComponent));
+    (
+      [...filter.nativeElement.querySelectorAll('button')].find((button: any) =>
+        button.textContent.includes('Фильтры'),
+      ) as HTMLButtonElement | undefined
+    )?.click();
+    await fixture.whenStable();
     const text = filter.query(By.directive(FilterTextComponent))
       .componentInstance as FilterTextComponent;
     (text as any).updateValue('A-001');
@@ -172,11 +251,19 @@ describe('v1 orders and returns', () => {
     await fixture.whenStable();
     page.selected.set(new Set(['HIDDEN']));
     const filter = fixture.debugElement.query(By.directive(OrderFilterComponent));
+    (
+      [...filter.nativeElement.querySelectorAll('button')].find((button: any) =>
+        button.textContent.includes('Фильтры'),
+      ) as HTMLButtonElement | undefined
+    )?.click();
+    await fixture.whenStable();
     const scheme = filter
       .queryAll(By.directive(FilterSelectComponent))
       .map((n) => n.componentInstance as FilterSelectComponent)
       .find((c) => c.key === 'scheme')!;
     (scheme as any).updateValue('fbo');
+    expect(navigate).not.toHaveBeenCalled();
+    (filter.componentInstance as OrderFilterComponent).applyFilter();
     expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({
       scheme: 'fbo',
       lifecycle: 'current',

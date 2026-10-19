@@ -1,0 +1,39 @@
+:host {
+  display: inline-block;
+}
+.filter-trigger {
+  gap: 8px;
+}
+.filter-count {
+  min-width: 20px;
+  padding: 2px 5px;
+  border-radius: var(--control-radius);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 11px;
+}
+dialog {
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--panel-radius, 12px);
+  background: var(--surface);
+  color: var(--text);
+  overflow: auto;
+}
+dialog::backdrop {
+  background: rgb(15 23 42 / 32%);
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+h2 {
+  margin: 0;
+  font-size: 16px;
+}

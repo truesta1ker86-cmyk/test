@@ -16,7 +16,7 @@
       @if (entity === 'orders') {
         <button
           class="button"
-          [disabled]="loading() || exporting() || !data()?.local_preview"
+          [disabled]="loading() || exporting() || !data()?.meta?.total"
           (click)="export(true)"
         >
           <app-icon name="download" />{{ exporting() ? 'Готовим выгрузку…' : 'Скачать Excel' }}
@@ -67,13 +67,17 @@
     <p class="editor-success" role="status">{{ notice() }}</p>
   }
   <section class="panel operational-panel">
-    <app-order-filter
-      [filter]="query()"
-      [entity]="entity"
-      [statuses]="statusOptions()"
-      [loading]="loading()"
-      (filterChange)="onFilterChange($event)"
-    /><span class="list-total">{{ data()?.meta?.total ?? '—' }} из {{ scopeTotal() ?? '—' }}</span>
+    <div class="operational-toolbar">
+      <app-order-filter
+        [filter]="query()"
+        [entity]="entity"
+        [statuses]="statusOptions()"
+        [loading]="loading()"
+        (filterChange)="onFilterChange($event)"
+      /><span class="list-total"
+        >{{ data()?.meta?.total ?? '—' }} из {{ scopeTotal() ?? '—' }}</span
+      >
+    </div>
     @if (error()) {
       <div class="editor-error" role="alert">
         {{ error() }} <button class="text-button" (click)="refresh()">Повторить</button>

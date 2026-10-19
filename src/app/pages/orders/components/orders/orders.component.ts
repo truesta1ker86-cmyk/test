@@ -129,7 +129,9 @@ export class OrdersComponent {
     ].filter((s) => completedStatuses.has(s) === (this.query().lifecycle === 'completed')),
   );
   readonly readyRows = computed(() =>
-    (this.data()?.items || []).map((r) => r as Order).filter(canLabel),
+    this.data()?.local_preview
+      ? (this.data()?.items || []).map((r) => r as Order).filter(canLabel)
+      : [],
   );
   readonly hiddenSelected = computed(
     () =>
@@ -258,7 +260,7 @@ export class OrdersComponent {
     this.apply();
   }
   toggle(order: Order, checked: boolean) {
-    if (!canLabel(order)) return;
+    if (!this.data()?.local_preview || !canLabel(order)) return;
     this.selected.update((ids) => {
       const next = new Set(ids);
       if (checked) next.add(order.posting_number);
@@ -327,12 +329,10 @@ export class OrdersComponent {
     if (this.exporting()) return;
     this.exporting.set(true);
     this.error.set('');
-    const request = excel
-      ? this.api.localExcel(this.query(), this.data()?.local_preview === true)
-      : this.api.export(this.entity, this.query());
+    const request = this.api.export(this.entity, this.query(), excel ? 'xlsx' : 'csv');
     request.pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: (blob) => {
-        download(blob, excel ? 'orders-local.xlsx' : this.entity + '-local.csv');
+        download(blob, this.entity + '-v2.' + (excel ? 'xlsx' : 'csv'));
         this.exporting.set(false);
       },
       error: async (e) => {

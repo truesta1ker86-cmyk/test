@@ -1,0 +1,30 @@
+<button
+  type="button"
+  class="button filter-trigger"
+  aria-haspopup="dialog"
+  [attr.aria-label]="label"
+  [attr.aria-expanded]="open"
+  (click)="openChange.emit(true)"
+>
+  <app-icon name="filter" />Фильтры
+  @if (count > 0) {
+    <span class="filter-count" [attr.aria-label]="'Активных условий: ' + count">{{ count }}</span>
+  }
+</button>
+@if (open) {
+  <dialog
+    #dialog
+    appModalFocus
+    [attr.aria-label]="label"
+    (cancel)="$event.preventDefault(); close()"
+    (modalEscape)="close()"
+  >
+    <header>
+      <h2>{{ label }}</h2>
+      <button type="button" class="icon-button" aria-label="Закрыть фильтры" (click)="close()">
+        ×
+      </button>
+    </header>
+    <ng-content />
+  </dialog>
+}

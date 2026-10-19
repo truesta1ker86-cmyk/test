@@ -10,6 +10,7 @@ export interface OrderItem {
 }
 
 export interface Order {
+  id?: number;
   label_downloaded_at?: string | null;
   created_at?: string | null;
   posting_number: string;
@@ -25,6 +26,7 @@ export interface Order {
 }
 
 export interface ReturnRow {
+  id?: number;
   name?: string | null;
   main_image?: string | null;
   return_id: number | null;

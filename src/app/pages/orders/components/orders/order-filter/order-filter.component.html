@@ -1,45 +1,58 @@
-<form class="operational-filters filter-bar" (ngSubmit)="applyFilter()">
-  @if (entity === 'orders') {
-    <app-filter-select
-      key="lifecycle"
-      label="Жизненный цикл"
-      [options]="lifecycles"
-      [(ngModel)]="lifecycle"
-      name="lifecycle"
-      (userChange)="status = ''; applyFilter()"
+<app-table-filters
+  [open]="opened"
+  [count]="activeCount"
+  [label]="entity === 'orders' ? 'Фильтры заказов' : 'Фильтры возвратов'"
+  (openChange)="toggleFilters($event)"
+>
+  <form class="operational-filters" (ngSubmit)="applyFilter()">
+    @if (entity === 'orders') {
+      <app-filter-select
+        key="lifecycle"
+        label="Жизненный цикл"
+        [options]="lifecycles"
+        [(ngModel)]="lifecycle"
+        name="lifecycle"
+        (userChange)="status = ''"
+      />
+      <app-filter-select
+        key="status"
+        label="Статус"
+        [options]="statuses"
+        [(ngModel)]="status"
+        name="status"
+      />
+      <app-filter-select
+        key="scheme"
+        label="Схема"
+        [options]="schemes"
+        [(ngModel)]="scheme"
+        name="scheme"
+      />
+    }
+    <app-filter-text
+      class="filter-wide filter-search"
+      key="search"
+      label="Поиск"
+      placeholder="Номер, артикул…"
+      [(ngModel)]="search"
+      name="search"
     />
     <app-filter-select
-      key="status"
-      label="Статус"
-      [options]="statuses"
-      [(ngModel)]="status"
-      name="status"
-      (userChange)="applyFilter()"
+      key="sort"
+      [class.filter-wide]="entity === 'returns'"
+      label="Порядок"
+      [options]="entity === 'orders' ? sorts : returnSorts"
+      [(ngModel)]="sort"
+      name="sort"
     />
-    <app-filter-select
-      key="scheme"
-      label="Схема"
-      [options]="schemes"
-      [(ngModel)]="scheme"
-      name="scheme"
-      (userChange)="applyFilter()"
-    />
-  }
-  <app-filter-text
-    key="search"
-    label="Поиск"
-    placeholder="Номер, артикул…"
-    [(ngModel)]="search"
-    name="search"
-  />
-  <app-filter-select
-    key="sort"
-    label="Порядок"
-    [options]="entity === 'orders' ? sorts : returnSorts"
-    [(ngModel)]="sort"
-    name="sort"
-    (userChange)="applyFilter()"
-  />
-  <button class="button primary" type="submit" [disabled]="loading">Применить</button
-  ><button class="button" type="button" (click)="resetFilter()">Сбросить</button>
-</form>
+    <app-filter-date key="start" label="Дата с" [(ngModel)]="start" name="start" />
+    <app-filter-date key="end" label="Дата по" [(ngModel)]="end" name="end" />
+    @if (error) {
+      <p class="editor-error filter-error" role="alert">{{ error }}</p>
+    }
+    <div class="filter-actions">
+      <button class="button" type="button" (click)="resetFilter()">Сбросить</button>
+      <button class="button primary" type="submit" [disabled]="loading">Применить</button>
+    </div>
+  </form>
+</app-table-filters>

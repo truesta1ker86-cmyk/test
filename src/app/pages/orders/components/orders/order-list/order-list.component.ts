@@ -115,8 +115,12 @@ export class OrderListComponent {
   readonly currency = currency;
   readonly quantity = quantity;
   readonly status = status;
-  readonly canLabel = canLabel;
-  readonly actionLabel = orderActionLabel;
+  canLabel(order: Order): boolean {
+    return !!this.data()?.local_preview && canLabel(order);
+  }
+  actionLabel(order: Order): string {
+    return this.data()?.local_preview ? orderActionLabel(order) : 'Подробнее';
+  }
   order(row: Order | ReturnRow) {
     return row as Order;
   }
@@ -127,7 +131,7 @@ export class OrderListComponent {
     this.selectionChange.emit(selection);
   }
   toggle(order: Order, checked: boolean) {
-    if (!canLabel(order)) return;
+    if (!this.canLabel(order)) return;
     const ids = new Set(this.selected());
     checked ? ids.add(order.posting_number) : ids.delete(order.posting_number);
     this.onSelectionChange(ids);
@@ -136,6 +140,6 @@ export class OrderListComponent {
     this.detailRequested.emit(order.posting_number);
   }
   downloadLabel(order: Order): void {
-    if (canLabel(order)) this.labelRequested.emit(order);
+    if (this.canLabel(order)) this.labelRequested.emit(order);
   }
 }

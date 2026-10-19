@@ -109,11 +109,13 @@
               [checked]="selected().has(o.posting_number)"
               [disabled]="!canLabel(o) || labelsBusy()"
               [attr.aria-label]="
-                canLabel(o)
-                  ? 'Выбрать FBS-заказ ' + o.posting_number
-                  : o.scheme?.toLowerCase() === 'fbo'
-                    ? 'FBO-заказ ' + o.posting_number + ': выбор не требуется'
-                    : 'Заказ ' + o.posting_number + ': сначала соберите заказ'
+                !data()?.local_preview
+                  ? 'Заказ ' + o.posting_number + ': получение этикетки Ozon отключено'
+                  : canLabel(o)
+                    ? 'Выбрать FBS-заказ ' + o.posting_number
+                    : o.scheme?.toLowerCase() === 'fbo'
+                      ? 'FBO-заказ ' + o.posting_number + ': выбор не требуется'
+                      : 'Заказ ' + o.posting_number + ': сначала соберите заказ'
               "
               (change)="toggle(o, $any($event.target).checked)"
             />
