@@ -1,0 +1,11 @@
+{
+  "/v2/api": {
+    "target": "https://pujer.ru",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/v2/api": "/api"
+    },
+    "logLevel": "debug" 
+  }
+}
