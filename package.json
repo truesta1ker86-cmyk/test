@@ -3,9 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --host 127.0.0.1 --proxy-config proxy.local.conf.cjs",
-    "start:remote": "ng serve --host 127.0.0.1 --proxy-config proxy.remote.conf.cjs",
-    "start:server": "ng serve --host 127.0.0.1 --proxy-config proxy.server.conf.cjs",
+    "start": "ng serve --host 127.0.0.1 --proxy-config proxy.conf.json",
     "api:docs": "node development-api/serve.cjs",
     "build": "NG_BUILD_MAX_WORKERS=2 ng build --base-href /v2/ --delete-output-path=false && cp dist/ozon1c-v2/3rdpartylicenses.txt dist/ozon1c-v2/browser/3rdpartylicenses.txt",
     "watch": "ng build --watch --configuration development",

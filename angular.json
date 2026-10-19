@@ -52,7 +52,6 @@
               "outputHashing": "all"
             },
             "development": {
-              "baseHref": "/v2/",
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
