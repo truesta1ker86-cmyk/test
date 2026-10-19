@@ -1,0 +1,37 @@
+name: CI & Deploy
+
+on:
+  push:
+    branches: [ii_test]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build
+        run: npx ng build --configuration=production
+
+      - name: Deploy to server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
+          source: "dist/o1c_panel/*"
+          target: "/var/www/o1c_panel"
+          overwrite: true
+          # rm: true  ← пока не включай, пока не настроишь права на сервере
