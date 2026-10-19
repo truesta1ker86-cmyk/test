@@ -35,7 +35,7 @@ describe('Workspace access', () => {
     await fixture.whenStable();
     expect(fixture.nativeElement.textContent).toContain('Вход в версию 2');
     expect(fixture.nativeElement.querySelector('input[type="password"]')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(false);
+    expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
     expect(fixture.nativeElement.querySelector('router-outlet')).toBeNull();
   });
 

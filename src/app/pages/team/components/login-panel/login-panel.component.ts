@@ -47,8 +47,11 @@ import { errorMessage } from '../../../../core/infrastructure/utils/api.utils';
     @if (error()) {
       <p role="alert" class="error">{{ error() }}</p>
     }
-    <button class="button primary" type="submit" [disabled]="busy() || !options()">
-      {{ busy() ? 'Входим…' : 'Войти в v2' }}
+    @if (!options() && !optionsLoading()) {
+      <button class="button" type="button" (click)="loadOptions()">Повторить подключение</button>
+    }
+    <button class="button primary" type="submit" [disabled]="!canLogin()">
+      {{ optionsLoading() ? 'Подключаемся…' : busy() ? 'Входим…' : 'Войти в v2' }}
     </button>
   </form>`,
   styles: `
@@ -95,21 +98,43 @@ export class LoginPanel {
     null,
   );
   readonly busy = signal(false);
+  readonly optionsLoading = signal(false);
   readonly error = signal('');
   token = '';
   terms = false;
   consent = false;
   constructor() {
+    this.loadOptions();
+  }
+  loadOptions() {
+    if (this.optionsLoading()) return;
+    this.optionsLoading.set(true);
+    this.error.set('');
     this.http
       .get<{ legal_document_version: string; consent_required: boolean }>('/v2/api/auth/options')
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
-        next: (r) => this.options.set(r),
-        error: (e) => this.error.set(errorMessage(e)),
+        next: (r) => {
+          this.options.set(r);
+          this.optionsLoading.set(false);
+        },
+        error: () => {
+          this.optionsLoading.set(false);
+          this.error.set('Сервис входа недоступен. Проверьте подключение к API V2 и повторите.');
+        },
       });
   }
+  canLogin() {
+    const options = this.options();
+    return (
+      !!options &&
+      !this.busy() &&
+      this.token.trim().length >= 16 &&
+      (!options.consent_required || (this.terms && this.consent))
+    );
+  }
   login() {
-    if (this.busy()) return;
+    if (!this.canLogin()) return;
     this.busy.set(true);
     this.error.set('');
     this.http
