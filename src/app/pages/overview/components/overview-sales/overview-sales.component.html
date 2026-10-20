@@ -11,8 +11,8 @@
       >Период
       <select
         aria-label="Период динамики продаж"
-        [value]="days()"
-        (change)="setDays($any($event.target).value)"
+        [ngModel]="days()"
+        (ngModelChange)="setDays($event)"
       >
         @for (period of periods; track period.days) {
           <option [value]="period.days">{{ period.label }}</option>

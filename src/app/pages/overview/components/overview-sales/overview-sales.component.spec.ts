@@ -44,11 +44,13 @@ function setup() {
 }
 
 describe('overview delivered-sales dynamics', () => {
-  it('shows saved totals, an accessible daily table and zero days in the chart', () => {
+  it('shows saved totals, an accessible daily table and zero days in the chart', async () => {
     const { fixture, page, http, initial } = setup();
     expect(fixture.nativeElement.textContent).toContain('Загружаем динамику');
     initial.flush(result());
     fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('select').value).toBe('30');
     expect(page.chartData()?.datasets[0].data).toEqual([2, 0, 3]);
     expect(salesChartData(result()).labels).toEqual(['18.10', '19.10', '20.10']);
     expect(fixture.nativeElement.textContent).toContain('80,30');
