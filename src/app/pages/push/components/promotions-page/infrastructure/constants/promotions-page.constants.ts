@@ -25,3 +25,4 @@ export const PROMOTIONS_PAGE_DECISIONS: Record<string, string> = {
   incomplete: 'Не хватает данных',
   unmanaged: 'Без модели',
 };
+export const PROMOTIONS_PAGE_SIZE = 50;

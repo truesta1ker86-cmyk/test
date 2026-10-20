@@ -10,7 +10,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   template: `<div class="page-heading">
       <div>
         <h1>Состав версии 2</h1>
-        <p>Angular-интерфейс и отдельный C++ API. Рабочая версия продолжает работать.</p>
+        <p>Angular-интерфейс и отдельный API V2. Рабочая версия продолжает работать.</p>
       </div>
     </div>
     <section class="panel migration-panel" aria-labelledby="migration-title">

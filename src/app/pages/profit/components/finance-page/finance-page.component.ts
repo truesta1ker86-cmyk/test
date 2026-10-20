@@ -5,6 +5,7 @@ import {
   FINANCE_PAGE_TABS,
   FINANCE_PAGE_FACET_FIELDS,
   FINANCE_PAGE_TABLE_COLUMNS1,
+  FINANCE_MARKET_PAGE_SIZE,
 } from './infrastructure/constants/finance-page.constants';
 import {
   ChangeDetectionStrategy,
@@ -74,6 +75,20 @@ export class FinancePage {
   readonly tabs = FINANCE_PAGE_TABS;
   readonly data = signal<FinanceData | null>(null);
   readonly view = signal('profit');
+  readonly marketPage = signal(1);
+  readonly marketPageSize = FINANCE_MARKET_PAGE_SIZE;
+  readonly marketPageCount = computed(() =>
+    Math.max(1, Math.ceil(this.rows().length / this.marketPageSize)),
+  );
+  readonly currentMarketPage = computed(() => Math.min(this.marketPage(), this.marketPageCount()));
+  readonly displayedRows = computed(() =>
+    this.view() === 'market'
+      ? this.rows().slice(
+          (this.currentMarketPage() - 1) * this.marketPageSize,
+          this.currentMarketPage() * this.marketPageSize,
+        )
+      : this.rows(),
+  );
   readonly query = signal({
     start: '',
     end: '',
@@ -718,6 +733,7 @@ export class FinancePage {
       )
       .subscribe((data) => {
         this.data.set(data);
+        this.marketPage.set(1);
         this.tax = data?.tax_regime || 'usn_6';
         this.loading.set(false);
       });

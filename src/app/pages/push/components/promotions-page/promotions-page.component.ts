@@ -4,6 +4,7 @@ import {
   PROMOTIONS_PAGE_TABLE_COLUMNS4,
   PROMOTIONS_PAGE_TABLE_COLUMNS3,
   PROMOTIONS_PAGE_DECISIONS,
+  PROMOTIONS_PAGE_SIZE,
 } from './infrastructure/constants/promotions-page.constants';
 import { PromotionDrafts } from './infrastructure/services/promotion-drafts.service';
 import {
@@ -167,6 +168,13 @@ export class PromotionsPage {
   });
   readonly columnState = signal<Record<string, ColumnRules>>({});
   readonly sorting = signal({ key: '', desc: false });
+  readonly page = signal(1);
+  readonly pageSize = PROMOTIONS_PAGE_SIZE;
+  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.rows().length / this.pageSize)));
+  readonly currentPage = computed(() => Math.min(this.page(), this.pageCount()));
+  readonly pageRows = computed(() =>
+    this.rows().slice((this.currentPage() - 1) * this.pageSize, this.currentPage() * this.pageSize),
+  );
   readonly columnRules = computed(() => this.columnState()[this.tab()] || {});
   readonly canWrite = computed(
     () => !this.loading() && !this.busy() && !this.error() && this.api.allowed(this.data()),
@@ -324,6 +332,7 @@ export class PromotionsPage {
         participating: this.participating,
         models: this.models,
       });
+      this.page.set(1);
     });
     this.load();
   }
@@ -422,11 +431,13 @@ export class PromotionsPage {
     };
   }
   columnChanged(e: ColumnChange) {
+    this.page.set(1);
     const rules = { ...this.columnRules() };
     e.rule ? (rules[e.field] = e.rule) : delete rules[e.field];
     this.columnState.update((s) => ({ ...s, [this.tab()]: rules }));
   }
   sort(key: string) {
+    this.page.set(1);
     this.sorting.update((s) => ({ key, desc: s.key === key ? !s.desc : false }));
   }
   isSelected(row: Policy | CategoryRule | CampaignRow) {

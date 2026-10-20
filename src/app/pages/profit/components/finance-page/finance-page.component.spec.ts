@@ -177,6 +177,19 @@ describe('Financial view adapters', () => {
     expect(page.columns().some((c) => c.key === 'marketplace_card_price')).toBe(true);
     expect(page.rows()[0].cells['marketplace_card_price']).toBeNull();
   });
+  it('renders market prices by fifty while retaining the full filtered result', () => {
+    const page = setup('market', {
+      items: Array.from({ length: 75 }, (_, i) => ({
+        offer_id: 'A-' + i,
+        name: 'Товар ' + i,
+        seller_price: '100',
+      })),
+    });
+    expect(page.rows()).toHaveLength(75);
+    expect(page.displayedRows()).toHaveLength(50);
+    page.marketPage.set(2);
+    expect(page.displayedRows()).toHaveLength(25);
+  });
   it('rejects nonexistent calendar dates before building or exporting a report', () => {
     expect(validFinanceDates('2026-02-29', '2026-03-02')).toBe(false);
     expect(validFinanceDates('2024-02-29', '2024-03-02')).toBe(true);

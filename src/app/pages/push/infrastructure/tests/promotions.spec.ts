@@ -181,9 +181,15 @@ describe('v1 promotions local rules and table state', () => {
     w.products = Array.from({ length: 70 }, (_, i) => ({ ...w.products[0], offer_id: 'A-' + i }));
     http.expectOne(root + '/workspace').flush(w);
     p.tab.set('products');
+    expect(p.pageRows()).toHaveLength(50);
+    p.page.set(2);
+    expect(p.pageRows()).toHaveLength(20);
+    expect(p.pageRows()[0]).toMatchObject({ offer_id: 'A-50' });
     p.selectFiltered();
     expect(p.selection().size).toBe(70);
     p.filter.update((s) => ({ ...s, q: 'A-69' }));
+    expect(p.currentPage()).toBe(1);
+    expect(p.pageRows()).toHaveLength(1);
     expect(p.hiddenCount()).toBe(69);
     p.selectFiltered(false);
     expect(p.selection().size).toBe(69);

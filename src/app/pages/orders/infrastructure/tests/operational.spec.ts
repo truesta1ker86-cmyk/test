@@ -506,6 +506,15 @@ describe('Local order action preview', () => {
     http.expectNone((r) => r.method === 'POST');
     http.verify();
   });
+  it('renders a read-only copied order with aligned item columns and truthful source', () => {
+    const { fixture, http } = detail('fbs', false);
+    const table = fixture.nativeElement.querySelector('table');
+    expect(table.querySelectorAll('th').length).toBe(3);
+    expect(table.querySelectorAll('tbody tr td').length).toBe(3);
+    expect(table.querySelectorAll('input[type="checkbox"]').length).toBe(0);
+    expect(fixture.nativeElement.textContent).toContain('сохранённые данные V2');
+    http.verify();
+  });
   it('retains recoverable errors without changing status', () => {
     const { page, http } = detail();
     page.prepare();

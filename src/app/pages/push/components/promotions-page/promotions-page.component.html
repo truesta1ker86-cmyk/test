@@ -229,7 +229,7 @@
         [attr.aria-busy]="loading()"
       >
         <app-data-table
-          [data]="rows()"
+          [data]="pageRows()"
           selectionMode="none"
           [columns]="tableColumns1()"
           [headerTemplate]="tableHeader1"
@@ -238,6 +238,7 @@
           [scrollable]="false"
           tableStyleClass="operation-table promo-table"
           emptyMessage="Нет данных"
+          [loading]="loading()"
         >
           <ng-template #tableHeader1>
             <tr>
@@ -472,11 +473,35 @@
           </ng-template>
         </app-data-table>
       </div>
+      <nav class="panel-heading" aria-label="Страницы акций">
+        <button
+          class="button"
+          [disabled]="currentPage() <= 1 || loading()"
+          (click)="page.set(currentPage() - 1)"
+        >
+          Предыдущая страница
+        </button>
+        <span
+          >Страница {{ currentPage() }} из {{ pageCount() }} · строк {{ rows().length }} · по
+          {{ pageSize }}</span
+        >
+        <button
+          class="button"
+          [disabled]="currentPage() >= pageCount() || loading()"
+          (click)="page.set(currentPage() + 1)"
+        >
+          Следующая страница
+        </button>
+      </nav>
     </section>
   } @else {
     <section class="panel history-panel">
       <div class="panel-heading">
-        <h2>Изменения правил в локальном макете</h2>
+        <h2>
+          {{
+            databaseCopy() ? 'Изменения правил в копии базы' : 'Изменения правил в локальном макете'
+          }}
+        </h2>
         <button class="button" [disabled]="loading()" (click)="load()">Обновить список</button>
       </div>
       <div class="table-scroll">

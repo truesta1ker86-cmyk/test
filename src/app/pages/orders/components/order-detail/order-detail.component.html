@@ -4,7 +4,10 @@
       <h2 id="order-detail-title">
         {{ data()?.order?.scheme === 'fbo' ? 'Информация по FBO-заказу' : 'Обработка заказа' }}
       </h2>
-      <p>Отправление {{ posting() }} · локальный макет</p>
+      <p>
+        Отправление {{ posting() }} ·
+        {{ data()?.local_preview ? 'локальный макет' : 'сохранённые данные V2' }}
+      </p>
     </div>
     <button type="button" class="icon-button" aria-label="Закрыть отправление" (click)="close()">
       <app-icon name="close" />
@@ -37,7 +40,7 @@
           [data]="detail.order.items"
           [columns]="tableColumns1()"
           [headerTemplate]="tableHeader1"
-          selectionMode="multiple"
+          selectionMode="none"
           [rowClickable]="false"
           [lazy]="false"
           [scrollable]="false"

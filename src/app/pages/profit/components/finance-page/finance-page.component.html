@@ -228,7 +228,7 @@
         [columnRules]="columnRules()"
         [columnOptions]="columnOptions()"
         (columnChanged)="changeColumn($event)"
-        [rows]="rows()"
+        [rows]="displayedRows()"
         [canEdit]="false"
         [identityLinks]="view() !== 'gross' && view() !== 'weekly'"
         [label]="view() === 'gross' || view() === 'weekly' ? 'Категория' : 'Товар / статья'"
@@ -236,6 +236,28 @@
       />
     }
   </section>
+  @if (view() === 'market' && data() && !loading()) {
+    <nav class="pager" aria-label="Страницы рынка">
+      <button
+        class="button"
+        [disabled]="currentMarketPage() <= 1"
+        (click)="marketPage.set(currentMarketPage() - 1)"
+      >
+        Предыдущая страница
+      </button>
+      <span
+        >Страница {{ currentMarketPage() }} из {{ marketPageCount() }} · товаров
+        {{ rows().length }} · по {{ marketPageSize }}</span
+      >
+      <button
+        class="button"
+        [disabled]="currentMarketPage() >= marketPageCount()"
+        (click)="marketPage.set(currentMarketPage() + 1)"
+      >
+        Следующая страница
+      </button>
+    </nav>
+  }
   @if (cellStats(); as stats) {
     <div class="finance-selection-summary" role="status">
       <b>Выделено {{ stats.count }}</b

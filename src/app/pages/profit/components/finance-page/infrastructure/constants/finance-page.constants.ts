@@ -31,3 +31,4 @@ export const FINANCE_PAGE_FACET_FIELDS = [
   ['product_group', 'Подгруппа'],
   ['fin_type', 'Тип Фин'],
 ] as const;
+export const FINANCE_MARKET_PAGE_SIZE = 50;
