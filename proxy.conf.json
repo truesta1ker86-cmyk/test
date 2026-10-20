@@ -1,14 +1,14 @@
 {
   "/v2/api": {
     "target": "https://pujer.ru",
-    "secure": false,
+    "secure": true,
     "changeOrigin": true,
     "pathRewrite": {
       "^/v2/api": "/api"
     },
     "headers": {
       "Origin": "https://pujer.ru"
-    },    
-    "logLevel": "debug" 
+    },
+    "logLevel": "debug"
   }
 }
