@@ -80,9 +80,7 @@
     <div class="table-wrap">
       <app-data-table
         [columns]="tableColumns1()"
-        [data]="visibleShops()"
         [headerTemplate]="tableHeader1"
-        selectionMode="none"
         [rowClickable]="false"
         [lazy]="false"
         [scrollable]="false"
@@ -203,9 +201,7 @@
     <div class="table-wrap">
       <app-data-table
         [columns]="tableColumns2()"
-        [data]="data()?.members || []"
         [headerTemplate]="tableHeader2"
-        selectionMode="none"
         [rowClickable]="false"
         [lazy]="false"
         [scrollable]="false"
@@ -327,9 +323,7 @@
     <div class="table-wrap">
       <app-data-table
         [columns]="tableColumns3()"
-        [data]="data()?.billing?.transactions || []"
         [headerTemplate]="tableHeader3"
-        selectionMode="none"
         [rowClickable]="false"
         [lazy]="false"
         [scrollable]="false"
@@ -409,9 +403,7 @@
       <div class="table-wrap">
         <app-data-table
           [columns]="tableColumns4()"
-          [data]="data()?.billing?.top_up_requests || []"
           [headerTemplate]="tableHeader4"
-          selectionMode="none"
           [rowClickable]="false"
           [lazy]="false"
           [scrollable]="false"
@@ -530,9 +522,7 @@
         <div class="table-wrap">
           <app-data-table
             [columns]="tableColumns5()"
-            [data]="p.cost_preview"
             [headerTemplate]="tableHeader5"
-            selectionMode="none"
             [rowClickable]="false"
             [lazy]="false"
             [scrollable]="false"

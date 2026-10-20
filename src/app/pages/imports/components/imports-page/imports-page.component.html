@@ -75,9 +75,7 @@
           <div class="table-wrap">
             <app-data-table
               [columns]="tableColumns1()"
-              [data]="sheet.mappings"
               [headerTemplate]="tableHeader1"
-              selectionMode="none"
               [rowClickable]="false"
               [lazy]="false"
               [scrollable]="false"
@@ -124,9 +122,7 @@
             <div class="table-wrap">
               <app-data-table
                 [columns]="tableColumns2(sheet)"
-                [data]="sheet.sample_rows"
                 [headerTemplate]="tableHeader2"
-                selectionMode="none"
                 [rowClickable]="false"
                 [lazy]="false"
                 [scrollable]="false"
@@ -198,9 +194,7 @@
           <div class="table-wrap">
             <app-data-table
               [columns]="tableColumns3()"
-              [data]="j.validation.issues"
               [headerTemplate]="tableHeader3"
-              selectionMode="none"
               [rowClickable]="false"
               [lazy]="false"
               [scrollable]="false"
@@ -251,9 +245,7 @@
           <div class="table-wrap">
             <app-data-table
               [columns]="tableColumns7()"
-              [data]="previewFieldRows(p.changes)"
               [headerTemplate]="tableHeader7"
-              selectionMode="none"
               [rowClickable]="false"
               [lazy]="false"
               [scrollable]="false"
@@ -341,9 +333,7 @@
     <div class="table-wrap">
       <app-data-table
         [columns]="tableColumns5()"
-        [data]="data()?.items || []"
         [headerTemplate]="tableHeader5"
-        selectionMode="none"
         [rowClickable]="false"
         [lazy]="false"
         [scrollable]="false"
@@ -411,9 +401,7 @@
     <div class="table-wrap">
       <app-data-table
         [columns]="tableColumns6()"
-        [data]="data()?.profiles || []"
         [headerTemplate]="tableHeader6"
-        selectionMode="none"
         [rowClickable]="false"
         [lazy]="false"
         [scrollable]="false"

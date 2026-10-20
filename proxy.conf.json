@@ -6,6 +6,9 @@
     "pathRewrite": {
       "^/v2/api": "/api"
     },
+    "headers": {
+      "Origin": "https://pujer.ru"
+    },    
     "logLevel": "debug" 
   }
 }

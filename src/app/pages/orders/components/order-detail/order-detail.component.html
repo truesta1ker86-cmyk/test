@@ -35,9 +35,8 @@
       <div class="table-scroll">
         <app-data-table
           [columns]="tableColumns1()"
-          [data]="detail.order.items"
           [headerTemplate]="tableHeader1"
-          selectionMode="none"
+          selectionMode="multiple"
           [rowClickable]="false"
           [lazy]="false"
           [scrollable]="false"

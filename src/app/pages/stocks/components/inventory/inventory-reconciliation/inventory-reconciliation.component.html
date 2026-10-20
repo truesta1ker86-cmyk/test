@@ -1,9 +1,7 @@
 <div class="table-wrap" [attr.aria-busy]="loading">
   <app-data-table
     [columns]="reconciliationColumns"
-    [data]="items"
     [headerTemplate]="tableHeader1"
-    selectionMode="none"
     [rowClickable]="false"
     [lazy]="false"
     [scrollable]="false"

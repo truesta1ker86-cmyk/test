@@ -93,23 +93,7 @@
         @if (snapshot.row; as sale) {
           <app-data-table
             [columns]="tableColumns1()"
-            [data]="[
-              { label: 'Продано, шт.', value: sale.units_sold },
-              { label: 'Доставки', value: money(sale.sales_revenue) },
-              { label: 'Возвраты', value: money(sale.returns) },
-              { label: 'Продажи за вычетом возвратов', value: money(sale.revenue) },
-              { label: 'Начислено Ozon', value: money(sale.ozon_accrual) },
-              {
-                label: 'Себестоимость',
-                value: sale.has_cost_price ? money(sale.cost) : 'Нет данных',
-              },
-              {
-                label: 'Прибыль после налога',
-                value: sale.has_cost_price ? money(sale.profit) : 'Нет данных',
-              },
-            ]"
             [headerTemplate]="tableHeader1"
-            selectionMode="none"
             [rowClickable]="false"
             [lazy]="false"
             [scrollable]="false"

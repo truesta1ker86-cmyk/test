@@ -124,6 +124,5 @@ export function applyFilter<TEntity extends Entity>(
 
   const predicate = createMatcher(schema, values, hooks);
   const result = items.filter(predicate);
-
   return hooks?.afterFilter?.(result, values) ?? result;
 }

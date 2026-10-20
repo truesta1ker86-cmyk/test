@@ -81,7 +81,7 @@
     }
     @if (entity === 'orders') {
       <app-order-bulk-actions
-        [selectedCount]="selected().size"
+        [selectedCount]="selected().length"
         [readyCount]="readyRows().length"
         [hiddenCount]="hiddenSelected()"
         [busy]="loading() || labelsBusy()"
@@ -92,20 +92,24 @@
       />
     }
     <app-order-list
-      [orders]="loading() ? [] : rows()"
-      [entity]="entity"
-      [data]="data()"
-      [loading]="loading()"
-      [selected]="selected()"
-      [labelsBusy]="labelsBusy()"
-      [headingSort]="headingSort()"
-      [columnRules]="columnRules()"
-      (selectionChange)="selected.set($event)"
-      (sortChange)="sortHeading($event)"
-      (columnChange)="columnChanged($event)"
-      (detailRequested)="open($event)"
-      (labelRequested)="labels($event)"
-    />
+    [orders]="data()?.items || []"
+    [entity]="entity"
+    [data]="data()"
+    [selected]="selected()"
+    [labelsBusy]="labelsBusy()"
+    [headingSort]="headingSort()"
+    [columnRules]="columnRules()"
+    
+    [filters]="query()" 
+    
+    (selectionChange)="selected.set($event)"
+    (sortChange)="sortHeading($event)"
+    (columnChange)="columnChanged($event)"
+    (detailRequested)="open($event)"
+    (labelRequested)="labels($event)"
+    
+    (dataLoaded)="onDataLoaded($event)"
+  />
     <div class="operational-export">
       <button
         class="text-button"

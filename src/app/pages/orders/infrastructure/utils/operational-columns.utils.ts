@@ -110,9 +110,11 @@ export function applyOperationalColumns(
         values[field + ':' + bound] = rule[bound].trim().replace(',', '.');
       }
     }
+
     return applyFilter(projected, schema, values);
   };
   const items = matching().map((row) => data.items[Number(row['index'])]);
+
   const column_values = Object.fromEntries(
     fields.map((field) => [
       field,
@@ -121,10 +123,11 @@ export function applyOperationalColumns(
       ),
     ]),
   );
+
   return {
     ...data,
     items,
     column_values,
-    meta: { ...data.meta, total: items.length, page_size: items.length, has_more: false },
+    meta: { ...data.meta },
   };
 }

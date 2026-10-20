@@ -6,6 +6,8 @@ import { ColumnFilterModule } from '../../../../../shared/directives/filter-pane
 import { RouterLink } from '@angular/router';
 import { ProductNameModule } from '../../../../../shared/product-preview/directives/product-name.module';
 import { IconModule } from '../../../../../shared/icons-sprite/icon/icon.module';
+import { CheckboxModule } from 'primeng/checkbox';
+import { FormsModule } from '@angular/forms';
 @NgModule({
   declarations: [OrderListComponent],
   imports: [
@@ -14,7 +16,9 @@ import { IconModule } from '../../../../../shared/icons-sprite/icon/icon.module'
     ColumnFilterModule,
     RouterLink,
     ProductNameModule,
+    CheckboxModule,
     IconModule,
+    FormsModule
   ],
   exports: [OrderListComponent],
 })

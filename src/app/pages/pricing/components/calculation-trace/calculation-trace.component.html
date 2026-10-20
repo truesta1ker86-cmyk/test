@@ -8,9 +8,7 @@
       </p>
       <app-data-table
         [columns]="tableColumns1()"
-        [data]="actualFields"
         [headerTemplate]="tableHeader1"
-        selectionMode="none"
         [rowClickable]="false"
         [lazy]="false"
         [scrollable]="false"
@@ -65,9 +63,7 @@
       <code class="formula-expression">{{ minimum.expression }}</code>
       <app-data-table
         [columns]="tableColumns2()"
-        [data]="variables()"
         [headerTemplate]="tableHeader2"
-        selectionMode="none"
         [rowClickable]="false"
         [lazy]="false"
         [scrollable]="false"
@@ -105,9 +101,7 @@
           <div class="table-scroll">
             <app-data-table
               [columns]="tableColumns3()"
-              [data]="scenarios()"
               [headerTemplate]="tableHeader3"
-              selectionMode="none"
               [rowClickable]="false"
               [lazy]="false"
               [scrollable]="false"

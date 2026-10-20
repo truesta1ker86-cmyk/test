@@ -230,9 +230,7 @@
       >
         <app-data-table
           [columns]="tableColumns1()"
-          [data]="rows()"
           [headerTemplate]="tableHeader1"
-          selectionMode="none"
           [rowClickable]="false"
           [lazy]="false"
           [scrollable]="false"
@@ -482,9 +480,7 @@
       <div class="table-scroll">
         <app-data-table
           [columns]="tableColumns4()"
-          [data]="data()?.history || []"
           [headerTemplate]="tableHeader4"
-          selectionMode="none"
           [rowClickable]="false"
           [lazy]="false"
           [scrollable]="false"
@@ -542,9 +538,7 @@
                     <summary>Открыть результат</summary>
                     <app-data-table
                       [columns]="tableColumns3()"
-                      [data]="op.changes"
                       [headerTemplate]="tableHeader3"
-                      selectionMode="none"
                       [rowClickable]="false"
                       [lazy]="false"
                       [scrollable]="false"

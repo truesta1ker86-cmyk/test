@@ -87,9 +87,7 @@
       <div class="preview-scroll">
         <app-data-table
           [columns]="tableColumns1()"
-          [data]="prepared().slice(0, 20)"
           [headerTemplate]="tableHeader1"
-          selectionMode="none"
           [rowClickable]="false"
           [lazy]="false"
           [scrollable]="false"
@@ -146,9 +144,7 @@
     [attr.aria-busy]="loading()"
     [columns]="tableColumns2()"
     [selection]="visibleTableSelection()"
-    [data]="loading() ? [] : rows()"
     [headerTemplate]="tableHeader2"
-    selectionMode="none"
     [rowClickable]="false"
     [lazy]="false"
     [scrollable]="false"
@@ -371,9 +367,7 @@
     <div class="preview-scroll">
       <app-data-table
         [columns]="tableColumns3()"
-        [data]="filteredCandidates()"
         [headerTemplate]="tableHeader3"
-        selectionMode="none"
         [rowClickable]="false"
         [lazy]="false"
         [scrollable]="false"
@@ -447,9 +441,7 @@
     <div class="preview-scroll">
       <app-data-table
         [columns]="tableColumns4()"
-        [data]="op.sample || []"
         [headerTemplate]="tableHeader4"
-        selectionMode="none"
         [rowClickable]="false"
         [lazy]="false"
         [scrollable]="false"
@@ -541,9 +533,7 @@
           <div class="preview-scroll">
             <app-data-table
               [columns]="tableColumns5()"
-              [data]="c.comparisons"
               [headerTemplate]="tableHeader5"
-              selectionMode="none"
               [rowClickable]="false"
               [lazy]="false"
               [scrollable]="false"

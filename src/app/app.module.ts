@@ -31,7 +31,6 @@ registerLocaleData(localeRu);
     provideZonelessChangeDetection(),
     { provide: LOCALE_ID, useValue: 'ru' },
     provideHttpClient(withInterceptors([shopInterceptor, preloaderInterceptor])),
-    providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: false } } }),
     {
       provide: PRELOADER_CONFIG,
       useValue: {
