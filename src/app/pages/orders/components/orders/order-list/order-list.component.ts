@@ -1,3 +1,7 @@
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
+import { WorkspaceApi } from '../../../infrastructure/services/workspace-api.service';
+import type { ColumnValuesRequest } from '../../../../../shared/directives/filter-panel/infrastructure/interfaces/column-rule.interfaces';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -6,6 +10,8 @@ import {
   inject,
   input,
   output,
+  signal,
+  DestroyRef,
 } from '@angular/core';
 import type { DataTableColumn } from '../../../../../shared/data-table/infrastructure/interfaces/data-table-config.interfaces';
 import type {
@@ -13,6 +19,7 @@ import type {
   ListQuery,
   Order,
   ReturnRow,
+  ColumnValuesState,
 } from '../../../infrastructure/interfaces/contracts.interfaces';
 import type {
   ColumnChange,
@@ -32,6 +39,45 @@ import type { CheckboxChangeEvent } from 'primeng/checkbox';
 })
 export class OrderListComponent {
   readonly cdr = inject(ChangeDetectorRef);
+  private readonly api = inject(WorkspaceApi);
+  private readonly destroy = inject(DestroyRef);
+  private choiceRequest?: Subscription;
+  readonly choices = signal<ColumnValuesState>({
+    field: '',
+    values: [],
+    busy: false,
+    error: '',
+    total: 0,
+    hasMore: false,
+  });
+
+  loadChoices(field: string, request: ColumnValuesRequest) {
+    this.choiceRequest?.unsubscribe();
+    this.choices.set({ field, values: [], busy: true, error: '', total: 0, hasMore: false });
+    this.choiceRequest = this.api
+      .columnValues(this.entity(), this.filters(), field, request.search, request.page)
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (response) =>
+          this.choices.set({
+            field,
+            values: response.values,
+            busy: false,
+            error: '',
+            total: response.meta.total,
+            hasMore: response.meta.has_more,
+          }),
+        error: () =>
+          this.choices.set({
+            field,
+            values: [],
+            busy: false,
+            error: 'Не удалось загрузить значения.',
+            total: 0,
+            hasMore: false,
+          }),
+      });
+  }
   readonly entity = input<'orders' | 'returns'>('orders');
   readonly rows = input<(Order | ReturnRow)[]>([], { alias: 'orders' });
   readonly data = input<ListPage | null>(null);
@@ -68,7 +114,7 @@ export class OrderListComponent {
             { field: 'scheme', header: 'Схема', cellTemplate: { slot: 'cell8' } },
             { field: 'status', header: 'Статус', cellTemplate: { slot: 'cell9' } },
             {
-              field: 'created_at',
+              field: 'date',
               header: 'Дата заказа',
               styleClass: 'order-date',
               cellTemplate: { slot: 'cell10' },
@@ -80,7 +126,7 @@ export class OrderListComponent {
               cellTemplate: { slot: 'cell11' },
             },
             {
-              field: 'total_price',
+              field: 'amount',
               header: 'Сумма',
               styleClass: 'numeric',
               cellTemplate: { slot: 'cell12' },
@@ -96,12 +142,12 @@ export class OrderListComponent {
             { field: 'posting_number', header: 'Номер', cellTemplate: { slot: 'cell1' } },
             { field: 'offer_id', header: 'Артикул', cellTemplate: { slot: 'cell2' } },
             {
-              field: 'returns_amount',
+              field: 'amount',
               header: 'Сумма возврата',
               styleClass: 'numeric',
               cellTemplate: { slot: 'cell3' },
             },
-            { field: 'returned_at', header: 'Дата возврата', cellTemplate: { slot: 'cell4' } },
+            { field: 'date', header: 'Дата возврата', cellTemplate: { slot: 'cell4' } },
             { field: 'status', header: 'Статус', cellTemplate: { slot: 'cell5' } },
           ]),
     ];

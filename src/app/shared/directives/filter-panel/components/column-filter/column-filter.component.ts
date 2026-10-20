@@ -8,12 +8,14 @@ import {
   output,
   signal,
   viewChild,
+  untracked,
 } from '@angular/core';
 import { FilterService } from '../../infrastructure/services/filter.service';
 import type { FilterConfig } from '../../infrastructure/interfaces/filter.interfaces';
 import type {
   ColumnRule,
   ColumnChange,
+  ColumnValuesRequest,
 } from '../../infrastructure/interfaces/column-rule.interfaces';
 
 @Component({
@@ -31,6 +33,13 @@ export class ColumnFilterComponent {
   readonly label = input.required<string>();
   readonly options = input<string[]>([]);
   readonly numeric = input(false);
+  readonly remoteOptions = input(false);
+  readonly optionsBusy = input(false);
+  readonly optionsHasMore = input(false);
+  readonly optionsTotal = input(0);
+  readonly optionsError = input('');
+  readonly optionsRequested = output<ColumnValuesRequest>();
+  readonly valuesPage = signal(1);
   readonly rule = input<ColumnRule | undefined>();
   readonly changed = output<ColumnChange>();
   readonly opened = signal(false);
@@ -39,6 +48,29 @@ export class ColumnFilterComponent {
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
 
   constructor() {
+    effect(() => {
+      const options = this.options();
+      if (!this.remoteOptions() || !this.opened()) return;
+      untracked(() => {
+        const values = this.filters.values();
+        const selected = (values['values'] as string[] | null) || [];
+        const choices = [...new Set([...options, ...selected])];
+        this.filters.setConfigs(
+          this.filters.configs().map((config) =>
+            config.key === 'values'
+              ? {
+                  ...config,
+                  options: choices.map((value) => ({
+                    value,
+                    label: value === '__empty__' ? '(Пусто / нет данных)' : value,
+                  })),
+                }
+              : config,
+          ),
+        );
+        this.filters.updateFilters(values);
+      });
+    });
     effect(() => {
       const dialog = this.dialog()?.nativeElement;
       if (dialog && !dialog.open) dialog.showModal();
@@ -72,6 +104,14 @@ export class ColumnFilterComponent {
         order: 1,
         group: 'search',
         defaultValue: '',
+      },
+      {
+        key: 'choice_search',
+        label: 'Поиск значений',
+        type: 'text',
+        order: 2,
+        defaultValue: '',
+        hidden: !this.remoteOptions(),
       },
       {
         key: 'values',
@@ -113,12 +153,23 @@ export class ColumnFilterComponent {
     if (this.rule()) this.filters.updateFilters(this.rule()!);
     const selected = this.rule()?.values;
     const options = this.allValues();
-    this.filters.updateFilter('values', selected ?? (options.length ? options : null));
+    this.filters.updateFilter(
+      'values',
+      selected ?? (!this.remoteOptions() && options.length ? options : null),
+    );
     this.error.set('');
     this.opened.set(true);
+    if (this.remoteOptions()) this.requestValues(1, true);
+  }
+
+  requestValues(page = 1, force = false) {
+    if (this.optionsBusy() && !force) return;
+    this.valuesPage.set(page);
+    this.optionsRequested.emit({ search: this.filters.getValue('choice_search').trim(), page });
   }
 
   apply() {
+    if (this.remoteOptions() && (this.optionsBusy() || this.optionsError())) return;
     if (!this.filters.isValid('min') || !this.filters.isValid('max')) {
       this.error.set('Проверьте числовой диапазон.');
       return;
@@ -127,6 +178,7 @@ export class ColumnFilterComponent {
     const all = this.allValues();
     const rule: ColumnRule = {
       values:
+        !this.remoteOptions() &&
         values?.length &&
         values.length === all.length &&
         all.every((value) => values.includes(value))

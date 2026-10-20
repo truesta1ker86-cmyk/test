@@ -10,3 +10,8 @@ export interface ColumnChange {
   field: string;
   rule: ColumnRule | null;
 }
+
+export interface ColumnValuesRequest {
+  search: string;
+  page: number;
+}

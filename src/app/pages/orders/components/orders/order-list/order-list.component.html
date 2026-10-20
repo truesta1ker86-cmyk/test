@@ -78,9 +78,15 @@
                 <app-column-filter
                   [field]="col.field"
                   [label]="col.header"
-                  [numeric]="col.field === 'total_price' || col.field === 'returns_amount'"
+                  [numeric]="col.field === 'amount'"
                   [rule]="columnRules()[col.field]"
-                  [options]="data()?.column_values?.[col.field] || []"
+                  [remoteOptions]="true"
+                  [options]="choices().field === col.field ? choices().values : []"
+                  [optionsBusy]="choices().field === col.field && choices().busy"
+                  [optionsError]="choices().field === col.field ? choices().error : ''"
+                  [optionsTotal]="choices().field === col.field ? choices().total : 0"
+                  [optionsHasMore]="choices().field === col.field && choices().hasMore"
+                  (optionsRequested)="loadChoices(col.field, $event)"
                   (changed)="onColumnChange($event)"
                 />
               </div>

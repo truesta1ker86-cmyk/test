@@ -29,19 +29,63 @@
     @if (numeric()) {
       <div class="bounds"><app-filter-text key="min" /><app-filter-text key="max" /></div>
     }
+    @if (remoteOptions()) {
+      <div class="choices-actions">
+        <app-filter-text key="choice_search" />
+        <button type="button" class="button" [disabled]="optionsBusy()" (click)="requestValues()">
+          Найти значения
+        </button>
+      </div>
+    }
     <div class="choices-actions">
-      <button type="button" (click)="filters.updateFilter('values', allValues())">
-        Выбрать все
+      <button
+        type="button"
+        (click)="filters.updateFilter('values', remoteOptions() ? null : allValues())"
+      >
+        {{ remoteOptions() ? 'Все значения без ограничения' : 'Выбрать все' }}
       </button>
       <button type="button" (click)="filters.updateFilter('values', [])">Снять все</button>
     </div>
-    <app-filter-multiselect key="values" />
+    @if (optionsBusy()) {
+      <app-preloader label="Загрузка значений…" />
+    } @else if (optionsError()) {
+      <p role="alert">{{ optionsError() }}</p>
+      <button type="button" class="button" (click)="requestValues(valuesPage())">Повторить</button>
+    } @else {
+      <app-filter-multiselect key="values" />
+    }
+    @if (remoteOptions()) {
+      <div class="choices-actions" aria-label="Страницы значений фильтра">
+        <span>Найдено {{ optionsTotal() }} · страница {{ valuesPage() }}</span>
+        <button
+          type="button"
+          [disabled]="optionsBusy() || valuesPage() <= 1"
+          (click)="requestValues(valuesPage() - 1)"
+        >
+          Назад
+        </button>
+        <button
+          type="button"
+          [disabled]="optionsBusy() || !optionsHasMore()"
+          (click)="requestValues(valuesPage() + 1)"
+        >
+          Далее
+        </button>
+      </div>
+    }
     @if (error()) {
       <p role="alert">{{ error() }}</p>
     }
     <footer>
       <button type="button" class="button" (click)="reset()">Сбросить</button
-      ><button type="button" class="button primary" (click)="apply()">Применить</button>
+      ><button
+        type="button"
+        class="button primary"
+        [disabled]="remoteOptions() && (optionsBusy() || !!optionsError())"
+        (click)="apply()"
+      >
+        Применить
+      </button>
     </footer>
   </dialog>
 }

@@ -53,6 +53,20 @@ export interface ListQuery {
   sort: string;
 }
 
+export interface ColumnValuesPage {
+  values: string[];
+  meta: { total: number; page: number; page_size: number; has_more: boolean };
+}
+
+export interface ColumnValuesState {
+  field: string;
+  values: string[];
+  busy: boolean;
+  error: string;
+  total: number;
+  hasMore: boolean;
+}
+
 export interface ListPage {
   local_preview?: boolean;
   column_values?: Record<string, string[]>;

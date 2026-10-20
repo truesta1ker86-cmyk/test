@@ -1,9 +1,14 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { defer, EMPTY, expand, map, Observable, switchMap, throwError, toArray } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { SessionContext } from '../../../../core/infrastructure/services/session-context.service';
-import { ListPage, ListQuery, OrderDetail, Overview } from '../interfaces/contracts.interfaces';
-import { applyOperationalColumns } from '../utils/operational-columns.utils';
+import {
+  ColumnValuesPage,
+  ListPage,
+  ListQuery,
+  OrderDetail,
+  Overview,
+} from '../interfaces/contracts.interfaces';
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceApi {
@@ -53,7 +58,7 @@ export class WorkspaceApi {
     });
   }
 
-  // Метод для таблицы (с применением колонок)
+  // Filtering and pagination are both owned by the server.
   listPage(
     entity: 'orders' | 'returns',
     query: ListQuery,
@@ -62,16 +67,31 @@ export class WorkspaceApi {
   ): Observable<ListPage> {
     const requestPayload = { ...query, page, page_size: pageSize };
 
-    return this.list(entity, requestPayload).pipe(
-      map((response) => {
-        return applyOperationalColumns(response, entity, query.column_filters);
+    return this.list(entity, requestPayload);
+  }
+
+  columnValues(
+    entity: 'orders' | 'returns',
+    query: ListQuery,
+    field: string,
+    search: string,
+    page: number,
+  ) {
+    return this.http.get<ColumnValuesPage>('/v2/api/workspace-v2/column-values', {
+      params: this.buildParams({
+        ...query,
+        entity,
+        field,
+        search,
+        value_page: page,
+        value_page_size: 50,
       }),
-    );
+    });
   }
 
   // Безопасная сборка параметров (чтобы массивы не ломались)
   private buildParams(query: any): HttpParams {
-    let params = new HttpParams();
+    let params = new HttpParams().set('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
     Object.entries(query).forEach(([key, value]) => {
       if (value === null || value === undefined) return;
       if (Array.isArray(value)) {
@@ -83,32 +103,6 @@ export class WorkspaceApi {
     return params;
   }
 
-  /** Complete selection for exports; the displayed table stays paged. */
-  listAll(entity: 'orders' | 'returns', query: ListQuery) {
-    let nextPage = 1;
-    const fetch = () => this.list(entity, { ...query, page: nextPage, page_size: 100 });
-    return fetch().pipe(
-      expand((page) => {
-        if (!page.meta.has_more) return EMPTY;
-        if (!page.items.length || page.meta.page !== nextPage)
-          return throwError(() => new Error('Не удалось дочитать список. Повторите загрузку.'));
-        nextPage++;
-        return fetch();
-      }),
-      toArray(),
-      map((pages) =>
-        applyOperationalColumns(
-          {
-            ...pages[0],
-            items: pages.flatMap((page) => page.items),
-            meta: { ...pages[0].meta, page: 1, page_size: pages[0].meta.total, has_more: false },
-          },
-          entity,
-          query.column_filters,
-        ),
-      ),
-    );
-  }
   order(posting_number: string) {
     return this.http.get<OrderDetail>('/v2/api/workspace-v2/orders/detail', {
       params: { posting_number },
@@ -116,35 +110,15 @@ export class WorkspaceApi {
   }
 
   export(entity: 'orders' | 'returns', query: ListQuery, format: 'csv' | 'xlsx' = 'csv') {
-    const { column_filters, ...filters } = query;
-    const download = (row_ids?: number[]) =>
-      this.http.post(
-        '/v2/api/workspace-v2/export',
-        {
-          ...filters,
-          entity,
-          ...(format === 'xlsx' ? { format } : {}),
-          ...(row_ids === undefined ? {} : { row_ids }),
-        },
-        { responseType: 'blob' },
-      );
-    return defer(() => {
-      const rules: unknown = JSON.parse(column_filters || '{}');
-      if (!rules || typeof rules !== 'object' || Array.isArray(rules))
-        return throwError(() => new Error('Некорректный фильтр столбцов.'));
-      if (!Object.keys(rules).length) return download();
-      return this.listAll(entity, query).pipe(
-        switchMap((page) => {
-          if (page.items.length > 10000)
-            return throwError(
-              () => new Error('Уточните отбор: одна выгрузка содержит до 10 000 записей.'),
-            );
-          const ids = page.items.map((row) => row.id);
-          if (ids.some((id) => !Number.isSafeInteger(id) || id! < 1))
-            return throwError(() => new Error('Для выгрузки отбора требуется обновление API V2.'));
-          return download(ids as number[]);
-        }),
-      );
-    });
+    return this.http.post(
+      '/v2/api/workspace-v2/export',
+      {
+        ...query,
+        entity,
+        format,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      },
+      { responseType: 'blob' },
+    );
   }
 }

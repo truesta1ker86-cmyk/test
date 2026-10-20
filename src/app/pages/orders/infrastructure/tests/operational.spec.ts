@@ -268,44 +268,33 @@ describe('v1 orders and returns', () => {
     expect(sortOperational(values, 'orders', 'date', true).at(-1)?.posting_number).toBe('QA-1');
     expect(values[0].posting_number).toBe('QA-10');
   });
-  it('loads every page and never exposes a partial list as complete', () => {
+  it('loads only the requested page, even when the API reports more pages', () => {
     const { http } = configure();
     const api = TestBed.inject(WorkspaceApi),
       received: ListPage[] = [];
-    api.listAll('orders', { page: 1 } as never).subscribe((page) => received.push(page));
-    http
-      .expectOne((r) => r.url.endsWith('/orders') && r.params.get('page') === '1')
-      .flush({
-        ...response(),
-        items: [row],
-        meta: { total: 2, page: 1, page_size: 100, has_more: true },
-      });
-    expect(received).toEqual([]);
-    http
-      .expectOne((r) => r.url.endsWith('/orders') && r.params.get('page') === '2')
-      .flush({
-        ...response(),
-        items: [ready],
-        meta: { total: 2, page: 2, page_size: 100, has_more: false },
-      });
-    expect(received[0].items).toEqual([row, ready]);
-    expect(received[0].meta.has_more).toBe(false);
+    api.listPage('orders', {} as never, 2, 25).subscribe((page) => received.push(page));
+    const request = http.expectOne((r) => r.url.endsWith('/orders'));
+    expect(request.request.params.get('page')).toBe('2');
+    expect(request.request.params.get('page_size')).toBe('25');
+    request.flush({
+      ...response(),
+      items: [row],
+      meta: { total: 200, page: 2, page_size: 25, has_more: true },
+    });
+    expect(received[0].items).toEqual([row]);
+    expect(received[0].meta.total).toBe(200);
+    http.expectNone((r) => r.url.endsWith('/orders'));
     http.verify();
   });
-  it('reports an incomplete page sequence instead of silently truncating it', () => {
-    const { http } = configure(),
-      errors: string[] = [];
-    TestBed.inject(WorkspaceApi)
-      .listAll('orders', {} as never)
-      .subscribe({ error: (e) => errors.push(e.message) });
-    http
-      .expectOne((r) => r.url.endsWith('/orders'))
-      .flush({
-        ...response(),
-        items: [],
-        meta: { total: 2, page: 1, page_size: 100, has_more: true },
-      });
-    expect(errors[0]).toContain('дочитать');
+  it('allows cancelling a page request without starting the next page', () => {
+    const { http } = configure();
+    const subscription = TestBed.inject(WorkspaceApi)
+      .listPage('orders', {} as never, 1, 50)
+      .subscribe();
+    const request = http.expectOne((r) => r.url.endsWith('/orders'));
+    subscription.unsubscribe();
+    expect(request.cancelled).toBe(true);
+    http.expectNone((r) => r.url.endsWith('/orders'));
     http.verify();
   });
   it('has two tabs, source columns/actions and product preview markers', () => {
@@ -382,6 +371,19 @@ describe('v1 orders and returns', () => {
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
+    http.verify();
+  });
+  it('requests global values lazily with the canonical amount column key', () => {
+    const { fixture, http } = setup();
+    const root: HTMLElement = fixture.nativeElement;
+    http.expectNone((r) => r.url.endsWith('/column-values'));
+    root.querySelector<HTMLButtonElement>('[aria-label="Фильтр: Сумма"]')!.click();
+    fixture.detectChanges();
+    const amount = http.expectOne((r) => r.url.endsWith('/column-values'));
+    expect(amount.request.params.get('field')).toBe('amount');
+    amount.flush({ values: ['990'], meta: { total: 1, page: 1, has_more: false } });
+    fixture.detectChanges();
+    expect(root.querySelector('[role=alert]')).toBeNull();
     http.verify();
   });
   it('combines multiselect column rules with search and resets page', () => {
