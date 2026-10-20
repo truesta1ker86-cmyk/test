@@ -48,3 +48,4 @@ export const MAPPING_WORKSPACE_COLUMNS = [
   { key: 'units_per_item', label: 'Штук в одной позиции', numeric: true },
   { key: 'available', label: 'Данные 1С', numeric: true },
 ];
+export const MAPPING_CANDIDATE_LIMIT = 50;

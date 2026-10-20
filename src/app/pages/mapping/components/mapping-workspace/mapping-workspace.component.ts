@@ -17,6 +17,7 @@ import {
   MAPPING_WORKSPACE_TABLE_COLUMNS4,
   MAPPING_WORKSPACE_TABLE_COLUMNS5,
   MAPPING_WORKSPACE_COLUMNS,
+  MAPPING_CANDIDATE_LIMIT,
 } from './infrastructure/constants/mapping-workspace.constants';
 import { MappingDrafts } from './infrastructure/services/mapping-drafts.service';
 import type { DataTableColumn } from '../../../../shared/data-table/infrastructure/interfaces/data-table-config.interfaces';
@@ -99,6 +100,8 @@ export class MappingWorkspace {
   readonly card = output<CatalogRow>();
   readonly saved = output<void>();
   readonly candidates = signal<MappingCandidate[]>([]);
+  readonly candidateQuery = signal('');
+  readonly candidateHints = computed(() => this.candidateOptions(this.candidateQuery()));
   readonly snapshotReady = signal(false);
   readonly busy = signal(false);
   readonly error = signal('');
@@ -151,10 +154,24 @@ export class MappingWorkspace {
       });
   }
   filteredCandidates() {
-    const q = this.candidateSearch.trim().toLocaleLowerCase('ru');
-    return this.candidates().filter((c) =>
-      [c.onec_code, c.sku_1c, c.onec_name].join(' ').toLocaleLowerCase('ru').includes(q),
-    );
+    return this.candidateOptions(this.candidateSearch);
+  }
+  private candidateOptions(search: string) {
+    const q = search.trim().toLocaleLowerCase('ru');
+    const found: MappingCandidate[] = [];
+    for (const candidate of this.candidates()) {
+      if (
+        !q ||
+        [candidate.onec_code, candidate.sku_1c, candidate.onec_name]
+          .join(' ')
+          .toLocaleLowerCase('ru')
+          .includes(q)
+      ) {
+        found.push(candidate);
+        if (found.length === MAPPING_CANDIDATE_LIMIT) break;
+      }
+    }
+    return found;
   }
   draft(row: CatalogRow) {
     return this.drafts().get(row.offer_id) || rowDraft(row);

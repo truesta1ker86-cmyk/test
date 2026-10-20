@@ -55,6 +55,28 @@ describe('local mapping workspace', () => {
       .flush({ items: [{ onec_code: '001', sku_1c: 'SKU', base_units: 1 }] });
     return { page, http, fixture };
   }
+  it('bounds rendered suggestions while searching beyond the first fifty candidates', () => {
+    const { page, fixture, http } = setup();
+    page.candidates.set(
+      Array.from({ length: 5000 }, (_, i) => ({
+        onec_code: 'CODE-' + i,
+        sku_1c: 'ARTICLE-' + i,
+        onec_name: 'Product ' + i,
+        base_units: 1,
+        warehouse_count: 1,
+        available: 1,
+        is_verified: true,
+      })),
+    );
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('#mapping-snapshot option')).toHaveLength(50);
+    page.candidateQuery.set('CODE-4999');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('#mapping-snapshot option')).toHaveLength(1);
+    page.candidateSearch = 'CODE-4999';
+    expect(page.filteredCandidates()[0].onec_code).toBe('CODE-4999');
+    http.verify();
+  });
   it('stages row changes without HTTP and saves exact versions without dropping other drafts', () => {
     const { page, http } = setup();
     page.edit(row(), 'identity', '001');

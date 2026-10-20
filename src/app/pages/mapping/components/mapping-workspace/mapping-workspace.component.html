@@ -34,7 +34,8 @@
         <label
           >Код / артикул 1С для выбранных<input
             [(ngModel)]="target"
-            (ngModelChange)="changed()"
+            (ngModelChange)="candidateQuery.set($event); changed()"
+            (focus)="candidateQuery.set(target)"
             list="mapping-snapshot"
             placeholder="Пусто — не менять связь"
         /></label>
@@ -133,8 +134,8 @@
   }
 </section>
 <datalist id="mapping-snapshot">
-  @for (c of candidates(); track c.onec_code) {
-    <option [value]="c.onec_code">{{ c.sku_1c }} · {{ c.onec_name }}</option>
+  @for (c of candidateHints(); track c.onec_code || c.sku_1c) {
+    <option [value]="c.onec_code || c.sku_1c">{{ c.sku_1c }} · {{ c.onec_name }}</option>
   }
 </datalist>
 <div
@@ -249,7 +250,8 @@
             <input
               [attr.aria-label]="'Код или артикул 1С для ' + row.offer_id"
               [ngModel]="draft(row).identity"
-              (ngModelChange)="edit(row, 'identity', $event)"
+              (ngModelChange)="candidateQuery.set($event); edit(row, 'identity', $event)"
+              (focus)="candidateQuery.set(draft(row).identity)"
               list="mapping-snapshot"
               [disabled]="busy() || uncertain() || !canManage() || !snapshotReady()"
               placeholder="Пусто — снять связь"
@@ -420,7 +422,10 @@
         </ng-template>
       </app-data-table>
     </div>
-    <p>Код однозначно определяет номенклатуру, даже если артикул повторяется.</p>
+    <p>
+      Показаны первые 50 совпадений. Поиск по коду, артикулу или названию работает по всему
+      справочнику. Код однозначно определяет номенклатуру, даже если артикул повторяется.
+    </p>
   </dialog>
 }
 @if (preview(); as op) {
