@@ -40,6 +40,7 @@
     name="sort"
     (userChange)="applyFilter()"
   />
-  <button class="button primary" type="submit" [disabled]="loading">Применить</button
+  <button class="button primary" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
+    Применить</button
   ><button class="button" type="button" (click)="resetFilter()">Сбросить</button>
 </form>

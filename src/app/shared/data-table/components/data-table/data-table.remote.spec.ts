@@ -59,6 +59,24 @@ describe('Paged table source', () => {
     fixture.destroy();
     expect(pages[1].observed).toBe(false);
   });
+  it('shows an accessible loader and blocks stale rows until the page finishes', async () => {
+    const { fixture, pages } = setup();
+    await fixture.whenStable();
+    const root: HTMLElement = fixture.nativeElement;
+    expect(root.querySelector('.table-state')?.getAttribute('aria-busy')).toBe('true');
+    expect(root.querySelector('[role=status]')?.textContent).toContain('Загрузка');
+    expect(root.textContent).not.toContain('Нет данных');
+    expect(root.querySelectorAll('.table-skeleton span')).toHaveLength(4);
+    pages[0].next({ items: [{ id: 1, name: 'Товар' }], meta: { total: 75 } });
+    await fixture.whenStable();
+    fixture.componentInstance.version.update((value) => value + 1);
+    await fixture.whenStable();
+    expect(root.querySelector('tbody tr')?.hasAttribute('inert')).toBe(true);
+    pages[1].next({ items: [], meta: { total: 0 } });
+    await fixture.whenStable();
+    expect(root.querySelector('.table-state')?.getAttribute('aria-busy')).toBe('false');
+    expect(root.textContent).toContain('Нет данных');
+  });
   it('loads the first page once and renders its asynchronous result with OnPush', async () => {
     const { fixture, listPage, pages } = setup();
     await fixture.whenStable();

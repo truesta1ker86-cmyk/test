@@ -1,5 +1,6 @@
 <div class="table-scroll" tabindex="0" aria-label="Товары, таблица с горизонтальной прокруткой">
   <app-data-table
+    [loading]="loading()"
     [data]="loading() ? [] : rows()"
     selectionMode="none"
     [columns]="tableColumns1()"

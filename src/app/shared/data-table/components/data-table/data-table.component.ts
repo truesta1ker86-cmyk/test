@@ -12,6 +12,7 @@ import {
   Optional,
   Inject,
   ChangeDetectorRef,
+  signal,
 } from '@angular/core';
 import { Subscription, takeUntil } from 'rxjs';
 import type { DataTableColumn } from '../../infrastructure/interfaces/data-table-config.interfaces';
@@ -72,7 +73,7 @@ export class DataTableComponent implements OnInit, OnChanges {
 
   // --- ВНУТРЕННЕЕ СОСТОЯНИЕ ---
   items: any[] = [];
-  isLoading = false;
+  readonly isLoading = signal(false);
   private suppliedTotal: number | undefined;
   private loadedTotal = 0;
   @Input() set totalRecords(value: number) {
@@ -178,13 +179,13 @@ export class DataTableComponent implements OnInit, OnChanges {
     const query = { ...this.filters, page, page_size: this.rows };
     const key = JSON.stringify([this.entity, query]);
     if (!force && this.requestKey === key) {
-      if (!this.isLoading && this.lastPage) this.dataLoaded.emit(this.lastPage);
+      if (!this.isLoading() && this.lastPage) this.dataLoaded.emit(this.lastPage);
       return;
     }
     this.requestKey = key;
     this.lastPage = undefined;
     this.request?.unsubscribe();
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.error = '';
     this.cdr.markForCheck();
 
@@ -196,14 +197,14 @@ export class DataTableComponent implements OnInit, OnChanges {
           this.lastPage = res;
           this.items = res.items || [];
           this.loadedTotal = res.meta.total;
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.dataLoaded.emit(res);
           this.cdr.markForCheck();
         },
         error: (err) => {
           this.items = [];
           this.loadedTotal = 0;
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.error = 'Не удалось загрузить таблицу. Повторите запрос.';
           this.requestKey = '';
           this.dataError.emit(err);

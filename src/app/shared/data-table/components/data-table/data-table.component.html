@@ -1,99 +1,110 @@
-<p-table
-  [value]="items"
-  [columns]="columns"
-  [lazy]="lazy"
-  [totalRecords]="totalRecords"
-  [loading]="remote ? isLoading : loading"
-  [rows]="rows"
-  [paginator]="(paginator ?? remote) && totalRecords > rows"
-  [first]="first"
-  (onLazyLoad)="onLazyLoad($event)"
-  (onPage)="!remote && onPage($event)"
-  (onSort)="!remote && onSort($event)"
-  [selection]="selection"
-  [selectionMode]="selectionMode === 'none' ? undefined : selectionMode"
-  (selectionChange)="onSelectionChange($event)"
-  [dataKey]="dataKey"
-  [sortField]="sortField"
-  [sortOrder]="sortOrder"
-  [scrollable]="scrollable"
-  [scrollHeight]="scrollable ? scrollHeight : undefined"
-  [tableStyle]="tableStyle"
-  [showCurrentPageReport]="showCurrentPageReport"
-  [currentPageReportTemplate]="currentPageReportTemplate"
-  [tableStyleClass]="tableStyleClass"
-  appTableColumnHover
-  styleClass="custom-table"
->
-  <ng-template #header>
-    <ng-container *ngIf="headerTemplate; else defaultHeader">
-      <ng-template
-        [ngTemplateOutlet]="headerTemplate"
-        [ngTemplateOutletContext]="{ $implicit: columns, columns: columns }"
-      />
-    </ng-container>
+<div class="table-state" [attr.aria-busy]="remote ? isLoading() : loading">
+  <p-table
+    [value]="items"
+    [columns]="columns"
+    [lazy]="lazy"
+    [totalRecords]="totalRecords"
+    [loading]="remote ? isLoading() : loading"
+    [rows]="rows"
+    [paginator]="(paginator ?? remote) && totalRecords > rows"
+    [first]="first"
+    (onLazyLoad)="onLazyLoad($event)"
+    (onPage)="!remote && onPage($event)"
+    (onSort)="!remote && onSort($event)"
+    [selection]="selection"
+    [selectionMode]="selectionMode === 'none' ? undefined : selectionMode"
+    (selectionChange)="onSelectionChange($event)"
+    [dataKey]="dataKey"
+    [sortField]="sortField"
+    [sortOrder]="sortOrder"
+    [scrollable]="scrollable"
+    [scrollHeight]="scrollable ? scrollHeight : undefined"
+    [tableStyle]="tableStyle"
+    [showCurrentPageReport]="showCurrentPageReport"
+    [currentPageReportTemplate]="currentPageReportTemplate"
+    [tableStyleClass]="tableStyleClass"
+    appTableColumnHover
+    styleClass="custom-table"
+  >
+    <ng-template #loadingicon><app-preloader label="Загрузка таблицы…" /></ng-template>
+    <ng-template #header>
+      <ng-container *ngIf="headerTemplate; else defaultHeader">
+        <ng-template
+          [ngTemplateOutlet]="headerTemplate"
+          [ngTemplateOutletContext]="{ $implicit: columns, columns: columns }"
+        />
+      </ng-container>
 
-    <ng-template #defaultHeader>
-      <tr>
-        <th *ngIf="selectionCheckboxes" style="width: 3rem"><p-table-header-checkbox /></th>
-        <th
-          *ngFor="let col of columns; trackBy: trackColumn"
-          [pSortableColumn]="col.sortable ? col.field : undefined"
+      <ng-template #defaultHeader>
+        <tr>
+          <th *ngIf="selectionCheckboxes" style="width: 3rem"><p-table-header-checkbox /></th>
+          <th
+            *ngFor="let col of columns; trackBy: trackColumn"
+            [pSortableColumn]="col.sortable ? col.field : undefined"
+            [style.width]="col.width || 'auto'"
+            [class]="col.styleClass || ''"
+          >
+            {{ col.header }}<p-sort-icon *ngIf="col.sortable" [field]="col.field" />
+          </th>
+        </tr>
+      </ng-template>
+    </ng-template>
+
+    <ng-template #body let-rowData let-rowIndex="rowIndex">
+      <tr
+        [attr.inert]="(remote ? isLoading() : loading) ? '' : null"
+        [pSelectableRow]="rowData"
+        [pSelectableRowDisabled]="selectionMode === 'none'"
+        [class.selected]="selection.includes(rowData)"
+        [class.clickable]="rowClickable"
+        [attr.data-offer]="rowData.offer_id || null"
+        (click)="onRowClick(rowData)"
+      >
+        <td *ngIf="selectionCheckboxes"><p-table-checkbox [value]="rowData" /></td>
+        <td
+          *ngFor="let col of columns; let i = index; trackBy: trackColumn"
           [style.width]="col.width || 'auto'"
           [class]="col.styleClass || ''"
         >
-          {{ col.header }}<p-sort-icon *ngIf="col.sortable" [field]="col.field" />
-        </th>
+          <ng-container *ngIf="hasCellTemplate(col); else defaultCell">
+            <ng-template
+              [ngTemplateOutlet]="cellTemplate"
+              [ngTemplateOutletContext]="{
+                $implicit: rowData,
+                row: rowData,
+                rowIndex: rowIndex,
+                column: col,
+                value: getValue(rowData, col.field),
+              }"
+            >
+            </ng-template>
+          </ng-container>
+
+          <ng-template #defaultCell>
+            {{ getValue(rowData, col.field) }}
+          </ng-template>
+        </td>
       </tr>
     </ng-template>
-  </ng-template>
 
-  <ng-template #body let-rowData let-rowIndex="rowIndex">
-    <tr
-      [pSelectableRow]="rowData"
-      [pSelectableRowDisabled]="selectionMode === 'none'"
-      [class.selected]="selection.includes(rowData)"
-      [class.clickable]="rowClickable"
-      [attr.data-offer]="rowData.offer_id || null"
-      (click)="onRowClick(rowData)"
-    >
-      <td *ngIf="selectionCheckboxes"><p-table-checkbox [value]="rowData" /></td>
-      <td
-        *ngFor="let col of columns; let i = index; trackBy: trackColumn"
-        [style.width]="col.width || 'auto'"
-        [class]="col.styleClass || ''"
-      >
-        <ng-container *ngIf="hasCellTemplate(col); else defaultCell">
-          <ng-template
-            [ngTemplateOutlet]="cellTemplate"
-            [ngTemplateOutletContext]="{
-              $implicit: rowData,
-              row: rowData,
-              rowIndex: rowIndex,
-              column: col,
-              value: getValue(rowData, col.field),
-            }"
-          >
-          </ng-template>
-        </ng-container>
-
-        <ng-template #defaultCell>
-          {{ getValue(rowData, col.field) }}
-        </ng-template>
-      </td>
-    </tr>
-  </ng-template>
-
-  <ng-template #emptymessage>
-    <tr>
-      <td [attr.colspan]="columns.length + (selectionCheckboxes ? 1 : 0)">
-        <div class="empty-message">{{ emptyMessage }}</div>
-      </td>
-    </tr>
-  </ng-template>
-</p-table>
-@if (error) {
-  <p class="table-error" role="alert">
-    {{ error }} <button class="button" type="button" (click)="reload()">Повторить</button>
-  </p>
-}
+    <ng-template #emptymessage>
+      <tr>
+        <td [attr.colspan]="columns.length + (selectionCheckboxes ? 1 : 0)">
+          <div class="empty-message">{{ emptyMessage }}</div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  @if ((remote ? isLoading() : loading) && !items.length) {
+    <div class="table-skeleton" aria-hidden="true">
+      @for (row of [1, 2, 3, 4]; track row) {
+        <span></span>
+      }
+    </div>
+  }
+  @if (error) {
+    <p class="table-error" role="alert">
+      {{ error }} <button class="button" type="button" (click)="reload()">Повторить</button>
+    </p>
+  }
+</div>

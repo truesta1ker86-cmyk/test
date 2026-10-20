@@ -1,3 +1,4 @@
+import { PreloaderIndicatorModule } from './shared/preloader/preloader-indicator.module';
 import { LoginPanelModule } from './pages/team/components/login-panel/login-panel.module';
 import { IconModule } from './shared/icons-sprite/icon/icon.module';
 import { NgModule, LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
@@ -19,6 +20,7 @@ registerLocaleData(localeRu);
   declarations: [AppComponent],
   imports: [
     BrowserModule,
+    PreloaderIndicatorModule,
     AppRoutingModule,
     PageModule,
     PageAttachModule,

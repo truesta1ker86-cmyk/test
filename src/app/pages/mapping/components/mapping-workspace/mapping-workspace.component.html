@@ -86,6 +86,7 @@
       <strong>Подготовлено строк: {{ prepared().length }}</strong>
       <div class="preview-scroll">
         <app-data-table
+          [loading]="loading()"
           [data]="prepared().slice(0, 20)"
           selectionMode="none"
           [columns]="tableColumns1()"

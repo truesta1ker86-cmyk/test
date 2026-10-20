@@ -1,3 +1,4 @@
+import { PreloaderService } from './shared/preloader/infrastructure/services/preloader.service';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Api } from './core/infrastructure/services/api.service';
@@ -14,6 +15,7 @@ import { SessionContext } from './core/infrastructure/services/session-context.s
 })
 export class AppComponent {
   readonly context = inject(SessionContext);
+  readonly pending = inject(PreloaderService);
   readonly sessionError = signal('');
   private readonly api = inject(Api);
   private readonly destroy = inject(DestroyRef);

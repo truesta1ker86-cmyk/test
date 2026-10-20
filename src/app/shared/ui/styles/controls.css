@@ -334,3 +334,52 @@ body.o1c-ui {
     }
   }
 }
+
+/* Shared asynchronous states remain visible without an external theme. */
+body.o1c-ui {
+  .p-datatable {
+    position: relative;
+  }
+  .p-datatable-loading-mask,
+  .p-datatable-mask {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    background: rgb(255 255 255 / 82%);
+    padding-top: 16px;
+  }
+  .p-datatable-loading-icon {
+    position: sticky;
+    top: 16px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--control-radius);
+    background: var(--surface);
+  }
+  .button[aria-busy='true']::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    flex: none;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: o1c-spin 0.8s linear infinite;
+  }
+  .button[aria-busy='true'] app-icon {
+    display: none;
+  }
+}
+@keyframes o1c-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.o1c-ui .button[aria-busy='true']::before {
+    animation-duration: 2s;
+  }
+}

@@ -209,3 +209,16 @@
   color: #1849a9;
   font-size: 12px;
 }
+
+.network-loading {
+  position: fixed;
+  z-index: 900;
+  right: 24px;
+  bottom: 20px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  box-shadow: 0 4px 18px rgb(16 24 40 / 10%);
+  pointer-events: none;
+}

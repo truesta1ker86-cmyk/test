@@ -148,3 +148,28 @@
   color: var(--red);
   font-size: 12px;
 }
+
+.table-state {
+  position: relative;
+}
+.table-state[aria-busy='true'] ::ng-deep .p-datatable {
+  min-height: 240px;
+}
+.table-skeleton {
+  position: absolute;
+  top: 56px;
+  left: 12px;
+  right: 12px;
+  z-index: 1;
+  pointer-events: none;
+  display: grid;
+  gap: 14px;
+  padding: 18px 0;
+  min-height: 180px;
+  span {
+    display: block;
+    height: 24px;
+    border-radius: 4px;
+    background: var(--surface-2);
+  }
+}

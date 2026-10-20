@@ -1,3 +1,4 @@
+import { PreloaderIndicatorModule } from '../preloader/preloader-indicator.module';
 import { TableColumnHoverModule } from './directives/table-column-hover.module';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -12,6 +13,7 @@ import { DataTableComponent } from './components/data-table/data-table.component
   declarations: [DataTableComponent],
   imports: [
     CommonModule,
+    PreloaderIndicatorModule,
     TableColumnHoverModule,
     FormsModule,
     TableModule,

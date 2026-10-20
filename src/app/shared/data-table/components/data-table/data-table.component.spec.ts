@@ -118,7 +118,7 @@ describe('Employer DataTable integration', () => {
     expect(root.querySelectorAll('[role=tooltip]')).toHaveLength(1);
     expect(
       root
-        .querySelector('#outer > p-table > div > div > table > tbody > tr')
+        .querySelector('#outer > .table-state > p-table > div > div > table > tbody > tr')
         ?.classList.contains('o1c-row-hover'),
     ).not.toBe(true);
     expect(root.querySelectorAll('#inner .o1c-column-hover')).toHaveLength(2);

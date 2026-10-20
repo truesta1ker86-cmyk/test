@@ -18,28 +18,34 @@
   white-space: nowrap;
 }
 
-/* ─── Размеры ─────────────────────────────────────────────── */
-:host(.preloader--sm) ::ng-deep .p-progressspinner {
+.preloader__spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border: 2px solid var(--brand, #005bff);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: preloader-spin 0.8s linear infinite;
+}
+:host(.preloader--sm) .preloader__spinner {
   width: 18px;
   height: 18px;
 }
-
-:host(.preloader--sm) .preloader__label {
-  font-size: 11px;
-}
-
-:host(.preloader--lg) ::ng-deep .p-progressspinner {
+:host(.preloader--lg) .preloader__spinner {
   width: 48px;
   height: 48px;
 }
-
+:host(.preloader--sm) .preloader__label {
+  font-size: 11px;
+}
 :host(.preloader--lg) .preloader__label {
   font-size: 14px;
 }
-
-/* ─── Кастомный цвет спиннера ─────────────────────────────── */
-:host ::ng-deep .p-progressspinner .p-progressspinner-circle {
-  stroke: var(--brand, #005bff);
+@keyframes preloader-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ─── Overlay — поверх родителя ───────────────────────────── */
@@ -72,7 +78,7 @@
 
 /* ─── Reduced motion ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  :host ::ng-deep p-progressspinner-circle {
-    animation-duration: 1.6s !important;
+  .preloader__spinner {
+    animation-duration: 2s;
   }
 }

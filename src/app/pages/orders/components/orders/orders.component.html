@@ -9,6 +9,7 @@
         class="button"
         [class.primary]="entity === 'orders'"
         [disabled]="loading()"
+        [attr.aria-busy]="loading()"
         (click)="refresh()"
       >
         <app-icon name="refresh" />{{ entity === 'orders' ? 'Обновить заказы' : 'Обновить' }}
@@ -17,6 +18,7 @@
         <button
           class="button"
           [disabled]="loading() || exporting() || !data()?.meta?.total"
+          [attr.aria-busy]="exporting()"
           (click)="export(true)"
         >
           <app-icon name="download" />{{ exporting() ? 'Готовим выгрузку…' : 'Скачать Excel' }}
@@ -116,6 +118,7 @@
       <button
         class="text-button"
         [disabled]="loading() || exporting() || !data()?.meta?.total"
+        [attr.aria-busy]="exporting()"
         (click)="export()"
       >
         Выгрузить отбор CSV

@@ -1,10 +1,14 @@
 @if (context.status() === 'ready') {
+  @if (pending.visible()) {
+    <div class="network-loading"><app-preloader size="sm" label="Загрузка…" /></div>
+  }
   <app-page><router-outlet appPageAttach /></app-page>
 } @else {
   <main class="access-state" aria-live="polite">
     <span class="logo-mark">O1</span>
     @switch (context.status()) {
       @case ('loading') {
+        <app-preloader label="Проверяем доступ…" />
         <h1>Открываем рабочее пространство</h1>
         <p>Проверяем ваш магазин и доступ.</p>
       }

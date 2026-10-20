@@ -1,10 +1,10 @@
 @if (visible()) {
   <div class="preloader__inner" role="status" aria-live="polite">
-    <p-progress-spinner
-      [strokeWidth]="strokeWidth()"
-      animationDuration=".8s"
-      aria-label="Загрузка"
-    />
+    <span
+      class="preloader__spinner"
+      aria-hidden="true"
+      [style.border-width.px]="+strokeWidth() / 2"
+    ></span>
 
     @if (label()) {
       <span class="preloader__label">{{ label() }}</span>

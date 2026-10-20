@@ -20,6 +20,7 @@ const files = new Map(
 const errors = [];
 const injectableServices = new Map();
 const injectionConsumers = new Map();
+const functionalConsumers = new Set();
 function isStaticConfiguration(node, aliases) {
   if (!node) return false;
   if (ts.isAsExpression(node) || ts.isSatisfiesExpression(node))
@@ -183,6 +184,21 @@ for (const [file, ast] of files) {
 // Component-owned services must be provided by their component, including when
 // the original shared module also exposes a provider for compatibility.
 for (const [file, ast] of files) {
+  // Functional interceptors/guards share root services with components.
+  function visitFunction(item) {
+    if (ts.isClassDeclaration(item)) return;
+    if (
+      ts.isCallExpression(item) &&
+      item.expression.getText() === 'inject' &&
+      ts.isIdentifier(item.arguments[0])
+    ) {
+      const service = definition(file, item.arguments[0].text);
+      if (service && ts.isClassDeclaration(service.node))
+        functionalConsumers.add(`${service.file}#${service.node.name.text}`);
+    }
+    ts.forEachChild(item, visitFunction);
+  }
+  visitFunction(ast);
   for (const node of ast.statements.filter(ts.isClassDeclaration)) {
     const component = decorator(node, 'Component');
     function visit(item) {
@@ -207,6 +223,7 @@ for (const [file, ast] of files) {
   }
 }
 for (const [key, consumers] of injectionConsumers) {
+  if (functionalConsumers.has(key)) continue;
   const owners = new Map(
     consumers.map((consumer) => [`${consumer.file}#${consumer.node.name.text}`, consumer]),
   );
