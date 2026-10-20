@@ -126,9 +126,10 @@ for (const [file, ast] of files) {
       ts.isVariableStatement(node) &&
       !file.endsWith('.module.ts') &&
       !file.includes('/infrastructure/constants/') &&
+      !file.includes('/infrastructure/tokens/') &&
       !file.includes('/infrastructure/utils/')
     )
-      errors.push(`${file}: top-level value outside constants/utils`);
+      errors.push(`${file}: top-level value outside constants/utils/tokens`);
     if (!ts.isClassDeclaration(node)) continue;
     for (const member of node.members) {
       if (

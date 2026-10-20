@@ -1,5 +1,7 @@
 <div class="table-wrap">
   <app-data-table
+    [data]="stocks"
+    selectionMode="none"
     [columns]="detailColumns"
     [headerTemplate]="tableHeader2"
     [rowClickable]="false"

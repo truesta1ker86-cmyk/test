@@ -22,6 +22,8 @@
   <p class="run-mode">Режим проверки · отправка в Ozon остановлена</p>
   <div class="run-table">
     <app-data-table
+      [data]="rows()"
+      selectionMode="none"
       [columns]="tableColumns1()"
       [headerTemplate]="tableHeader1"
       [rowClickable]="false"

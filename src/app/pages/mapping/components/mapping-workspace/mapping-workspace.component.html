@@ -86,6 +86,8 @@
       <strong>Подготовлено строк: {{ prepared().length }}</strong>
       <div class="preview-scroll">
         <app-data-table
+          [data]="prepared().slice(0, 20)"
+          selectionMode="none"
           [columns]="tableColumns1()"
           [headerTemplate]="tableHeader1"
           [rowClickable]="false"
@@ -141,6 +143,8 @@
   tabindex="0"
 >
   <app-data-table
+    [data]="loading() ? [] : rows()"
+    selectionMode="none"
     [attr.aria-busy]="loading()"
     [columns]="tableColumns2()"
     [selection]="visibleTableSelection()"
@@ -366,6 +370,8 @@
     ></label>
     <div class="preview-scroll">
       <app-data-table
+        [data]="filteredCandidates()"
+        selectionMode="none"
         [columns]="tableColumns3()"
         [headerTemplate]="tableHeader3"
         [rowClickable]="false"
@@ -440,6 +446,8 @@
     </p>
     <div class="preview-scroll">
       <app-data-table
+        [data]="op.sample || []"
+        selectionMode="none"
         [columns]="tableColumns4()"
         [headerTemplate]="tableHeader4"
         [rowClickable]="false"
@@ -532,6 +540,8 @@
           </p>
           <div class="preview-scroll">
             <app-data-table
+              [data]="c.comparisons"
+              selectionMode="none"
               [columns]="tableColumns5()"
               [headerTemplate]="tableHeader5"
               [rowClickable]="false"

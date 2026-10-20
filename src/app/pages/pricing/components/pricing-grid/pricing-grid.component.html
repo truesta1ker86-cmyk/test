@@ -6,6 +6,8 @@
   (scroll)="loadOnScroll()"
 >
   <app-data-table
+    [data]="rows()"
+    selectionMode="none"
     [columns]="tableColumns1()"
     [selection]="visibleTableSelection()"
     [headerTemplate]="tableHeader1"

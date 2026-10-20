@@ -74,6 +74,8 @@
           </div>
           <div class="table-wrap">
             <app-data-table
+              [data]="sheet.mappings"
+              selectionMode="none"
               [columns]="tableColumns1()"
               [headerTemplate]="tableHeader1"
               [rowClickable]="false"
@@ -121,6 +123,8 @@
             <summary>Первые строки после распознавания</summary>
             <div class="table-wrap">
               <app-data-table
+                [data]="sheet.sample_rows"
+                selectionMode="none"
                 [columns]="tableColumns2(sheet)"
                 [headerTemplate]="tableHeader2"
                 [rowClickable]="false"
@@ -193,6 +197,8 @@
           <h2>Замечания проверки</h2>
           <div class="table-wrap">
             <app-data-table
+              [data]="j.validation.issues"
+              selectionMode="none"
               [columns]="tableColumns3()"
               [headerTemplate]="tableHeader3"
               [rowClickable]="false"
@@ -244,6 +250,8 @@
           </p>
           <div class="table-wrap">
             <app-data-table
+              [data]="previewFieldRows(p.changes)"
+              selectionMode="none"
               [columns]="tableColumns7()"
               [headerTemplate]="tableHeader7"
               [rowClickable]="false"
@@ -332,6 +340,8 @@
   @if (tab() === 'history') {
     <div class="table-wrap">
       <app-data-table
+        [data]="data()?.items || []"
+        selectionMode="none"
         [columns]="tableColumns5()"
         [headerTemplate]="tableHeader5"
         [rowClickable]="false"
@@ -400,6 +410,8 @@
     </p>
     <div class="table-wrap">
       <app-data-table
+        [data]="data()?.profiles || []"
+        selectionMode="none"
         [columns]="tableColumns6()"
         [headerTemplate]="tableHeader6"
         [rowClickable]="false"

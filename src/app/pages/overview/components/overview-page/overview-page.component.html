@@ -45,6 +45,8 @@
         </div>
         <div class="table-scroll">
           <app-data-table
+            [data]="d.recent_orders"
+            selectionMode="none"
             [columns]="tableColumns1()"
             [headerTemplate]="tableHeader1"
             [rowClickable]="false"
@@ -132,6 +134,8 @@
       </div>
       <div class="table-scroll">
         <app-data-table
+          [data]="d.operations"
+          selectionMode="none"
           [columns]="tableColumns2()"
           [headerTemplate]="tableHeader2"
           [rowClickable]="false"

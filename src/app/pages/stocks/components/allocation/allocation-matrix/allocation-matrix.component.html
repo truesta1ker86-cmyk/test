@@ -114,6 +114,8 @@
   aria-label="Распределение по складам, таблица прокручивается по горизонтали"
 >
   <app-data-table
+    [data]="rows()"
+    selectionMode="none"
     [columns]="tableColumns1()"
     [selection]="visibleTableSelection()"
     [headerTemplate]="tableHeader1"

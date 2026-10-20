@@ -67,6 +67,8 @@
         <polyline [attr.points]="points()" fill="none" stroke="#005bff" stroke-width="3" />
       </svg>
       <app-data-table
+        [data]="timeline()"
+        selectionMode="none"
         [columns]="tableColumns1()"
         [headerTemplate]="tableHeader1"
         [rowClickable]="false"

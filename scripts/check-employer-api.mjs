@@ -284,6 +284,7 @@ const tableTemplate = fs.readFileSync(
   'src/app/shared/data-table/components/data-table/data-table.component.html',
   'utf8',
 );
+const rendererAdaptations = JSON.parse(fs.readFileSync(adaptationFile, 'utf8')).renderer || {};
 for (const binding of [
   '<p-table',
   '[value]="data"',
@@ -292,7 +293,11 @@ for (const binding of [
   'getValue(rowData, col.field)',
 ]) {
   const required = binding === '[headerTemplate]' ? '[ngTemplateOutlet]="headerTemplate"' : binding;
-  if (!tableTemplate.includes(required))
+  const replacement = rendererAdaptations[required];
+  if (
+    !tableTemplate.includes(required) &&
+    !(replacement?.reason && tableTemplate.includes(replacement.binding))
+  )
     report.errors.push(`Original DataTable renderer connection is missing: ${required}`);
 }
 if (tableTemplate.includes('<ng-content'))

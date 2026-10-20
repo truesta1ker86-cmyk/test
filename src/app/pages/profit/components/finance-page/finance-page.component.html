@@ -287,6 +287,8 @@
       </p>
       <div class="table-wrap">
         <app-data-table
+          [data]="distribution()"
+          selectionMode="none"
           [columns]="tableColumns1()"
           [headerTemplate]="tableHeader1"
           [rowClickable]="false"

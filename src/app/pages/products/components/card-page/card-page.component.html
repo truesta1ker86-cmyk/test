@@ -648,6 +648,8 @@
           <h3>Текущая версия → черновик</h3>
           <div class="table-scroll changes-table">
             <app-data-table
+              [data]="reviewChanges()"
+              selectionMode="none"
               [columns]="tableColumns1()"
               [headerTemplate]="tableHeader1"
               [rowClickable]="false"

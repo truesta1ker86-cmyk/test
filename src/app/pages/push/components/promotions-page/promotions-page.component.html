@@ -229,6 +229,8 @@
         [attr.aria-busy]="loading()"
       >
         <app-data-table
+          [data]="rows()"
+          selectionMode="none"
           [columns]="tableColumns1()"
           [headerTemplate]="tableHeader1"
           [rowClickable]="false"
@@ -479,6 +481,8 @@
       </div>
       <div class="table-scroll">
         <app-data-table
+          [data]="data()?.history || []"
+          selectionMode="none"
           [columns]="tableColumns4()"
           [headerTemplate]="tableHeader4"
           [rowClickable]="false"
@@ -537,6 +541,8 @@
                   <details>
                     <summary>Открыть результат</summary>
                     <app-data-table
+                      [data]="op.changes"
+                      selectionMode="none"
                       [columns]="tableColumns3()"
                       [headerTemplate]="tableHeader3"
                       [rowClickable]="false"

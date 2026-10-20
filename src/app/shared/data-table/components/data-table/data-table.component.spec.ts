@@ -61,6 +61,18 @@ class NestedHost {
 }
 
 describe('Employer DataTable integration', () => {
+  it('keeps every already-loaded row visible when its page owns pagination or infinite scroll', async () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.rows = Array.from({ length: 75 }, (_, index) => ({
+      offer_id: String(index),
+      name: 'Товар ' + index,
+    }));
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelectorAll('tbody tr')).toHaveLength(75);
+    expect(
+      fixture.nativeElement.querySelector('.p-datatable-table-container').style.maxHeight,
+    ).toBe('');
+  });
   it('uses PrimeNG rows, the employer cell slot, row events and built-in sorting', async () => {
     const fixture = TestBed.createComponent(Host);
     await fixture.whenStable();

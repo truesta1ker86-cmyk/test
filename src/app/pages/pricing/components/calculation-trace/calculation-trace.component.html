@@ -7,6 +7,8 @@
         Цена сайта и ручная себестоимость в фактическую маржу не подставляются.
       </p>
       <app-data-table
+        [data]="actualFields"
+        selectionMode="none"
         [columns]="tableColumns1()"
         [headerTemplate]="tableHeader1"
         [rowClickable]="false"
@@ -62,6 +64,8 @@
     <div class="history-body">
       <code class="formula-expression">{{ minimum.expression }}</code>
       <app-data-table
+        [data]="variables()"
+        selectionMode="none"
         [columns]="tableColumns2()"
         [headerTemplate]="tableHeader2"
         [rowClickable]="false"
@@ -100,6 +104,8 @@
           <summary>Сравнение сценариев логистики</summary>
           <div class="table-scroll">
             <app-data-table
+              [data]="scenarios()"
+              selectionMode="none"
               [columns]="tableColumns3()"
               [headerTemplate]="tableHeader3"
               [rowClickable]="false"

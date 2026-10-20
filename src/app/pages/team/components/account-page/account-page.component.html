@@ -79,6 +79,8 @@
     }
     <div class="table-wrap">
       <app-data-table
+        [data]="visibleShops()"
+        selectionMode="none"
         [columns]="tableColumns1()"
         [headerTemplate]="tableHeader1"
         [rowClickable]="false"
@@ -200,6 +202,8 @@
     </form>
     <div class="table-wrap">
       <app-data-table
+        [data]="data()?.members || []"
+        selectionMode="none"
         [columns]="tableColumns2()"
         [headerTemplate]="tableHeader2"
         [rowClickable]="false"
@@ -322,6 +326,8 @@
     <h3>История операций</h3>
     <div class="table-wrap">
       <app-data-table
+        [data]="data()?.billing?.transactions || []"
+        selectionMode="none"
         [columns]="tableColumns3()"
         [headerTemplate]="tableHeader3"
         [rowClickable]="false"
@@ -402,6 +408,8 @@
       }
       <div class="table-wrap">
         <app-data-table
+          [data]="data()?.billing?.top_up_requests || []"
+          selectionMode="none"
           [columns]="tableColumns4()"
           [headerTemplate]="tableHeader4"
           [rowClickable]="false"
@@ -521,6 +529,8 @@
         }
         <div class="table-wrap">
           <app-data-table
+            [data]="p.cost_preview"
+            selectionMode="none"
             [columns]="tableColumns5()"
             [headerTemplate]="tableHeader5"
             [rowClickable]="false"

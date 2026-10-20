@@ -89,6 +89,8 @@
     <p class="muted">Предпросмотр до {{ date(state.expires_at) }}. Первые 20 товаров:</p>
     <div class="table-scroll">
       <app-data-table
+        [data]="state.sample"
+        selectionMode="none"
         [columns]="tableColumns1()"
         [headerTemplate]="tableHeader1"
         [rowClickable]="false"

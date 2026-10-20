@@ -1,5 +1,7 @@
 <div class="table-wrap" tabindex="0" aria-label="Финансовая таблица с горизонтальной прокруткой">
   <app-data-table
+    [data]="visibleRows()"
+    selectionMode="none"
     [class.has-groups]="headerGroups().length"
     [columns]="tableColumns1()"
     [headerTemplate]="tableHeader1"

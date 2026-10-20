@@ -120,6 +120,8 @@
         </p>
         <div class="table-scroll">
           <app-data-table
+            [data]="p.sample"
+            selectionMode="none"
             [columns]="tableColumns1()"
             [headerTemplate]="tableHeader1"
             [rowClickable]="false"

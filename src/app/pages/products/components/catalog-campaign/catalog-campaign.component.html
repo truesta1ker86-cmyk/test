@@ -150,6 +150,8 @@
       </div>
       <div class="plan-table-scroll" tabindex="0" aria-label="Таблица плана акции с прокруткой">
         <app-data-table
+          [data]="rows()"
+          selectionMode="none"
           [columns]="tableColumns1(p)"
           [selection]="visibleTableSelection()"
           [headerTemplate]="tableHeader1"

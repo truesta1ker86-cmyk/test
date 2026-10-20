@@ -112,6 +112,8 @@
   }
   <div class="history-scroll">
     <app-data-table
+      [data]="mappingHistory()"
+      selectionMode="none"
       [columns]="mappingHistoryColumns()"
       [headerTemplate]="tableHeader1"
       [rowClickable]="false"

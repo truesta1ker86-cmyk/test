@@ -41,6 +41,8 @@
     <p>Проверено: {{ run.items.length }} · отправлено: 0</p>
     <div class="table-scroll">
       <app-data-table
+        [data]="publicationRows(run.items)"
+        selectionMode="none"
         [columns]="tableColumns1()"
         [headerTemplate]="tableHeader1"
         [rowClickable]="false"

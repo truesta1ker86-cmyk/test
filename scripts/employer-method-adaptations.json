@@ -80,6 +80,34 @@
     "FilterBaseComponent.toModelValue": {
       "hash": "25b98a4605f009a6defc2c278a732e53e8c2fcc6b063c395a98fbcab32875065",
       "reason": "Преобразование значения исходного контрола в прежний контракт бизнес-формы: ISO-дата, пустой текст, массив или boolean."
+    },
+    "DataTableComponent.onSelectionChange": {
+      "hash": "6d9ff37246b6c2f13482ebca774f3a6292ad4ff535b995374da74d839fac5d84",
+      "reason": "Выделение объектов согласовано с PrimeNG и запрещено для таблиц просмотра, сохраняется исходная публичная сигнатура."
+    },
+    "DataTableComponent.constructor": {
+      "hash": "6859824d386b7443af1d03ac0c8e3a762309e56663f6411e9b0d5cf3afbb4034",
+      "reason": "Источник таблицы внедряется через TABLE_DATA_SERVICE; scoped UnsubscribeService сохраняет схему Виталия для отмены запросов при уничтожении."
+    },
+    "DataTableComponent.ngOnInit": {
+      "hash": "5d0ea2919bf179a4f9b848bf56af08eb5b97e4f54558cc468580387bdcc872ff",
+      "reason": "Постраничный источник загружается один раз: lazy-таблица инициирует запрос своим событием, исключая двойную начальную загрузку."
+    },
+    "DataTableComponent.ngOnChanges": {
+      "hash": "691dc821f85c670d3ba82c7cc81d0e65f9631b925928eae3830f64f273380908",
+      "reason": "Смена фильтров/страницы отменяет старый запрос; локальные строки, обновление и номер страницы сохраняются в общей таблице."
+    },
+    "DataTableComponent.onLazyLoad": {
+      "hash": "c27f06ff06c2b5f52f9fba8514901364094176f26e833f6d1ab04bce83b61a48",
+      "reason": "Одинаковая пагинация и события источника таблицы Виталия без повторной загрузки той же страницы."
+    },
+    "DataTableComponent.loadPage": {
+      "hash": "980c9d1e5663c4746a39788363212ab7ab6de45e9fa35ec6ecaf998fcd863fae",
+      "reason": "Загрузка страницы с отменой предыдущего запроса, защитой от дублей, повторной передачей уже загруженной страницы при обновлении URL, состоянием ошибки и обновлением OnPush."
+    },
+    "DataTableComponent.reload": {
+      "hash": "1801841358ef881878fe46c929a92fe99c068fb61c9018735ed0e0d8e828a034",
+      "reason": "Повторная загрузка сохраняет открытую страницу и явно обходит дедупликацию запроса."
     }
   },
   "members": {
@@ -94,12 +122,32 @@
       "currentKind": "GetAccessor",
       "hash": "7898bdf781cace29e9cb4584f79b8c1e0521ffc3e06c99356537477aafdf3ce0",
       "reason": "Getter поддерживает строки и Signal страниц v2; заголовок обновляется при смене вкладки без повторной активации маршрута."
+    },
+    "DataTableComponent.totalRecords": {
+      "hash": "e732d07dc0003829cfc05baa06d7d603f93fcc23da4f5cbc8a14b4a07fc00939",
+      "originalKind": "PropertyDeclaration",
+      "currentKind": "SetAccessor",
+      "reason": "Сохранён внешний вход totalRecords; свойство различает число строк серверной страницы и локального массива без потери общего итога."
     }
   },
   "initializers": {
     "FilterService.validValues": {
       "hash": "c4dfdcaa0dcbdc313fd33031535ccef1dc100afd6b9cfc301a3512ae8970df35",
       "reason": "Значения отключённых зависимых фильтров не передаются как активные фильтры после изменения родительского поля."
+    },
+    "DataTableComponent.scrollable": {
+      "hash": "05080dc082c6df88129efbbe3f2c5a354e5348c963564f889914d0252f48b17d",
+      "reason": "Настройки общей таблицы Виталия: прокруткой управляет контейнер раздела, постраничный счётчик использует русскую подпись."
+    },
+    "DataTableComponent.currentPageReportTemplate": {
+      "hash": "7de2f23c9131d6f2588917fa19fa2a2fe8be872bd80ce632b313e82cea98482e",
+      "reason": "Настройки общей таблицы Виталия: прокруткой управляет контейнер раздела, постраничный счётчик использует русскую подпись."
+    }
+  },
+  "renderer": {
+    "[value]=\"data\"": {
+      "binding": "[value]=\"items\"",
+      "reason": "Общий renderer Виталия получает текущую страницу от TABLE_DATA_SERVICE и использует те же PrimeNG body/header/cell slots; локальные массивы подключаются к items через сохранённый вход data."
     }
   }
 }

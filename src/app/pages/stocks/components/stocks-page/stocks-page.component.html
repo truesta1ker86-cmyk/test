@@ -247,6 +247,8 @@
     </div>
     <div class="table-wrap">
       <app-data-table
+        [data]="rules()?.items || []"
+        selectionMode="none"
         [columns]="tableColumns3()"
         [headerTemplate]="tableHeader3"
         [rowClickable]="false"
@@ -435,6 +437,8 @@
         <p>Правил: {{ p.rules }} · новых: {{ p.creates }} · изменится: {{ p.updates }}</p>
         <div class="table-wrap">
           <app-data-table
+            [data]="p.sample"
+            selectionMode="none"
             [columns]="tableColumns4()"
             [headerTemplate]="tableHeader4"
             [rowClickable]="false"
@@ -531,6 +535,8 @@
       @if (selection().size) {
         <div class="table-wrap expected-quantity-table">
           <app-data-table
+            [data]="expectedRows()"
+            selectionMode="none"
             [columns]="tableColumns5()"
             [headerTemplate]="tableHeader5"
             [rowClickable]="false"
@@ -621,6 +627,8 @@
         </p>
         <div class="table-wrap">
           <app-data-table
+            [data]="expectedAllocationRows(p.items)"
+            selectionMode="none"
             [columns]="tableColumns10()"
             [headerTemplate]="tableHeader10"
             [rowClickable]="false"
@@ -673,6 +681,8 @@
     }
     <div class="table-wrap">
       <app-data-table
+        [data]="visiblePlans()"
+        selectionMode="none"
         [columns]="tableColumns7()"
         [headerTemplate]="tableHeader7"
         [rowClickable]="false"
@@ -763,6 +773,8 @@
     </div>
     <div class="table-wrap">
       <app-data-table
+        [data]="raw()?.items || []"
+        selectionMode="none"
         [columns]="tableColumns8()"
         [headerTemplate]="tableHeader8"
         [rowClickable]="false"
@@ -815,6 +827,8 @@
     <h2>Операции в копии</h2>
     <div class="table-wrap">
       <app-data-table
+        [data]="operations()"
+        selectionMode="none"
         [columns]="tableColumns9()"
         [headerTemplate]="tableHeader9"
         [rowClickable]="false"
