@@ -31,6 +31,7 @@ export class OverviewPage {
   readonly data = signal<Overview | null>(null);
   readonly loading = signal(true);
   readonly error = signal('');
+  readonly chartRefresh = signal(0);
   readonly currency = currency;
   readonly status = status;
   readonly date = date;
@@ -40,6 +41,7 @@ export class OverviewPage {
     this.load();
   }
   load() {
+    this.chartRefresh.update((value) => value + 1);
     this.loading.set(true);
     this.error.set('');
     this.api

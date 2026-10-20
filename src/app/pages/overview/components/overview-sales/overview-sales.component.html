@@ -1,0 +1,101 @@
+<section
+  class="panel sales-panel"
+  aria-labelledby="overview-sales-title"
+  [attr.aria-busy]="loading()"
+>
+  <div class="panel-heading sales-heading">
+    <div>
+      <h2 id="overview-sales-title">Динамика продаж</h2>
+    </div>
+    <label class="sales-period"
+      >Период
+      <select
+        aria-label="Период динамики продаж"
+        [value]="days()"
+        (change)="setDays($any($event.target).value)"
+      >
+        @for (period of periods; track period.days) {
+          <option [value]="period.days">{{ period.label }}</option>
+        }
+      </select>
+    </label>
+  </div>
+  @if (loading()) {
+    <div class="sales-loading" role="status">
+      <div class="sales-skeleton" aria-hidden="true"></div>
+      <span>Загружаем динамику продаж…</span>
+    </div>
+  } @else if (error()) {
+    <div class="sales-error" role="alert">
+      <p>{{ error() }}</p>
+      <button class="button" (click)="retry()">Повторить загрузку графика</button>
+    </div>
+  } @else if (data(); as d) {
+    <dl class="sales-summary">
+      <div>
+        <dt>Доставлено, шт.</dt>
+        <dd>{{ units(d.total_units) }}</dd>
+      </div>
+      <div>
+        <dt>Выручка доставок</dt>
+        <dd>{{ money(d.total_revenue) }}</dd>
+      </div>
+      <div>
+        <dt>Самый активный день</dt>
+        <dd class="sales-peak">{{ peak() }}</dd>
+      </div>
+    </dl>
+    <div class="sales-chart">
+      <p-chart
+        type="line"
+        [data]="chartData()"
+        [options]="chartOptions()"
+        height="200px"
+        ariaLabel="Количество доставленных товаров по дням. Точные значения доступны в таблице под графиком."
+      />
+    </div>
+    @if (d.total_units === 0) {
+      <p class="sales-empty" role="status">За выбранный период доставленных продаж нет.</p>
+    }
+    <p class="sales-note">
+      Только доставленные заказы, по дате создания. Отмены и заказы в пути не учитываются.
+    </p>
+    <details class="sales-days">
+      <summary>Данные по дням</summary>
+      <div
+        class="sales-table-scroll"
+        role="region"
+        aria-label="Доставленные продажи по дням за выбранный период"
+      >
+        <app-data-table
+          [data]="d.timeline"
+          [columns]="dayColumns"
+          selectionMode="none"
+          [lazy]="false"
+          [scrollable]="false"
+          [rowClickable]="false"
+          dataKey="date"
+          tableStyleClass="operation-table"
+          emptyMessage="Нет данных за выбранный период"
+        >
+          <ng-template #cellTemplate let-point let-column="column">
+            @switch (column.cellTemplate.slot) {
+              @case ('date') {
+                <span data-o1c-cell-content>{{ day(point.date) }}</span>
+              }
+              @case ('units') {
+                <span data-o1c-cell-content>{{ units(point.units) }}</span>
+              }
+              @case ('revenue') {
+                <span data-o1c-cell-content>{{ money(point.revenue) }}</span>
+              }
+            }
+          </ng-template>
+        </app-data-table>
+      </div>
+    </details>
+    @if (d.snapshot_at) {
+      <p class="sales-snapshot">Снимок магазина: {{ date(d.snapshot_at) }}</p>
+    }
+  }
+</section>

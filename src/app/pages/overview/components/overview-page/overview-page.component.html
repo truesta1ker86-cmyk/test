@@ -37,6 +37,7 @@
         <span>Финансовые операции</span><strong>{{ d.status.totals.finance_rows }}</strong>
       </div>
     </section>
+    <app-overview-sales [refresh]="chartRefresh()" />
     <div class="overview-layout">
       <section class="panel">
         <div class="panel-heading">
