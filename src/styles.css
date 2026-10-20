@@ -1,6 +1,7 @@
 @import './app/shared/page/styles/workspace.css';
 @import './app/shared/data-table/styles/table-column-hover.css';
 @import './app/shared/product-preview/styles/product-hover-preview.css';
+@import './app/shared/ui/styles/controls.css';
 :root {
   --bg: #fafafb;
   --surface: #fff;
@@ -11,6 +12,22 @@
   --border: #e4e7ec;
   --panel-radius: 14px;
   --control-radius: 10px;
+  --control-bg: var(--surface);
+  --control-border: #b2bccb;
+  --control-border-hover: #98a2b3;
+  --control-hover-border: var(--control-border-hover);
+  --control-disabled-bg: var(--surface-2);
+  --control-disabled-border: #d0d5dd;
+  --control-focus-ring: rgb(0 91 255 / 18%);
+  --control-height-compact: 32px;
+  --control-height-large: 44px;
+  --hair: var(--border);
+  --hair-2: #d0d5dd;
+  --faint: #98a2b3;
+  --surface-3: #eef1f5;
+  --danger: var(--red);
+  --red-soft: #fef3f2;
+  --motion-fast: 160ms;
   --table-grid: #bdc7d5;
   --table-row-line: #dde3eb;
   --table-heading-bg: #f4f5f7;

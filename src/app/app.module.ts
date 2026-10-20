@@ -11,9 +11,7 @@ import { PageAttachModule } from './shared/directives/page-attach/page-attach.mo
 import { shopInterceptor } from './core/infrastructure/utils/shop-interceptor.utils';
 import { preloaderInterceptor } from './shared/preloader/infrastructure/utils/preloader.interceptor.utils';
 import { PRELOADER_CONFIG } from './shared/preloader/infrastructure/constants/preloader.constants';
-import { providePrimeNG } from 'primeng/config';
 import localeRu from '@angular/common/locales/ru';
-import Aura from '@primeuix/themes/aura';
 
 registerLocaleData(localeRu);
 

@@ -91,24 +91,6 @@
         color: var(--brand);
       }
     }
-
-    /* ────────────────────────────────────────────────────────
-       ЧЕКБОКСЫ
-       ──────────────────────────────────────────────────────── */
-    .p-checkbox {
-      .p-checkbox-box {
-        border-radius: 4px;
-        border-color: var(--control-border);
-        background: var(--surface);
-        width: 16px;
-        height: 16px;
-      }
-
-      .p-checkbox-box.p-highlight {
-        background: var(--brand);
-        border-color: var(--brand);
-      }
-    }
   }
 }
 /* The employer renderer keeps v1 table density and visible column boundaries. */
@@ -145,4 +127,24 @@
   .p-datatable-table-container {
     overflow: visible;
   }
+  p-paginator.p-datatable-paginator-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 35;
+  }
+  .operation-table tbody tr.selected > td,
+  .operation-table tbody tr.p-datatable-row-selected > td {
+    background: var(--brand-soft);
+  }
+}
+.table-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 16px;
+  background: #fef3f2;
+  color: var(--red);
+  font-size: 12px;
 }
