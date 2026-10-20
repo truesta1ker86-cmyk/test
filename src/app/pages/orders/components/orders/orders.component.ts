@@ -19,9 +19,7 @@ import type {
   Order,
   ReturnRow,
 } from '../../infrastructure/interfaces/contracts.interfaces';
-import {
-  downloadErrorMessage,
-} from '../../../../core/infrastructure/utils/api.utils';
+import { downloadErrorMessage } from '../../../../core/infrastructure/utils/api.utils';
 import { status, download } from '../../infrastructure/utils/format.utils';
 import { ColumnChange, ColumnRules } from '../../../../shared/directives/filter-panel/filter-panel';
 import { canLabel, sortOperational } from '../../infrastructure/utils/operational-logic.utils';
@@ -32,10 +30,7 @@ import {
 import { TABLE_DATA_SERVICE } from '../../../../shared/data-table/infrastructure/tokens/table-data-source.token';
 
 @Component({
-  providers: [
-    { provide: TABLE_DATA_SERVICE, useExisting: WorkspaceApi },
-    FilterService
-  ],
+  providers: [{ provide: TABLE_DATA_SERVICE, useExisting: WorkspaceApi }, FilterService],
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-orders',
@@ -50,15 +45,16 @@ export class OrdersComponent {
 
   readonly databaseCopy = inject(SessionContext).databaseCopy;
   readonly entity = this.route.snapshot.data['entity'] as 'orders' | 'returns';
-  
+
   readonly data = signal<ListPage | null>(null);
   readonly loading = signal(true);
   readonly exporting = signal(false);
   readonly labelsBusy = signal(false);
-  
+  readonly refreshVersion = signal(0);
+
   // ХРАНИМ МАССИВ ОБЪЕКТОВ
-  readonly selected = signal<Order[]>([]); 
-  
+  readonly selected = signal<Order[]>([]);
+
   readonly notice = signal('');
   readonly error = signal('');
   readonly detail = signal<string | null>(null);
@@ -81,14 +77,31 @@ export class OrdersComponent {
   }
 
   readonly query = signal<ListQuery>({
-    q: '', status: '', scheme: '', lifecycle: this.entity === 'orders' ? 'current' : '',
-    start: '', end: '', page: 1, page_size: 50, sort: 'date_desc', column_filters: '',
+    q: '',
+    status: '',
+    scheme: '',
+    lifecycle: this.entity === 'orders' ? 'current' : '',
+    start: '',
+    end: '',
+    page: 1,
+    page_size: 50,
+    sort: 'date_desc',
+    column_filters: '',
   });
 
   readonly form = new FormGroup(
     Object.fromEntries(
-      ['q', 'status', 'scheme', 'lifecycle', 'start', 'end', 'page_size', 'sort', 'column_filters']
-        .map((k) => [k, new FormControl('', { nonNullable: true })]),
+      [
+        'q',
+        'status',
+        'scheme',
+        'lifecycle',
+        'start',
+        'end',
+        'page_size',
+        'sort',
+        'column_filters',
+      ].map((k) => [k, new FormControl('', { nonNullable: true })]),
     ),
   );
 
@@ -111,62 +124,85 @@ export class OrdersComponent {
     [
       ...new Set([
         ...orderStatuses,
-        ...(this.data()?.statuses || []).map((s) => s === 'awaiting_deliver' ? 'awaiting_delivering' : s),
+        ...(this.data()?.statuses || []).map((s) =>
+          s === 'awaiting_deliver' ? 'awaiting_delivering' : s,
+        ),
       ]),
     ].filter((s) => completedStatuses.has(s) === (this.query().lifecycle === 'completed')),
   );
 
   readonly readyRows = computed(() =>
-    (this.data()?.items || []).map((r) => r as Order).filter(canLabel),
+    this.data()?.local_preview
+      ? (this.data()?.items || []).map((r) => r as Order).filter(canLabel)
+      : [],
   );
 
   // АДАПТИРОВАНО ПОД ОБЪЕКТЫ
   readonly hiddenSelected = computed(
-    () => this.selected().filter(
-      o => !this.readyRows().some(r => r.posting_number === o.posting_number)
-    ).length,
+    () =>
+      this.selected().filter(
+        (o) => !this.data()?.items.some((r) => r.posting_number === o.posting_number),
+      ).length,
   );
 
   readonly status = status;
   readonly canLabel = canLabel;
 
   constructor() {
-    this.route.queryParamMap.pipe(
-      map((params) => {
-        const lifecycle = this.entity === 'orders' ? (params.get('lifecycle') === 'completed' ? 'completed' : 'current') : '';
-        let state = params.get('status') || '';
-        if (state === 'awaiting_deliver') state = 'awaiting_delivering';
-        if (this.entity === 'orders' && state && completedStatuses.has(state) !== (lifecycle === 'completed')) state = '';
-        
-        const sort = params.get('sort') || 'date_desc';
-        const allowed = this.entity === 'orders' ? ['date_desc', 'date_asc', 'number_asc', 'number_desc'] : ['date_desc', 'date_asc', 'amount_desc'];
-        
-        const query: ListQuery = {
-          q: params.get('q') || '',
-          status: state,
-          scheme: params.get('scheme') || '',
-          lifecycle,
-          start: params.get('start') || '',
-          end: params.get('end') || '',
-          page: Math.max(1, Math.floor(Number(params.get('page')) || 1)),
-          page_size: [25, 50, 100].includes(Number(params.get('page_size'))) ? Number(params.get('page_size')) : 50,
-          sort: allowed.includes(sort) ? sort : 'date_desc',
-          column_filters: params.get('column_filters') || '',
-        };
-        
-        this.detail.set(this.entity === 'orders' ? params.get('posting') : null);
-        
-        for (const [key, control] of Object.entries(this.form.controls)) {
-          control.setValue(String(query[key as keyof ListQuery] ?? ''), { emitEvent: false });
-        }
-        
+    this.route.queryParamMap
+      .pipe(
+        map((params) => {
+          const lifecycle =
+            this.entity === 'orders'
+              ? params.get('lifecycle') === 'completed'
+                ? 'completed'
+                : 'current'
+              : '';
+          let state = params.get('status') || '';
+          if (state === 'awaiting_deliver') state = 'awaiting_delivering';
+          if (
+            this.entity === 'orders' &&
+            state &&
+            completedStatuses.has(state) !== (lifecycle === 'completed')
+          )
+            state = '';
+
+          const sort = params.get('sort') || 'date_desc';
+          const allowed =
+            this.entity === 'orders'
+              ? ['date_desc', 'date_asc', 'number_asc', 'number_desc']
+              : ['date_desc', 'date_asc', 'amount_desc'];
+
+          const query: ListQuery = {
+            q: params.get('q') || '',
+            status: state,
+            scheme: params.get('scheme') || '',
+            lifecycle,
+            start: params.get('start') || '',
+            end: params.get('end') || '',
+            page: Math.max(1, Math.floor(Number(params.get('page')) || 1)),
+            page_size: [25, 50, 100].includes(Number(params.get('page_size')))
+              ? Number(params.get('page_size'))
+              : 50,
+            sort: allowed.includes(sort) ? sort : 'date_desc',
+            column_filters: params.get('column_filters') || '',
+          };
+
+          this.detail.set(this.entity === 'orders' ? params.get('posting') : null);
+
+          for (const [key, control] of Object.entries(this.form.controls)) {
+            control.setValue(String(query[key as keyof ListQuery] ?? ''), { emitEvent: false });
+          }
+
+          return query;
+        }),
+        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        takeUntilDestroyed(this.destroy),
+      )
+      .subscribe((query) => {
         this.query.set(query);
         this.loading.set(true);
-        return query;
-      }),
-      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-      takeUntilDestroyed(this.destroy),
-    ).subscribe();
+      });
   }
 
   onFilterChange(filter: ListQuery): void {
@@ -202,39 +238,50 @@ export class OrdersComponent {
   tabKey(event: KeyboardEvent) {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const value = event.key === 'Home' ? 'current' : event.key === 'End' ? 'completed' : this.query().lifecycle === 'current' ? 'completed' : 'current';
+    const value =
+      event.key === 'Home'
+        ? 'current'
+        : event.key === 'End'
+          ? 'completed'
+          : this.query().lifecycle === 'current'
+            ? 'completed'
+            : 'current';
     this.lifecycle(value);
-    (event.currentTarget as HTMLElement).querySelector<HTMLButtonElement>('[data-lifecycle="' + value + '"]')?.focus();
+    (event.currentTarget as HTMLElement)
+      .querySelector<HTMLButtonElement>('[data-lifecycle="' + value + '"]')
+      ?.focus();
   }
 
   columnChanged(change: ColumnChange) {
     const rules = { ...this.columnRules() };
     if (change.rule) rules[change.field] = change.rule;
     else delete rules[change.field];
-    this.form.controls['column_filters'].setValue(Object.keys(rules).length ? JSON.stringify(rules) : '');
+    this.form.controls['column_filters'].setValue(
+      Object.keys(rules).length ? JSON.stringify(rules) : '',
+    );
     this.apply();
   }
 
   // ИСПРАВЛЕННЫЙ TOGGLE (РАБОТАЕТ С ОБЪЕКТАМИ)
   toggle(order: Order, checked: boolean) {
     if (!canLabel(order)) return;
-    
-    this.selected.update(orders => {
-      const exists = orders.some(o => o.posting_number === order.posting_number);
-      
+
+    this.selected.update((orders) => {
+      const exists = orders.some((o) => o.posting_number === order.posting_number);
+
       if (checked) {
         return exists ? orders : [...orders, order];
       }
-      return orders.filter(o => o.posting_number !== order.posting_number);
+      return orders.filter((o) => o.posting_number !== order.posting_number);
     });
   }
 
   // ИСПРАВЛЕННЫЙ SELECT AVAILABLE
   selectAvailable() {
-    this.selected.update(orders => {
+    this.selected.update((orders) => {
       const available = this.readyRows();
-      const map = new Map(orders.map(o => [o.posting_number, o]));
-      available.forEach(o => map.set(o.posting_number, o));
+      const map = new Map(orders.map((o) => [o.posting_number, o]));
+      available.forEach((o) => map.set(o.posting_number, o));
       return Array.from(map.values());
     });
   }
@@ -244,57 +291,78 @@ export class OrdersComponent {
   }
 
   open(posting: string) {
-    void this.router.navigate([], { relativeTo: this.route, queryParams: { posting }, queryParamsHandling: 'merge' });
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { posting },
+      queryParamsHandling: 'merge',
+    });
   }
 
   close() {
     this.detail.set(null);
-    void this.router.navigate([], { relativeTo: this.route, queryParams: { posting: null }, queryParamsHandling: 'merge', replaceUrl: true });
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { posting: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   changed() {
-    this.notice.set('Упаковка подтверждена только в локальном макете. В Ozon ничего не отправлено.');
+    this.notice.set(
+      'Упаковка подтверждена только в локальном макете. В Ozon ничего не отправлено.',
+    );
     this.refresh();
   }
 
   refresh() {
-    this.apply(this.query().page); 
+    this.loading.set(true);
+    this.refreshVersion.update((value) => value + 1);
   }
 
   onDataLoaded(data: ListPage) {
     this.data.set(data);
     this.loading.set(false);
-    if (data?.available_label_ids) {
+    this.error.set('');
+    if (data?.local_preview && data.available_label_ids) {
       const available = new Set(data.available_label_ids);
       // Фильтруем массив объектов
-      this.selected.update(orders => 
-        orders.filter(o => available.has(o.posting_number))
-      );
+      this.selected.update((orders) => orders.filter((o) => available.has(o.posting_number)));
     }
   }
 
   onPageChange(event: any) {
-    const page = (event.first / event.rows) + 1;
+    this.form.controls['page_size'].setValue(String(event.rows));
+    const page = event.first / event.rows + 1;
     this.apply(page);
+  }
+
+  onDataError() {
+    this.data.set(null);
+    this.loading.set(false);
+    this.error.set('Не удалось загрузить список. Повторите запрос.');
   }
 
   labels(order?: Order) {
     if (this.labelsBusy() || !this.data()?.local_preview || (order && !canLabel(order))) return;
-    
+
     // Формируем массив строк ID из объектов
-    const ids = order 
-      ? [order.posting_number] 
-      : this.selected().map(o => o.posting_number);
-      
+    const ids = order ? [order.posting_number] : this.selected().map((o) => o.posting_number);
+
     if (!ids.length) return;
-    
+
     this.labelsBusy.set(true);
     this.error.set('');
-    this.api.localLabels(ids, true).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+    this.api
+      .localLabels(ids, true)
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
         next: (blob) => {
           download(blob, 'labels-local-preview.pdf');
           this.labelsBusy.set(false);
-          this.notice.set('Скачан тестовый PDF без рабочего штрихкода. Для отгрузки он не подходит.');
+          this.notice.set(
+            'Скачан тестовый PDF без рабочего штрихкода. Для отгрузки он не подходит.',
+          );
           this.refresh();
         },
         error: async (e) => {
@@ -308,10 +376,10 @@ export class OrdersComponent {
     if (this.exporting()) return;
     this.exporting.set(true);
     this.error.set('');
-    const request = excel ? this.api.localExcel(this.query(), this.data()?.local_preview === true) : this.api.export(this.entity, this.query());
+    const request = this.api.export(this.entity, this.query(), excel ? 'xlsx' : 'csv');
     request.pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: (blob) => {
-        download(blob, excel ? 'orders-local.xlsx' : this.entity + '-local.csv');
+        download(blob, this.entity + '-v2.' + (excel ? 'xlsx' : 'csv'));
         this.exporting.set(false);
       },
       error: async (e) => {
@@ -323,7 +391,14 @@ export class OrdersComponent {
 
   statusOptions() {
     return [
-      { value: '', label: String(this.query().lifecycle === 'completed' ? 'Все завершённые статусы' : 'Все текущие статусы') },
+      {
+        value: '',
+        label: String(
+          this.query().lifecycle === 'completed'
+            ? 'Все завершённые статусы'
+            : 'Все текущие статусы',
+        ),
+      },
       ...this.statuses().flatMap((s) => [{ value: String(s), label: String(this.status(s)) }]),
     ];
   }

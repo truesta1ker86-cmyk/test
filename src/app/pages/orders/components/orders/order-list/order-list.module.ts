@@ -18,7 +18,7 @@ import { FormsModule } from '@angular/forms';
     ProductNameModule,
     CheckboxModule,
     IconModule,
-    FormsModule
+    FormsModule,
   ],
   exports: [OrderListComponent],
 })

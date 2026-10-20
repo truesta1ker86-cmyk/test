@@ -16,7 +16,7 @@
       @if (entity === 'orders') {
         <button
           class="button"
-          [disabled]="loading() || exporting() || !data()?.local_preview"
+          [disabled]="loading() || exporting() || !data()?.meta?.total"
           (click)="export(true)"
         >
           <app-icon name="download" />{{ exporting() ? 'Готовим выгрузку…' : 'Скачать Excel' }}
@@ -73,7 +73,9 @@
       [statuses]="statusOptions()"
       [loading]="loading()"
       (filterChange)="onFilterChange($event)"
-    /><span class="list-total">{{ data()?.meta?.total ?? '—' }} из {{ scopeTotal() ?? '—' }}</span>
+    /><span class="list-total"
+      >Показано {{ data()?.items?.length ?? '—' }} из {{ data()?.meta?.total ?? '—' }}</span
+    >
     @if (error()) {
       <div class="editor-error" role="alert">
         {{ error() }} <button class="text-button" (click)="refresh()">Повторить</button>
@@ -92,24 +94,24 @@
       />
     }
     <app-order-list
-    [orders]="data()?.items || []"
-    [entity]="entity"
-    [data]="data()"
-    [selected]="selected()"
-    [labelsBusy]="labelsBusy()"
-    [headingSort]="headingSort()"
-    [columnRules]="columnRules()"
-    
-    [filters]="query()" 
-    
-    (selectionChange)="selected.set($event)"
-    (sortChange)="sortHeading($event)"
-    (columnChange)="columnChanged($event)"
-    (detailRequested)="open($event)"
-    (labelRequested)="labels($event)"
-    
-    (dataLoaded)="onDataLoaded($event)"
-  />
+      [orders]="rows()"
+      [entity]="entity"
+      [data]="data()"
+      [selected]="selected()"
+      [labelsBusy]="labelsBusy()"
+      [headingSort]="headingSort()"
+      [columnRules]="columnRules()"
+      [filters]="query()"
+      [refreshToken]="refreshVersion()"
+      (dataFailed)="onDataError()"
+      (pageChange)="onPageChange($event)"
+      (selectionChange)="selected.set($event)"
+      (sortChange)="sortHeading($event)"
+      (columnChange)="columnChanged($event)"
+      (detailRequested)="open($event)"
+      (labelRequested)="labels($event)"
+      (dataLoaded)="onDataLoaded($event)"
+    />
     <div class="operational-export">
       <button
         class="text-button"

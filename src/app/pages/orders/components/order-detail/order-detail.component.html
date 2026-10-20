@@ -34,6 +34,7 @@
       <h3>Состав</h3>
       <div class="table-scroll">
         <app-data-table
+          [data]="detail.order.items"
           [columns]="tableColumns1()"
           [headerTemplate]="tableHeader1"
           selectionMode="multiple"

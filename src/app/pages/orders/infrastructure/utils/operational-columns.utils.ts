@@ -128,6 +128,9 @@ export function applyOperationalColumns(
     ...data,
     items,
     column_values,
-    meta: { ...data.meta },
+    meta:
+      !data.meta.has_more && data.meta.page === 1 && data.meta.total === data.items.length
+        ? { ...data.meta, total: items.length, page_size: items.length }
+        : { ...data.meta },
   };
 }

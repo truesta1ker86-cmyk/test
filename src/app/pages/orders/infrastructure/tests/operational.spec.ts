@@ -41,6 +41,28 @@ const row: Order = {
 
 const ready: Order = { ...row, posting_number: 'QA-10', status: 'awaiting_delivering' };
 
+const dialogMethods = ['showModal', 'close'] as const;
+const originalDialogMethods = dialogMethods.map((name) =>
+  Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, name),
+);
+beforeAll(() =>
+  dialogMethods.forEach((name) =>
+    Object.defineProperty(HTMLDialogElement.prototype, name, {
+      configurable: true,
+      value: function (this: HTMLDialogElement) {
+        name === 'close' ? this.removeAttribute('open') : this.setAttribute('open', '');
+      },
+    }),
+  ),
+);
+afterAll(() =>
+  dialogMethods.forEach((name, index) =>
+    originalDialogMethods[index]
+      ? Object.defineProperty(HTMLDialogElement.prototype, name, originalDialogMethods[index]!)
+      : Reflect.deleteProperty(HTMLDialogElement.prototype, name),
+  ),
+);
+
 function response(): ListPage {
   return {
     local_preview: true,
@@ -86,6 +108,7 @@ function setup(entity = 'orders') {
   const env = configure(entity),
     fixture = TestBed.createComponent(OrdersComponent),
     page = fixture.componentInstance;
+  fixture.detectChanges();
   env.http
     .expectOne((r) => r.url.endsWith('/' + entity))
     .flush(
@@ -109,13 +132,43 @@ function setup(entity = 'orders') {
           },
     );
   fixture.detectChanges();
-  return { ...env, fixture, page };
+  return {
+    ...env,
+    fixture,
+    page,
+    setParams: (value: ReturnType<typeof convertToParamMap>) => {
+      env.params.next(value);
+      fixture.detectChanges();
+    },
+  };
 }
 
 describe('v1 orders and returns', () => {
+  it('updates selection exactly once when the rendered checkbox is clicked', () => {
+    const { fixture, page, http } = setup();
+    const checkbox = fixture.nativeElement.querySelectorAll(
+      'tbody p-checkbox input',
+    )[1] as HTMLInputElement;
+    checkbox.click();
+    fixture.detectChanges();
+    expect(page.selected().map((row) => row.posting_number)).toEqual(['QA-10']);
+    expect(checkbox.checked).toBe(true);
+    checkbox.click();
+    fixture.detectChanges();
+    expect(page.selected()).toEqual([]);
+    expect(checkbox.checked).toBe(false);
+    http.verify();
+  });
+  it('opens the posting button without also changing row selection', () => {
+    const { fixture, page, http, navigate } = setup();
+    (fixture.nativeElement.querySelector('tbody .record-link') as HTMLButtonElement).click();
+    expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toEqual({ posting: 'QA-2' });
+    expect(page.selected()).toEqual([]);
+    http.verify();
+  });
   it('resets column rules and dates together with the original filter controls', () => {
-    const { fixture, params, navigate, http } = setup();
-    params.next(
+    const { fixture, setParams, navigate, http } = setup();
+    setParams(
       convertToParamMap({
         column_filters: '{"scheme":{"text":"realFBS"}}',
         start: '2026-10-01',
@@ -170,7 +223,7 @@ describe('v1 orders and returns', () => {
   it('applies the original order filter to the existing query and preserves hidden selection', async () => {
     const { fixture, page, navigate, http } = setup();
     await fixture.whenStable();
-    page.selected.set(new Set(['HIDDEN']));
+    page.selected.set([{ ...ready, posting_number: 'HIDDEN' }]);
     const filter = fixture.debugElement.query(By.directive(OrderFilterComponent));
     const scheme = filter
       .queryAll(By.directive(FilterSelectComponent))
@@ -182,7 +235,7 @@ describe('v1 orders and returns', () => {
       lifecycle: 'current',
       page: 1,
     });
-    expect([...page.selected()]).toEqual(['HIDDEN']);
+    expect(page.selected().map((row) => row.posting_number)).toEqual(['HIDDEN']);
     http.verify();
   });
   it('sorts headings locally in both directions without losing the selection', () => {
@@ -195,7 +248,7 @@ describe('v1 orders and returns', () => {
     expect(page.rows().map((r) => r.posting_number)).toEqual(['FBO', 'QA-2', 'QA-10']);
     page.sortHeading('posting_number');
     expect(page.rows().map((r) => r.posting_number)).toEqual(['QA-10', 'QA-2', 'FBO']);
-    expect([...page.selected()]).toEqual(['QA-10']);
+    expect(page.selected().map((row) => row.posting_number)).toEqual(['QA-10']);
     expect(page.data()?.items[0].posting_number).toBe('QA-2');
     http.expectNone((r) => r.url.endsWith('/orders'));
     http.verify();
@@ -272,24 +325,24 @@ describe('v1 orders and returns', () => {
     http.verify();
   });
   it('selects only ready FBS, retains hidden selection and clears it on completed', () => {
-    const { page, http, params } = setup();
+    const { page, http, setParams } = setup();
     page.toggle(row, true);
-    expect(page.selected().size).toBe(0);
+    expect(page.selected().length).toBe(0);
     page.selectAvailable();
-    expect([...page.selected()]).toEqual(['QA-10']);
-    page.selected.update((s) => new Set([...s, 'HIDDEN']));
-    params.next(convertToParamMap({ q: 'other' }));
+    expect(page.selected().map((row) => row.posting_number)).toEqual(['QA-10']);
+    page.selected.update((s) => [...s, { ...ready, posting_number: 'HIDDEN' }]);
+    setParams(convertToParamMap({ q: 'other' }));
     http.expectOne((r) => r.url.endsWith('/orders')).flush({ ...response(), items: [] });
     expect(page.hiddenSelected()).toBe(2);
-    params.next(convertToParamMap({ lifecycle: 'completed' }));
+    setParams(convertToParamMap({ lifecycle: 'completed' }));
     http
       .expectOne((r) => r.url.endsWith('/orders'))
       .flush({ ...response(), available_label_ids: [], items: [] });
-    expect(page.selected().size).toBe(0);
+    expect(page.selected().length).toBe(0);
     http.verify();
   });
   it('resets incompatible status and preserves contextual FBO labels', () => {
-    const { page, navigate, http, params } = setup();
+    const { page, navigate, http, setParams } = setup();
     page.form.controls['status'].setValue('awaiting_packaging');
     page.lifecycle('completed');
     expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({
@@ -297,7 +350,7 @@ describe('v1 orders and returns', () => {
       status: '',
       page: 1,
     });
-    params.next(convertToParamMap({ lifecycle: 'completed', status: 'awaiting_packaging' }));
+    setParams(convertToParamMap({ lifecycle: 'completed', status: 'awaiting_packaging' }));
     http.expectOne((r) => r.url.endsWith('/orders')).flush(response());
     expect(page.query().status).toBe('');
     expect(page.statuses()).not.toContain('awaiting_packaging');
@@ -305,18 +358,22 @@ describe('v1 orders and returns', () => {
     http.verify();
   });
   it('cancels an older refresh when filters change', () => {
-    const { page, http, params } = setup();
+    const { page, http, setParams, fixture } = setup();
     page.refresh();
+    fixture.detectChanges();
     const old = http.expectOne((r) => r.url.endsWith('/orders'));
-    params.next(convertToParamMap({ q: 'new' }));
+    setParams(convertToParamMap({ q: 'new' }));
     expect(old.cancelled).toBe(true);
     http.expectOne((r) => r.url.endsWith('/orders')).flush({ ...response(), items: [ready] });
     expect(page.data()?.items).toEqual([ready]);
     http.verify();
   });
   it('opens/closes a posting without reloading or losing list parameters', () => {
-    const { page, http, params, navigate } = setup();
-    params.next(convertToParamMap({ posting: 'QA-10' }));
+    const { page, http, setParams, navigate } = setup();
+    setParams(convertToParamMap({ posting: 'QA-10' }));
+    http
+      .expectOne((r) => r.url.endsWith('/orders/detail'))
+      .flush({ order: ready, actions: [], notice: '', marketplace_actions_enabled: false });
     expect(page.detail()).toBe('QA-10');
     http.expectNone((r) => r.url.endsWith('/orders'));
     page.close();
@@ -345,6 +402,8 @@ describe('v1 orders and returns', () => {
       root: HTMLElement = fixture.nativeElement;
     expect(root.querySelectorAll('[role=tab]').length).toBe(0);
     expect(root.querySelectorAll('thead th').length).toBe(5);
+    expect(root.querySelector('tbody tr')?.querySelectorAll('td')).toHaveLength(5);
+    expect(root.querySelector('tbody input[type=checkbox]')).toBeNull();
     expect(root.textContent).toContain('0,00');
     expect(root.querySelector('[data-product-preview="A-001"]')).not.toBeNull();
     expect(root.querySelector('[formControlName=scheme]')).toBeNull();

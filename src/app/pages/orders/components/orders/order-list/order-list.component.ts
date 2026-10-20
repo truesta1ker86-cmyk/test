@@ -1,10 +1,27 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import type { DataTableColumn } from '../../../../../shared/data-table/infrastructure/interfaces/data-table-config.interfaces';
-import type { ListPage, ListQuery, Order, ReturnRow } from '../../../infrastructure/interfaces/contracts.interfaces';
-import type { ColumnChange, ColumnRules } from '../../../../../shared/directives/filter-panel/filter-panel';
+import type {
+  ListPage,
+  ListQuery,
+  Order,
+  ReturnRow,
+} from '../../../infrastructure/interfaces/contracts.interfaces';
+import type {
+  ColumnChange,
+  ColumnRules,
+} from '../../../../../shared/directives/filter-panel/filter-panel';
 import { date } from '../../../../../core/infrastructure/utils/format.utils';
 import { currency, quantity, status } from '../../../infrastructure/utils/format.utils';
 import { canLabel, orderActionLabel } from '../../../infrastructure/utils/operational-logic.utils';
+import type { CheckboxChangeEvent } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-order-list',
@@ -16,44 +33,75 @@ import { canLabel, orderActionLabel } from '../../../infrastructure/utils/operat
 export class OrderListComponent {
   readonly cdr = inject(ChangeDetectorRef);
   readonly entity = input<'orders' | 'returns'>('orders');
-  readonly rows = input<(Order | ReturnRow)[]>([], { alias: 'orders' }); 
-  readonly data = input<ListPage | null>(null); 
-  
-  readonly selected = input<Order[]>([]);       ;
-  
+  readonly rows = input<(Order | ReturnRow)[]>([], { alias: 'orders' });
+  readonly data = input<ListPage | null>(null);
+
+  readonly selected = input<Order[]>([]);
+
   readonly labelsBusy = input(false);
   readonly headingSort = input({ field: '', desc: false });
   readonly columnRules = input<ColumnRules>({});
   readonly filters = input<any>({});
+  readonly refreshToken = input<unknown>();
 
-  readonly selectionChange = output<Order[]>(); 
+  readonly selectionChange = output<Order[]>();
   readonly columnChange = output<ColumnChange>();
   readonly sortChange = output<string>();
   readonly detailRequested = output<string>();
   readonly labelRequested = output<Order>();
-  
+
   readonly pageChange = output<any>();
   readonly dataLoaded = output<ListPage>();
- 
+  readonly dataFailed = output<unknown>();
 
   tableColumns1(): DataTableColumn[] {
     return [
       ...(this.entity() === 'orders'
         ? [
-            { field: 'selection', header: '', styleClass: 'order-select-cell', cellTemplate: { slot: 'cell6' } },
+            {
+              field: 'selection',
+              header: '',
+              styleClass: 'order-select-cell',
+              cellTemplate: { slot: 'cell6' },
+            },
             { field: 'posting_number', header: 'Номер', cellTemplate: { slot: 'cell7' } },
             { field: 'scheme', header: 'Схема', cellTemplate: { slot: 'cell8' } },
             { field: 'status', header: 'Статус', cellTemplate: { slot: 'cell9' } },
-            { field: 'created_at', header: 'Дата заказа', styleClass: 'order-date', cellTemplate: { slot: 'cell10' } },
-            { field: 'items', header: 'Состав', styleClass: 'order-items', cellTemplate: { slot: 'cell11' } },
-            { field: 'total_price', header: 'Сумма', styleClass: 'numeric', cellTemplate: { slot: 'cell12' } },
-            { field: 'actions', header: 'Действие', styleClass: 'order-row-actions', cellTemplate: { slot: 'cell13' } },
+            {
+              field: 'created_at',
+              header: 'Дата заказа',
+              styleClass: 'order-date',
+              cellTemplate: { slot: 'cell10' },
+            },
+            {
+              field: 'items',
+              header: 'Состав',
+              styleClass: 'order-items',
+              cellTemplate: { slot: 'cell11' },
+            },
+            {
+              field: 'total_price',
+              header: 'Сумма',
+              styleClass: 'numeric',
+              cellTemplate: { slot: 'cell12' },
+            },
+            {
+              field: 'actions',
+              header: 'Действие',
+              styleClass: 'order-row-actions',
+              cellTemplate: { slot: 'cell13' },
+            },
           ]
         : [
             { field: 'posting_number', header: 'Номер', cellTemplate: { slot: 'cell1' } },
             { field: 'offer_id', header: 'Артикул', cellTemplate: { slot: 'cell2' } },
-            { field: 'returns_amount', header: 'Действия', styleClass: 'numeric', cellTemplate: { slot: 'cell3' } },
-            { field: 'returned_at', header: '', cellTemplate: { slot: 'cell4' } },
+            {
+              field: 'returns_amount',
+              header: 'Сумма возврата',
+              styleClass: 'numeric',
+              cellTemplate: { slot: 'cell3' },
+            },
+            { field: 'returned_at', header: 'Дата возврата', cellTemplate: { slot: 'cell4' } },
             { field: 'status', header: 'Статус', cellTemplate: { slot: 'cell5' } },
           ]),
     ];
@@ -64,21 +112,50 @@ export class OrderListComponent {
   readonly quantity = quantity;
   readonly status = status;
   readonly canLabel = canLabel;
-  readonly actionLabel = orderActionLabel;
+  actionLabel(order: Order): string {
+    return this.data()?.local_preview ? orderActionLabel(order) : 'Подробнее';
+  }
 
-  order(row: Order | ReturnRow) { return row as Order; }
-  returned(row: Order | ReturnRow) { return row as ReturnRow; }
-
+  order(row: Order | ReturnRow) {
+    return row as Order;
+  }
+  returned(row: Order | ReturnRow) {
+    return row as ReturnRow;
+  }
 
   onSelectionChange(newIds: Order[]) {
     this.selectionChange.emit(newIds);
   }
 
-  onColumnChange(event: ColumnChange): void { this.columnChange.emit(event); }
-  onSortChange(event: string): void { this.sortChange.emit(event); }
-  onPageChange(event: any): void { this.pageChange.emit(event); }
-  onDataLoaded(data: any): void { this.dataLoaded.emit(data as ListPage); }
+  toggleCheckbox(order: Order, event: CheckboxChangeEvent): void {
+    event.originalEvent?.stopPropagation();
+    const selected = this.selected();
+    this.selectionChange.emit(
+      event.checked
+        ? selected.some((row) => row.posting_number === order.posting_number)
+          ? selected
+          : [...selected, order]
+        : selected.filter((row) => row.posting_number !== order.posting_number),
+    );
+  }
 
-  openDetail(order: Order): void { this.detailRequested.emit(order.posting_number); }
-  downloadLabel(order: Order): void { if (canLabel(order)) this.labelRequested.emit(order); }
+  onColumnChange(event: ColumnChange): void {
+    this.columnChange.emit(event);
+  }
+  onSortChange(event: string): void {
+    this.sortChange.emit(event);
+  }
+  onPageChange(event: any): void {
+    this.pageChange.emit(event);
+  }
+  onDataLoaded(data: any): void {
+    this.dataLoaded.emit(data as ListPage);
+  }
+
+  openDetail(order: Order): void {
+    this.detailRequested.emit(order.posting_number);
+  }
+  downloadLabel(order: Order): void {
+    if (canLabel(order)) this.labelRequested.emit(order);
+  }
 }
