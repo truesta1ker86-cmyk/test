@@ -8,11 +8,13 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
 import { DataTableComponent } from './components/data-table/data-table.component';
+import { DataTableFilterModule } from '../data-table-filter/data-table-filter.module';
 
 @NgModule({
   declarations: [DataTableComponent],
   imports: [
     CommonModule,
+    DataTableFilterModule,
     PreloaderIndicatorModule,
     TableColumnHoverModule,
     FormsModule,

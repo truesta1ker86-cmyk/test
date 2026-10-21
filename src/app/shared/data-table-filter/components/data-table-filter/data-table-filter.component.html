@@ -1,0 +1,132 @@
+<button
+  #trigger
+  type="button"
+  class="column-filter-trigger"
+  [class.active]="!!rule()"
+  [attr.aria-label]="'Фильтр: ' + label()"
+  [attr.title]="'Фильтр: ' + label()"
+  aria-haspopup="dialog"
+  [attr.aria-expanded]="opened()"
+  (keydown)="$event.stopPropagation()"
+  (click)="$event.stopPropagation(); open()"
+>
+  <span aria-hidden="true">▾</span>
+</button>
+@if (opened()) {
+  <dialog
+    #dialog
+    appModalFocus
+    class="data-table-filter-dialog"
+    [attr.aria-label]="'Фильтр столбца: ' + label()"
+    [style.left.px]="position().left"
+    [style.top.px]="position().top"
+    (cancel)="$event.preventDefault(); close()"
+    (modalEscape)="close()"
+    (keydown)="$event.stopPropagation()"
+    (click)="$event.stopPropagation(); outside($event)"
+  >
+    <header>
+      <h3>{{ label() }}</h3>
+    </header>
+    <section aria-label="Выбор значений">
+      <p class="section-label">Выбрать значения</p>
+      <app-filter-text key="choice_search" placeholder="Найти значение…" [showLabel]="false" />
+      <div class="choice-actions">
+        <button
+          type="button"
+          class="button"
+          [disabled]="valuesBusy() || !!optionsError()"
+          (click)="selectFound()"
+        >
+          Выбрать найденные
+        </button>
+        <button type="button" class="button" (click)="state.all(false)">Снять все</button>
+      </div>
+      <div class="values-list" [attr.aria-busy]="valuesBusy()">
+        <label class="choice all-values"
+          ><input
+            type="checkbox"
+            [checked]="allChecked()"
+            [indeterminate]="!allChecked() && indeterminate()"
+            (change)="toggleAll($event)"
+          />Все значения</label
+        >
+        @if (valuesBusy()) {
+          <app-preloader label="Загрузка значений…" />
+        } @else if (optionsError()) {
+          <p role="alert">{{ optionsError() }}</p>
+          <button type="button" class="button" (click)="requestValues(valuesPage(), true)">
+            Повторить
+          </button>
+        } @else {
+          @for (value of visibleValues(); track value) {
+            <label class="choice"
+              ><input
+                type="checkbox"
+                [checked]="state.checked(value)"
+                (change)="toggle(value, $event)"
+              />
+              <span
+                >{{ valueLabel(value) }}
+                @if (counts()[value] !== undefined) {
+                  <span class="value-count"> ({{ counts()[value] }})</span>
+                }
+              </span>
+            </label>
+          } @empty {
+            <p class="empty-values">Значений не найдено</p>
+          }
+          @if (visibleValues().length < found().length) {
+            <button type="button" class="more-values" (click)="showMore()">
+              Показать ещё · {{ visibleValues().length }} из {{ found().length }}
+            </button>
+          }
+        }
+      </div>
+      @if (remoteOptions()) {
+        <div class="values-pages" aria-label="Страницы значений фильтра">
+          <span>Найдено {{ optionsTotal() }} · страница {{ valuesPage() }}</span>
+          <button
+            type="button"
+            class="button"
+            [disabled]="valuesBusy() || valuesPage() <= 1"
+            (click)="requestValues(valuesPage() - 1)"
+          >
+            Назад
+          </button>
+          <button
+            type="button"
+            class="button"
+            [disabled]="valuesBusy() || !optionsHasMore()"
+            (click)="requestValues(valuesPage() + 1)"
+          >
+            Далее
+          </button>
+        </div>
+      }
+    </section>
+    <section class="text-condition" aria-label="Текстовое условие">
+      <p class="section-label">Содержит / не содержит</p>
+      <app-filter-select key="operator" [showLabel]="false" />
+      <app-filter-text key="text" [showLabel]="false" />
+    </section>
+    @if (numeric()) {
+      <div class="bounds"><app-filter-text key="min" /><app-filter-text key="max" /></div>
+    }
+    @if (error()) {
+      <p role="alert">{{ error() }}</p>
+    }
+    <footer>
+      <button type="button" class="button" (click)="reset()">Сбросить</button>
+      <button type="button" class="button" (click)="close()">Отмена</button>
+      <button
+        type="button"
+        class="button primary"
+        [disabled]="valuesBusy() || !!optionsError()"
+        (click)="apply()"
+      >
+        Применить
+      </button>
+    </footer>
+  </dialog>
+}

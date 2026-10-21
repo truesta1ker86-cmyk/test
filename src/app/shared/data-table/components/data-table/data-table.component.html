@@ -45,6 +45,16 @@
             [class]="col.styleClass || ''"
           >
             {{ col.header }}<p-sort-icon *ngIf="col.sortable" [field]="col.field" />
+            <app-data-table-filter
+              *ngIf="col.filterable"
+              [field]="col.field"
+              [label]="col.header"
+              [numeric]="!!col.filterNumeric"
+              [options]="columnOptions[col.field] || []"
+              [counts]="columnCounts[col.field] || {}"
+              [rule]="columnRules[col.field]"
+              (changed)="columnChanged.emit($event)"
+            />
           </th>
         </tr>
       </ng-template>

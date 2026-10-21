@@ -31,6 +31,10 @@ import { UnsubscribeService } from '../../../infrastructure/services/unsubscribe
 export class DataTableComponent implements OnInit, OnChanges {
   // --- INPUTS ---
   @Input() columns: DataTableColumn[] = [];
+  @Input() columnRules: Record<string, DataTableFilterRule> = {};
+  @Input() columnOptions: Record<string, string[]> = {};
+  @Input() columnCounts: Record<string, Record<string, number>> = {};
+  @Output() columnChanged = new EventEmitter<DataTableFilterChange>();
   @Input() headerTemplate: TemplateRef<any> | null = null;
   @Input() data: any[] = [];
   @Input() loading = false;
@@ -217,3 +221,7 @@ export class DataTableComponent implements OnInit, OnChanges {
     this.loadPage(Math.floor(this.first / this.rows) + 1, true);
   }
 }
+import type {
+  DataTableFilterRule,
+  DataTableFilterChange,
+} from '../../../data-table-filter/infrastructure/interfaces/data-table-filter.interfaces';

@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { DataTableModule } from '../../data-table.module';
+import { DataTableFilterComponent } from '../../../data-table-filter/components/data-table-filter/data-table-filter.component';
 
 @Component({
   imports: [DataTableModule],
@@ -60,7 +62,65 @@ class NestedHost {
   innerColumns = [{ field: 'name', header: 'Вложенный столбец' }];
 }
 
+@Component({
+  imports: [DataTableModule],
+  template: `<app-data-table
+    [columns]="columns"
+    [data]="data"
+    [lazy]="false"
+    selectionMode="none"
+    [columnOptions]="options"
+    [columnCounts]="counts"
+    (columnChanged)="changed = $event"
+  />`,
+})
+class FilterHost {
+  columns = [{ field: 'offer_id', header: 'Артикул', sortable: true, filterable: true }];
+  data = [{ offer_id: 'B' }, { offer_id: 'A' }];
+  options = { offer_id: ['A', 'B'] };
+  counts = { offer_id: { A: 1, B: 1 } };
+  changed: unknown;
+}
+
 describe('Employer DataTable integration', () => {
+  it('attaches the shared filter through column configuration without sorting or filtering a partial page', async () => {
+    const original = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'showModal');
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+      configurable: true,
+      value() {
+        this.open = true;
+      },
+    });
+    const fixture = TestBed.createComponent(FilterHost);
+    try {
+      await fixture.whenStable();
+      const root = fixture.nativeElement as HTMLElement;
+      root.querySelector<HTMLButtonElement>('app-data-table-filter button')!.click();
+      await fixture.whenStable();
+      const filter = fixture.debugElement.query(By.directive(DataTableFilterComponent))
+        .componentInstance as DataTableFilterComponent;
+      filter.state.toggle('A', false);
+      filter.apply();
+      await fixture.whenStable();
+      expect(fixture.componentInstance.changed).toEqual({
+        field: 'offer_id',
+        rule: {
+          values: null,
+          excluded_values: ['A'],
+          text: '',
+          operator: 'contains',
+          min: '',
+          max: '',
+        },
+      });
+      expect(root.querySelector('tbody td')?.textContent?.trim()).toBe('B');
+      expect(root.querySelectorAll('tbody tr').length).toBe(2);
+    } finally {
+      fixture.destroy();
+      if (original) Object.defineProperty(HTMLDialogElement.prototype, 'showModal', original);
+      else Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
+    }
+  });
   it('keeps every already-loaded row visible when its page owns pagination or infinite scroll', async () => {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.rows = Array.from({ length: 75 }, (_, index) => ({

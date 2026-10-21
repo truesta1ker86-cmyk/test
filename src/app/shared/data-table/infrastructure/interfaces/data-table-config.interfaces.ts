@@ -2,6 +2,8 @@ export interface DataTableColumn {
   field: string;
   header: string;
   sortable?: boolean;
+  filterable?: boolean;
+  filterNumeric?: boolean;
   width?: string;
   styleClass?: string;
   cellTemplate?: any;
