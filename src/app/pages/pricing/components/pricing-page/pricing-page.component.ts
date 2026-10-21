@@ -171,6 +171,9 @@ export class PricingPageComponent {
     combineLatest([this.route.queryParamMap, this.refresh])
       .pipe(
         switchMap(([params]) => {
+          this.workspace.set(
+            params.get('workspace') === 'automation' ? 'automation' : 'calculation',
+          );
           const query = parsePricingQuery(
             Object.fromEntries(params.keys.map((key) => [key, params.get(key) || ''])),
           );
@@ -277,7 +280,10 @@ export class PricingPageComponent {
   update(values: Partial<PricingQuery>): void {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: queryParams({ ...this.query(), ...values }),
+      queryParams: {
+        ...queryParams({ ...this.query(), ...values }),
+        workspace: this.workspace() === 'automation' ? 'automation' : null,
+      },
       state: { pricingQueryUpdate: true },
     });
   }
@@ -623,7 +629,14 @@ export class PricingPageComponent {
       });
   }
   openPublication() {
-    this.workspace.set('automation');
+    this.openWorkspace('automation');
+  }
+  openWorkspace(workspace: 'calculation' | 'automation') {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { workspace },
+      queryParamsHandling: 'merge',
+    });
   }
   exportRepairs() {
     if (this.actionBusy()) return;

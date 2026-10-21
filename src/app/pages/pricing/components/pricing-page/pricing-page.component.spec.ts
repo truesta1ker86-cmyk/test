@@ -61,7 +61,7 @@ describe('Local pricing workflow', () => {
       ? Object.defineProperty(HTMLDialogElement.prototype, 'showModal', modal)
       : Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal'),
   );
-  function setup() {
+  function setup(params: Record<string, string> = {}) {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -69,7 +69,10 @@ describe('Local pricing workflow', () => {
         provideRouter([]),
         {
           provide: ActivatedRoute,
-          useValue: { queryParamMap: of(convertToParamMap({})), snapshot: { queryParams: {} } },
+          useValue: {
+            queryParamMap: of(convertToParamMap(params)),
+            snapshot: { queryParams: params },
+          },
         },
       ],
     });
@@ -98,6 +101,11 @@ describe('Local pricing workflow', () => {
       .flush({ items: [], total: 0, uncalculated_total: 0 });
     return { fixture, page, http };
   }
+  it('opens the automatic sending workspace from the sidebar URL', () => {
+    const { page, http } = setup({ workspace: 'automation' });
+    expect(page.workspace()).toBe('automation');
+    http.verify();
+  });
   it('loads filter choices from their real endpoint when refs has no facets', () => {
     const { page, http } = setup();
     expect(page.filterChoices()['brand']).toEqual([{ value: 'Docke', label: 'Docke', count: 2 }]);

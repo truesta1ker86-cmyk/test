@@ -32,15 +32,15 @@
   <button
     type="button"
     [class.active]="workspace() === 'calculation'"
-    (click)="workspace.set('calculation')"
+    (click)="openWorkspace('calculation')"
   >
     Расчёт цен
   </button>
-  <a routerLink="/pricing/formula">Формула и параметры</a>
+  <a routerLink="/pricing/formula">Редактор формулы</a>
   <button
     type="button"
     [class.active]="workspace() === 'automation'"
-    (click)="workspace.set('automation')"
+    (click)="openWorkspace('automation')"
   >
     Автоматическая отправка
   </button>

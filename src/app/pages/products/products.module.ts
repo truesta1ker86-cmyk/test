@@ -13,7 +13,7 @@ export const routes: Routes = [
     path: '',
     component: CatalogPageComponent,
     data: { mode: 'products' },
-    title: 'Товары — Ozon × 1С',
+    title: 'Карточки товаров — Ozon × 1С',
   },
 ];
 

@@ -34,8 +34,8 @@
       "reason": "Проверяются dependsOnValue и допустимые false, 0 и пустая строка, как в исходной проверке updateFilter."
     },
     "NavigationComponent.toggleGroup": {
-      "hash": "3e160ae16991fa84499a186921829a27a4f9679fc5d2fa68e183b729b2df10f9",
-      "reason": "Используется существующий URL v2 /stocks?tab=reconciliation вместо демонстрационного /stocks/inventory."
+      "hash": "8a71bf076b16b7085bcca9af4b9d6209712e2f4b3ad31da526da4e03dc93ad48",
+      "reason": "Группы Остатки и Расчёт цен используют свои первые рабочие вкладки V2; раскрытие внутри активного раздела сохраняет выбранную вкладку."
     },
     "PageComponent.listenToOutletEvents": {
       "hash": "670b422373c5b08b59172684b5f022890576c5f34b2faf480a4628aaf0d791c1",
@@ -108,6 +108,18 @@
     "DataTableComponent.reload": {
       "hash": "1801841358ef881878fe46c929a92fe99c068fb61c9018735ed0e0d8e828a034",
       "reason": "Повторная загрузка сохраняет открытую страницу и явно обходит дедупликацию запроса."
+    },
+    "NavigationComponent.ngOnInit": {
+      "hash": "676bef90bf3eb87ad2a42cd748756020259de697c4469c735e41901b75dafc2c",
+      "reason": "Синхронизация раскрытой группы V1 с текущим маршрутом и переходами Angular; подписка освобождается при уничтожении компонента."
+    },
+    "NavigationComponent.expandActiveGroup": {
+      "hash": "947f7636f85f6ad3a3c4331832054d0a1380c68152265b1a2f682f764affe3d3",
+      "reason": "При переходах автоматически раскрывается текущая вложенная группа как в V1; остальные группы закрываются и OnPush получает обновление."
+    },
+    "NavigationComponent.isChildActive": {
+      "hash": "4c40b9b6577f6b0d1a2cd478c0c3219ac5e5205b141f5ad0faf0cf91b7145948",
+      "reason": "Подсветка различает формулу, расчёт и автоматику, а также две вкладки остатков; дополнительные фильтры таблицы не снимают активность."
     }
   },
   "members": {

@@ -66,6 +66,9 @@ export class CatalogPageComponent {
   readonly databaseCopy = this.context.databaseCopy;
   private readonly destroy = inject(DestroyRef);
   readonly mode = this.route.snapshot.data['mode'] as CatalogMode;
+  get pageTitle(): string {
+    return this.mode === 'products' ? 'Карточки товаров' : 'Связь товаров с 1С';
+  }
   readonly productFiltersOpen = signal(false);
   applyProductFilters() {
     this.clearRules();

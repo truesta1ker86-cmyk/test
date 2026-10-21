@@ -26,6 +26,21 @@
     </div>
 
     <app-navigation [collapsed]="isSidebarCollapsed" (navigated)="closeMenu()"></app-navigation>
+    <a
+      class="sidebar-profile"
+      routerLink="/account"
+      [queryParams]="{ tab: 'profile' }"
+      aria-label="Открыть личный кабинет"
+      (click)="closeMenu()"
+    >
+      <span class="profile-avatar" aria-hidden="true">{{
+        (context.session()?.name || 'М').charAt(0)
+      }}</span>
+      <span class="profile-copy"
+        ><strong>{{ context.session()?.name }}</strong
+        ><small>Личный кабинет</small></span
+      >
+    </a>
   </aside>
 
   @if (mobileMenu) {

@@ -44,6 +44,13 @@ import type {
   ],
 })
 export class AccountPage {
+  get pageTitle(): string {
+    return this.tab() === 'billing'
+      ? 'Баланс и пополнение'
+      : this.tab() === 'team'
+        ? 'Команда'
+        : 'Личный кабинет';
+  }
   tableColumns1(): DataTableColumn[] {
     return ACCOUNT_PAGE_TABLE_COLUMNS1;
   }

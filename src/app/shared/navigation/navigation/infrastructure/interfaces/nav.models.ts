@@ -1,6 +1,7 @@
 export interface NavChildItem {
   label: string;
   workspace: string;
+  default?: boolean;
   count?: number;
   queryParams?: Record<string, string>;
   path?: string;
@@ -15,6 +16,8 @@ export interface NavItem {
   children?: NavChildItem[];
   path?: string;
   exact?: boolean;
+  queryParams?: Record<string, string>;
+  ownerOnly?: boolean;
 }
 
 export interface MenuGroup {
