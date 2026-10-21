@@ -210,6 +210,32 @@ describe('Local catalog selection and refresh', () => {
     expect(page.data()?.meta.total).toBe(3);
     http.verify();
   });
+  it('forces a fresh snapshot on refresh and reuses it for the following page', () => {
+    const { page, http } = setup();
+    page.refresh();
+    const refresh = http.expectOne((r) => r.url === '/v2/api/catalog-v2/list');
+    expect(refresh.request.params.get('fresh')).toBe('true');
+    refresh.flush({
+      items: [],
+      meta: { total: 100, page: 1, page_size: 50, has_more: true },
+      facets: {},
+      summary: {},
+    });
+    const params = TestBed.inject(ActivatedRoute).queryParamMap as BehaviorSubject<
+      ReturnType<typeof convertToParamMap>
+    >;
+    params.next(convertToParamMap({ page: '2' }));
+    const next = http.expectOne((r) => r.url === '/v2/api/catalog-v2/list');
+    expect(next.request.params.get('page')).toBe('2');
+    expect(next.request.params.has('fresh')).toBe(false);
+    next.flush({
+      items: [],
+      meta: { total: 100, page: 2, page_size: 50, has_more: false },
+      facets: {},
+      summary: {},
+    });
+    http.verify();
+  });
   it('keeps an invalid composed filter from sending selection or export requests', () => {
     const { page, http } = setup();
     page.addRule();

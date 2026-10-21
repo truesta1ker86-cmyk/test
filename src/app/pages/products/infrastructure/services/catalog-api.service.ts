@@ -56,9 +56,9 @@ export class CatalogApi {
   deleteView(view_id: string) {
     return this.http.post('/v2/api/catalog-v2/views/delete', { view_id });
   }
-  list(query: CatalogQuery) {
+  list(query: CatalogQuery, fresh = false) {
     return this.http.get<CatalogPage>('/v2/api/catalog-v2/list', {
-      params: new HttpParams({ fromObject: { ...query } }),
+      params: new HttpParams({ fromObject: { ...query, ...(fresh ? { fresh: true } : {}) } }),
     });
   }
   selection(query: CatalogQuery) {

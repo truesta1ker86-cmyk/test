@@ -91,6 +91,7 @@ export class CatalogPageComponent {
     }
   });
   private readonly refreshRequest = new BehaviorSubject(0);
+  private loadedRefresh = 0;
   private filterSignature = '';
   private paramSignature = '';
   private readonly stockDrafts = inject(StockDrafts);
@@ -215,14 +216,16 @@ export class CatalogPageComponent {
           this.loading.set(true);
           this.error.set('');
         }),
-        switchMap(() =>
-          this.api.list(this.query()).pipe(
+        switchMap(([, refresh]) => {
+          const fresh = refresh !== this.loadedRefresh;
+          this.loadedRefresh = refresh;
+          return this.api.list(this.query(), fresh).pipe(
             catchError((error) => {
               this.error.set(errorMessage(error));
               return of(null);
             }),
-          ),
-        ),
+          );
+        }),
         takeUntilDestroyed(this.destroy),
       )
       .subscribe((data) => {
