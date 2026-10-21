@@ -47,6 +47,7 @@
 </nav>
 @if (workspace() === 'automation') {
   <app-pricing-publication-preview
+    [localPreview]="localPreview()"
     [scope]="scope(selection.selected().size > 0)"
     (repair)="workspace.set('calculation'); update({ results: 'failed', page: 1 })"
   />

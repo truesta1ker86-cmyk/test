@@ -8,6 +8,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  effect,
   inject,
   input,
   output,
@@ -41,6 +42,7 @@ export class PricingPublicationPreview {
   }
 
   readonly scope = input<Scope>({});
+  readonly localPreview = input(false);
   readonly repair = output<void>();
   readonly runs = signal<PricingPublicationRun[]>([]);
   readonly selected = signal('');
@@ -53,12 +55,15 @@ export class PricingPublicationPreview {
   private readonly api = inject(Api);
   private readonly destroy = inject(DestroyRef);
   constructor() {
-    this.load();
+    effect(() => {
+      if (this.localPreview()) this.load();
+    });
   }
   current() {
     return this.runs().find((r) => r.id === this.selected());
   }
   load() {
+    if (!this.localPreview()) return;
     this.api
       .pricingPublicationRuns()
       .pipe(takeUntilDestroyed(this.destroy))
@@ -71,6 +76,7 @@ export class PricingPublicationPreview {
       });
   }
   inspect() {
+    if (!this.localPreview()) return;
     this.busy.set(true);
     this.error.set('');
     this.api
