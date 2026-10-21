@@ -2,6 +2,7 @@ import { PricingPageModule } from './pricing-page.module';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { PricingColumnFilter } from '../pricing-column-filter/pricing-column-filter.component';
+import { DataTableFilterComponent } from '../../../../shared/data-table-filter/components/data-table-filter/data-table-filter.component';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
@@ -127,7 +128,9 @@ describe('Local pricing workflow', () => {
       .queryAll(By.directive(PricingColumnFilter))
       .find((n) => n.componentInstance.field() === 'ship_method')!.componentInstance;
     expect(current).toBe(original);
-    expect(current.opened()).toBe(true);
+    expect(header.query(By.directive(DataTableFilterComponent)).componentInstance.opened()).toBe(
+      true,
+    );
     expect(
       fixture.nativeElement.querySelector('dialog[aria-label="Фильтр столбца: Метод"]'),
     ).not.toBeNull();

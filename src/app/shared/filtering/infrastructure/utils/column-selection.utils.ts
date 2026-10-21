@@ -40,6 +40,19 @@ export function selectColumns<T>(
       };
       values[field + ':values'] = 'active';
     }
+    if (rule.excluded_values?.length) {
+      if (
+        !Array.isArray(rule.excluded_values) ||
+        !rule.excluded_values.every((value) => typeof value === 'string')
+      )
+        return [];
+      const excluded = new Set(rule.excluded_values);
+      schema[field + ':excluded'] = {
+        path: field,
+        predicate: (ctx) => !excluded.has(String(ctx.entityValue)),
+      };
+      values[field + ':excluded'] = 'active';
+    }
     if (rule.text?.trim()) {
       schema[field + ':text'] = {
         path: field,

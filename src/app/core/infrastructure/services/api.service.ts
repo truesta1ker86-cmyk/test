@@ -26,10 +26,13 @@ export class Api {
     );
   }
   pricingColumnValues(field: string, filters: Record<string, unknown>) {
-    return this.http.post<{ values: string[] }>('/v2/api/pricing/column-values', {
-      field,
-      filters,
-    });
+    return this.http.post<{ values: string[]; counts?: Record<string, number> }>(
+      '/v2/api/pricing/column-values',
+      {
+        field,
+        filters,
+      },
+    );
   }
   private readonly http = inject(HttpClient);
   exportPricingRepairs(scope: Scope) {

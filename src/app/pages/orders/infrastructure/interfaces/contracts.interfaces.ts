@@ -55,12 +55,14 @@ export interface ListQuery {
 
 export interface ColumnValuesPage {
   values: string[];
+  counts?: Record<string, number>;
   meta: { total: number; page: number; page_size: number; has_more: boolean };
 }
 
 export interface ColumnValuesState {
   field: string;
   values: string[];
+  counts?: Record<string, number>;
   busy: boolean;
   error: string;
   total: number;

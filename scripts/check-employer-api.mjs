@@ -252,8 +252,6 @@ if (!auditOnly) {
 }
 // These presentation adapters must use the employer's controls and scoped state.
 for (const file of [
-  'src/app/shared/directives/filter-panel/components/column-filter/column-filter.component.ts',
-  'src/app/pages/pricing/components/pricing-column-filter/pricing-column-filter.component.ts',
   'src/app/pages/stocks/components/inventory/inventory-filter/inventory-filter.component.ts',
   'src/app/pages/stocks/components/allocation/warehouse-picker/warehouse-picker.component.ts',
 ]) {
@@ -280,6 +278,28 @@ for (const file of [
   if (/type\s*=\s*["']checkbox["']/.test(template))
     report.errors.push(`${file}: custom checkbox list replaces the employer multiselect`);
 }
+// Table-column filters intentionally use the shared checkbox popup requested
+// for V1 parity. Other facet controls retain the original multiselect guard.
+const sharedFilterFile =
+  'src/app/shared/data-table-filter/components/data-table-filter/data-table-filter.component.ts';
+const sharedFilterSource = fs.readFileSync(sharedFilterFile, 'utf8');
+const sharedFilterTemplate = fs.readFileSync(sharedFilterFile.replace('.ts', '.html'), 'utf8');
+if (!/providers:\s*\[FilterService,\s*DataTableFilterState\]/.test(sharedFilterSource))
+  report.errors.push('Shared table filter must keep its own FilterService and draft state');
+for (const control of ['app-filter-text', 'app-filter-select'])
+  if (!sharedFilterTemplate.includes('<' + control))
+    report.errors.push(`Shared table filter misses ${control}`);
+const pricingFilterTemplate = fs.readFileSync(
+  'src/app/pages/pricing/components/pricing-column-filter/pricing-column-filter.component.html',
+  'utf8',
+);
+if (
+  !pricingFilterTemplate.includes('<app-data-table-filter') ||
+  /type\s*=\s*["']checkbox["']/.test(pricingFilterTemplate)
+)
+  report.errors.push(
+    'Pricing must adapt the shared table filter without a second checkbox renderer',
+  );
 const tableTemplate = fs.readFileSync(
   'src/app/shared/data-table/components/data-table/data-table.component.html',
   'utf8',

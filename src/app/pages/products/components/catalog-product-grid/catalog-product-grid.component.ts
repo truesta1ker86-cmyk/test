@@ -46,6 +46,7 @@ export class CatalogProductGrid {
   readonly direction = input('asc');
   readonly columnRules = input<ColumnRules>({});
   readonly columnOptions = input<Record<string, string[]>>({});
+  readonly columnCounts = input<Record<string, Record<string, number>>>({});
   readonly toggled = output<string>();
   readonly filteredSelected = output<boolean>();
   readonly sorted = output<string>();

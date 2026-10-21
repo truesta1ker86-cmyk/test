@@ -110,6 +110,7 @@
       [canManage]="canManage()"
       [columnRules]="columnRules()"
       [columnOptions]="data()?.column_values || {}"
+      [columnCounts]="data()?.column_counts || {}"
       [sort]="query().sort"
       [direction]="query().direction"
       (toggled)="toggle($event)"

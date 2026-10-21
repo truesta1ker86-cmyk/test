@@ -43,11 +43,12 @@
               } @else {
                 <span>{{ col.label }}</span>
               }
-              <app-column-filter
+              <app-data-table-filter
                 [field]="col.key"
                 [label]="col.label"
                 [numeric]="!!col.numeric"
                 [options]="columnOptions()[col.key] || []"
+                [counts]="columnCounts()[col.key] || {}"
                 [rule]="columnRules()[col.key]"
                 (changed)="columnChanged.emit($event)"
               />

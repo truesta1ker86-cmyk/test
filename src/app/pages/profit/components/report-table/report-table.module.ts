@@ -1,4 +1,4 @@
-import { ColumnFilterModule } from '../../../../shared/directives/filter-panel/components/column-filter/column-filter.module';
+import { DataTableFilterModule } from '../../../../shared/data-table-filter/data-table-filter.module';
 import { NgModule } from '@angular/core';
 import { ReportTable } from './report-table.component';
 import { DataTableModule } from '../../../../shared/data-table/data-table.module';
@@ -14,7 +14,7 @@ import { ProductNameModule } from '../../../../shared/product-preview/directives
     RouterLink,
     IconModule,
     NgTemplateOutlet,
-    ColumnFilterModule,
+    DataTableFilterModule,
     ProductNameModule,
   ],
   exports: [ReportTable],

@@ -1,5 +1,5 @@
 import { FilterPanelModule } from '../../../../shared/directives/filter-panel/filter-panel.module';
-import { ColumnFilterModule } from '../../../../shared/directives/filter-panel/components/column-filter/column-filter.module';
+import { DataTableFilterModule } from '../../../../shared/data-table-filter/data-table-filter.module';
 import { NgModule } from '@angular/core';
 import { CatalogCampaign } from './catalog-campaign.component';
 import { DataTableModule } from '../../../../shared/data-table/data-table.module';
@@ -15,7 +15,7 @@ import { IconModule } from '../../../../shared/icons-sprite/icon/icon.module';
     FormsModule,
     ProductNameModule,
     IconModule,
-    ColumnFilterModule,
+    DataTableFilterModule,
   ],
   exports: [CatalogCampaign],
 })

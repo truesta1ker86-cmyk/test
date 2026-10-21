@@ -40,7 +40,7 @@
               <button type="button" (click)="sortBy(col.key)">
                 {{ col.label }} {{ sort().key === col.key ? (sort().desc ? '↓' : '↑') : '↕' }}
               </button>
-              <app-column-filter
+              <app-data-table-filter
                 [field]="col.key"
                 [label]="(col.group ? col.group + ' · ' : '') + col.label"
                 [numeric]="col.format !== 'text'"
@@ -144,7 +144,7 @@
     <button type="button" (click)="sortBy('label')">
       {{ label() }} {{ sort().key === 'label' ? (sort().desc ? '↓' : '↑') : '↕' }}
     </button>
-    <app-column-filter
+    <app-data-table-filter
       field="label"
       [label]="label()"
       [rule]="columnRules()['label']"

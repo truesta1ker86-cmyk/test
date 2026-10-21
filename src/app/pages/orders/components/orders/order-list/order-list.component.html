@@ -75,12 +75,13 @@
                 }
 
                 <!-- Фильтр колонок -->
-                <app-column-filter
+                <app-data-table-filter
                   [field]="col.field"
                   [label]="col.header"
                   [numeric]="col.field === 'amount'"
                   [rule]="columnRules()[col.field]"
                   [remoteOptions]="true"
+                  [counts]="choices().field === col.field ? choices().counts || {} : {}"
                   [options]="choices().field === col.field ? choices().values : []"
                   [optionsBusy]="choices().field === col.field && choices().busy"
                   [optionsError]="choices().field === col.field ? choices().error : ''"

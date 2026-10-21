@@ -2,7 +2,8 @@ import { PriceColumnFilter } from '../interfaces/pricing-column-filter.interface
 
 export function priceColumns(raw: string): Record<string, PriceColumnFilter> {
   try {
-    return JSON.parse(raw || '{}');
+    const value = JSON.parse(raw || '{}');
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   } catch {
     return {};
   }

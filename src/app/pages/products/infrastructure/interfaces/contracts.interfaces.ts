@@ -255,6 +255,7 @@ export interface CatalogPage {
   local_preview?: boolean;
   can_manage?: boolean;
   column_values?: Record<string, string[]>;
+  column_counts?: Record<string, Record<string, number>>;
   items: CatalogRow[];
   meta: { total: number; page: number; page_size: number; has_more: boolean };
   summary: Record<string, number>;

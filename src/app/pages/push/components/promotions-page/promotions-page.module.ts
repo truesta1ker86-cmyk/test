@@ -1,5 +1,5 @@
 import { FilterPanelModule } from '../../../../shared/directives/filter-panel/filter-panel.module';
-import { ColumnFilterModule } from '../../../../shared/directives/filter-panel/components/column-filter/column-filter.module';
+import { DataTableFilterModule } from '../../../../shared/data-table-filter/data-table-filter.module';
 import { NgModule } from '@angular/core';
 import { PromotionsPage } from './promotions-page.component';
 import { DataTableModule } from '../../../../shared/data-table/data-table.module';
@@ -19,7 +19,7 @@ import { PromotionModelEditorModule } from '../model-editor/model-editor.module'
     RouterLink,
     ProductNameModule,
     IconModule,
-    ColumnFilterModule,
+    DataTableFilterModule,
     CatalogCampaignModule,
     PromotionModelEditorModule,
   ],

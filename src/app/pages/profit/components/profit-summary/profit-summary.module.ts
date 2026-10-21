@@ -1,5 +1,5 @@
 import { FilterPanelModule } from '../../../../shared/directives/filter-panel/filter-panel.module';
-import { ColumnFilterModule } from '../../../../shared/directives/filter-panel/components/column-filter/column-filter.module';
+import { DataTableFilterModule } from '../../../../shared/data-table-filter/data-table-filter.module';
 import { NgModule } from '@angular/core';
 import { ProfitSummary } from './profit-summary.component';
 import { DataTableModule } from '../../../../shared/data-table/data-table.module';
@@ -8,7 +8,13 @@ import { ProductNameModule } from '../../../../shared/product-preview/directives
 
 @NgModule({
   declarations: [ProfitSummary],
-  imports: [FilterPanelModule, DataTableModule, FormsModule, ColumnFilterModule, ProductNameModule],
+  imports: [
+    FilterPanelModule,
+    DataTableModule,
+    FormsModule,
+    DataTableFilterModule,
+    ProductNameModule,
+  ],
   exports: [ProfitSummary],
 })
 export class ProfitSummaryModule {}

@@ -1,59 +1,14 @@
-<button
-  type="button"
-  class="column-filter-trigger"
-  [class.active]="active()"
-  [attr.aria-label]="'Фильтр: ' + label()"
-  [attr.title]="'Фильтр: ' + label()"
-  aria-haspopup="dialog"
-  (click)="open()"
->
-  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
-    <path d="M3 6h10l-5 5z" fill="currentColor" />
-  </svg>
-</button>
-@if (opened()) {
-  <dialog
-    #dialog
-    class="price-column-dialog"
-    [attr.aria-label]="'Фильтр столбца: ' + label()"
-    appModalFocus
-    (modalEscape)="opened.set(false)"
-    (cancel)="$event.preventDefault(); opened.set(false)"
-  >
-    <header>
-      <strong>{{ label() }}</strong
-      ><button type="button" aria-label="Закрыть фильтр столбца" (click)="opened.set(false)">
-        ×
-      </button>
-    </header>
-    @if (error()) {
-      <p role="alert" class="workflow-error">{{ error() }}</p>
-    }
-    <app-filter-select key="operator" />
-    <app-filter-text key="text" />
-    @if (numeric()) {
-      <div class="column-bounds"><app-filter-text key="min" /><app-filter-text key="max" /></div>
-    }
-    <div class="column-actions">
-      <button type="button" (click)="selectFound()" [disabled]="busy()">Выбрать найденные</button>
-      <button type="button" (click)="toggleAll(true)" [disabled]="busy()">Все значения</button>
-      <button type="button" (click)="toggleAll(false)">Снять все</button>
-    </div>
-    <app-filter-multiselect
-      key="values"
-      [showLabel]="false"
-      (filterChanged)="search = $event"
-      (valueChange)="valuesChanged($event)"
-    />
-    @if (busy()) {
-      <p role="status">Загружаем значения всего отбора…</p>
-    }
-    <footer>
-      <button type="button" class="button" (click)="reset()">Сбросить</button
-      ><button type="button" class="button" (click)="opened.set(false)">Отмена</button
-      ><button type="button" class="button primary" (click)="apply()" [disabled]="busy()">
-        Применить
-      </button>
-    </footer>
-  </dialog>
-}
+<app-data-table-filter
+  [field]="field()"
+  [label]="label()"
+  [numeric]="numeric()"
+  [options]="options()"
+  [counts]="counts()"
+  [rule]="rule()"
+  [allowEmpty]="false"
+  [optionsBusy]="busy()"
+  [optionsError]="error()"
+  (opening)="loadValues()"
+  (closed)="cancelValues()"
+  (changed)="change($event)"
+/>

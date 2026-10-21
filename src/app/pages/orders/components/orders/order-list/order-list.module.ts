@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OrderListComponent } from './order-list.component';
 import { DataTableModule } from '../../../../../shared/data-table/data-table.module';
-import { ColumnFilterModule } from '../../../../../shared/directives/filter-panel/components/column-filter/column-filter.module';
+import { DataTableFilterModule } from '../../../../../shared/data-table-filter/data-table-filter.module';
 import { RouterLink } from '@angular/router';
 import { ProductNameModule } from '../../../../../shared/product-preview/directives/product-name.module';
 import { IconModule } from '../../../../../shared/icons-sprite/icon/icon.module';
@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     DataTableModule,
-    ColumnFilterModule,
+    DataTableFilterModule,
     RouterLink,
     ProductNameModule,
     CheckboxModule,

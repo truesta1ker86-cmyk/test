@@ -62,6 +62,7 @@ export class OrderListComponent {
           this.choices.set({
             field,
             values: response.values,
+            counts: response.counts || {},
             busy: false,
             error: '',
             total: response.meta.total,

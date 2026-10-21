@@ -187,7 +187,7 @@
                       <span aria-hidden="true">{{
                         sorting().key === c.key ? (sorting().desc ? '↓' : '↑') : '↕'
                       }}</span></button
-                    ><app-column-filter
+                    ><app-data-table-filter
                       [field]="c.key"
                       [label]="c.label"
                       [numeric]="!!c.numeric"

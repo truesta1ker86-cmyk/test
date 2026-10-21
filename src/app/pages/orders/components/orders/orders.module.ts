@@ -3,7 +3,7 @@ import { OrderListModule } from '../orders/order-list/order-list.module';
 import { OrderFilterModule } from '../orders/order-filter/order-filter.module';
 import { FormsModule } from '@angular/forms';
 import { FilterPanelModule } from '../../../../shared/directives/filter-panel/filter-panel.module';
-import { ColumnFilterModule } from '../../../../shared/directives/filter-panel/components/column-filter/column-filter.module';
+import { DataTableFilterModule } from '../../../../shared/data-table-filter/data-table-filter.module';
 import { NgModule } from '@angular/core';
 import { OrdersComponent } from './orders.component';
 import { DataTableModule } from '../../../../shared/data-table/data-table.module';
@@ -27,7 +27,7 @@ import { IconModule } from '../../../../shared/icons-sprite/icon/icon.module';
     OrderDetailsModule,
     ProductNameModule,
     IconModule,
-    ColumnFilterModule,
+    DataTableFilterModule,
   ],
   exports: [OrdersComponent],
 })

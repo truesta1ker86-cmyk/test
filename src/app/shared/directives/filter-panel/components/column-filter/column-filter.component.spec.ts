@@ -71,10 +71,14 @@ describe('Financial column selection', () => {
     const component = fixture.componentInstance;
     component.open();
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('app-filter-multiselect p-select')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.values-list input[type=checkbox]').length).toBe(
+      3,
+    );
     component.filters.updateFilter('text', 'Товар A');
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('app-filter-text input').value).toBe('Товар A');
+    expect(fixture.nativeElement.querySelector('app-filter-text[key=text] input').value).toBe(
+      'Товар A',
+    );
     const second = TestBed.createComponent(ColumnFilterComponent);
     second.componentRef.setInput('field', 'name');
     second.componentRef.setInput('label', 'Номенклатура');
@@ -87,7 +91,8 @@ describe('Financial column selection', () => {
   it('shows all values checked for an unrestricted filter without treating an empty option list as a restriction', () => {
     const { component, change } = setup();
     component.open();
-    expect(component.filters.getValue('values')).toEqual(['100', '300']);
+    expect(component.state.checked('100')).toBe(true);
+    expect(component.state.checked('300')).toBe(true);
     component.apply();
     expect(change).toHaveBeenLastCalledWith({ field: 'cost', rule: null });
     const empty = TestBed.createComponent(ColumnFilterComponent);
