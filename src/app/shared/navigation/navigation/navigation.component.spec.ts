@@ -26,7 +26,6 @@ describe('Employer navigation with Ozon and 1C routes', () => {
     expect(destinations).toContain('/stocks?tab=reconciliation');
     expect(destinations).toContain('/stocks?tab=matrix');
     for (const path of [
-      '/products',
       '/orders',
       '/returns',
       '/pricing',

@@ -7,7 +7,6 @@ export const MENU_CONFIG: MenuGroup[] = [
       { tab: 'overview', label: 'Обзор', tooltip: 'Рабочая панель', icon: 'i-grid' },
       { tab: 'orders', label: 'Заказы', tooltip: 'Заказы', icon: 'i-box' },
       { tab: 'returns', label: 'Возвраты', tooltip: 'Возвраты', icon: 'i-return' },
-      { tab: 'products', label: 'Товары', tooltip: 'Товары', icon: 'i-box' },
       {
         tab: 'mapping',
         label: 'Сопоставление с 1С',
