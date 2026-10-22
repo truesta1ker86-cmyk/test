@@ -21,7 +21,7 @@ export class AppComponent {
   private readonly destroy = inject(DestroyRef);
 
   constructor() {
-    // StorageEvent.key identifies a cross-tab shop notification, not a keyboard key.
+
     const onShopContextStorage = (event: StorageEvent) => {
       if (
         (event.key === 'o1c-v2-shop-context-change' ||

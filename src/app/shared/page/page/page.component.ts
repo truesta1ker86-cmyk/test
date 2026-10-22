@@ -21,7 +21,7 @@ import { pageTitle } from './infrastructure/utils/page.utils';
 
   selector: 'app-page',
   standalone: false,
-  styleUrls: ['./page.component.scss', './workspace-shell.css'],
+  styleUrls: ['./page.component.scss'],
   templateUrl: './page.component.html',
 })
 export class PageComponent implements AfterContentInit, OnDestroy {

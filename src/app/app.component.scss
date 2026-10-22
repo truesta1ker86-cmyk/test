@@ -38,6 +38,11 @@
   transition:
     margin-left var(--motion) var(--ease),
     width var(--motion) var(--ease);
+
+  overflow-y: hidden;
+  height: calc(100vh - 28px); /* Ограничивает высоту экраном */
+  display: flex;
+  flex-direction: column;  
 }
 .main-head {
   display: flex;
@@ -94,7 +99,6 @@
   background: var(--green);
 }
 .page-content {
-  padding: 28px;
   view-transition-name: page;
 }
 .mobile-burger,

@@ -22,7 +22,7 @@ import { FilterService } from '../../../../../shared/directives/filter-panel/inf
   selector: 'app-order-filter',
   templateUrl: './order-filter.component.html',
   standalone: false,
-  styleUrls: ['../../orders/orders.component.css'],
+  styleUrls: ['./order-filter.component.scss'],
 })
 export class OrderFilterComponent implements OnChanges {
   @Input() filter!: OrderFilter;

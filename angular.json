@@ -6,6 +6,11 @@
     "analytics": "bcc3941f-a891-453e-8cf0-a6e12439bc9b"
   },
   "newProjectRoot": "projects",
+  "schematics": {
+    "@schematics/angular:component": {
+      "style": "scss"
+    }
+  },
   "projects": {
     "ozon1c-v2": {
       "projectType": "application",

@@ -75,7 +75,7 @@ export interface ListPage {
   available_label_ids?: string[];
   items: (Order | ReturnRow)[];
   meta: { total: number; page: number; page_size: number; has_more: boolean };
-  summary: { total: number; current?: number; completed?: number };
+  summary: { total: number; current?: number; completed?: number, available?: number };
   statuses: string[];
   snapshot_at: string;
 }

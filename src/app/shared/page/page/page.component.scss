@@ -214,7 +214,6 @@ svg.icon-sm {
 .main {
   flex: 1;
   margin-left: var(--current-sidebar-w);
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   transition: margin-left 220ms $ease-out;
@@ -328,8 +327,10 @@ svg.icon-sm {
 }
 
 .page-content {
-  padding: 24px;
-  flex: 1;
+  overflow-y: hidden;
+  height: calc(100vh - 80px); /* Ограничивает высоту экраном */
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 768px) {

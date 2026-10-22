@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter } from 
   selector: 'app-order-bulk-actions',
   standalone: false,
   templateUrl: './order-bulk-actions.component.html',
-  styleUrls: ['../../orders/orders.component.css'],
+  styleUrls: ['./order-bulk-actions.component.scss'],
 })
 export class OrderBulkActionsComponent {
   @Input() readyCount = 0;

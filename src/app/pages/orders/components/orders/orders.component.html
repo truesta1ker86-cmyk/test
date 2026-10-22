@@ -26,75 +26,83 @@
       }
     </div>
   </div>
-  <p class="workspace-context">
-    {{
-      databaseCopy()
-        ? 'Заказы и возвраты из копии рабочей базы. Действия в Ozon и 1С отключены.'
-        : entity === 'orders'
-          ? 'Локальный макет · тестовые данные. Упаковка меняет только снимок в памяти; PDF — тестовый образец. Подключения и отправки выключены.'
-          : 'Локальный макет · тестовые данные. Подключения и отправки выключены.'
-    }}
-  </p>
-  @if (entity === 'orders') {
-    <div class="orders-scheme-guide" role="note" aria-label="Как обрабатываются заказы">
-      <span><b class="status-pill">FBS</b> Вы собираете заказ и печатаете этикетку</span
-      ><span
-        ><b class="status-pill">FBO</b> Маркетплейс собирает заказ — вы контролируете статус</span
-      >
-    </div>
-    <div
-      class="lifecycle-tabs"
-      role="tablist"
-      aria-label="Состояние заказов"
-      (keydown)="tabKey($event)"
-    >
-      @for (group of ['current', 'completed']; track group) {
-        <button
-          role="tab"
-          [id]="'orders-tab-' + group"
-          [attr.data-lifecycle]="group"
-          aria-controls="operational-table"
-          [class.active]="query().lifecycle === group"
-          [attr.aria-selected]="query().lifecycle === group"
-          [attr.tabindex]="query().lifecycle === group ? 0 : -1"
-          (click)="lifecycle(group)"
+  <div class="page-description">
+    <p class="workspace-context">
+      {{
+        databaseCopy()
+          ? 'Заказы и возвраты из копии рабочей базы. Действия в Ozon и 1С отключены.'
+          : entity === 'orders'
+            ? 'Локальный макет · тестовые данные. Упаковка меняет только снимок в памяти; PDF — тестовый образец. Подключения и отправки выключены.'
+            : 'Локальный макет · тестовые данные. Подключения и отправки выключены.'
+      }}
+    </p>
+    @if (entity === 'orders') {
+      <div class="orders-scheme-guide" role="note" aria-label="Как обрабатываются заказы">
+        <span><b class="status-pill">FBS</b> Вы собираете заказ и печатаете этикетку</span
+        ><span
+          ><b class="status-pill">FBO</b> Маркетплейс собирает заказ — вы контролируете статус</span
         >
-          {{ group === 'current' ? 'Текущие' : 'Завершённые' }}
-          <span>{{ data()?.summary?.[group === 'current' ? 'current' : 'completed'] ?? '—' }}</span>
-        </button>
-      }
-    </div>
-  }
+      </div>
+    }
+  </div>  
   @if (notice()) {
     <p class="editor-success" role="status">{{ notice() }}</p>
   }
-  <section class="panel operational-panel">
-    <app-order-filter
-      [filter]="query()"
-      [entity]="entity"
-      [statuses]="statusOptions()"
-      [loading]="loading()"
-      (filterChange)="onFilterChange($event)"
-    /><span class="list-total"
-      >Показано {{ data()?.items?.length ?? '—' }} из {{ data()?.meta?.total ?? '—' }}</span
-    >
-    @if (error()) {
-      <div class="editor-error" role="alert">
-        {{ error() }} <button class="text-button" (click)="refresh()">Повторить</button>
+
+  <section class="sections">
+    @if (entity === 'orders') {
+      <div
+        class="lifecycle-tabs"
+        role="tablist"
+        aria-label="Состояние заказов"
+        (keydown)="tabKey($event)"
+      >
+        
+        @for (group of groupsList; track group) {
+          <button
+            role="tab"
+            [id]="'orders-tab-' + group"
+            [attr.data-lifecycle]="group"
+            aria-controls="operational-table"
+            [class.active]="query().lifecycle === group"
+            [attr.aria-selected]="query().lifecycle === group"
+            [attr.tabindex]="query().lifecycle === group ? 0 : -1"
+            (click)="lifecycle(group)"
+          >
+            {{ groupsLabels[group] }}
+            <span>{{ data()?.summary?.[group] ?? '—' }}</span>
+          </button>
+        }
       </div>
     }
-    @if (entity === 'orders') {
-      <app-order-bulk-actions
-        [selectedCount]="selected().length"
-        [readyCount]="readyRows().length"
-        [hiddenCount]="hiddenSelected()"
-        [busy]="loading() || labelsBusy()"
-        [labelsAllowed]="!!data()?.local_preview"
-        (selectAvailable)="selectAvailable()"
-        (clearSelection)="clearSelection()"
-        (printLabels)="labels()"
-      />
-    }
+  </section>  
+
+  <app-order-filter
+    [filter]="query()"
+    [entity]="entity"
+    [statuses]="statusOptions()"
+    [loading]="loading()"
+    (filterChange)="onFilterChange($event)"
+  />
+@if (error()) {
+  <div class="editor-error" role="alert">
+    {{ error() }} <button class="text-button" (click)="refresh()">Повторить</button>
+  </div>
+}
+@if (entity === 'orders') {
+  <app-order-bulk-actions
+    [selectedCount]="selected().length"
+    [readyCount]="readyRows().length"
+    [hiddenCount]="hiddenSelected()"
+    [busy]="loading() || labelsBusy()"
+    [labelsAllowed]="!!data()?.local_preview"
+    (selectAvailable)="selectAvailable()"
+    (clearSelection)="clearSelection()"
+    (printLabels)="labels()"
+  />
+}
+
+  <section class="panel operational-panel">
     <app-order-list
       [orders]="rows()"
       [entity]="entity"
@@ -114,16 +122,6 @@
       (labelRequested)="labels($event)"
       (dataLoaded)="onDataLoaded($event)"
     />
-    <div class="operational-export">
-      <button
-        class="text-button"
-        [disabled]="loading() || exporting() || !data()?.meta?.total"
-        [attr.aria-busy]="exporting()"
-        (click)="export()"
-      >
-        Выгрузить отбор CSV
-      </button>
-    </div>
   </section>
   @if (detail(); as posting) {
     <app-order-detail [posting]="posting" (closed)="close()" (changed)="changed()" />

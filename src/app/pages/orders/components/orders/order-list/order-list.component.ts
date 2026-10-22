@@ -35,7 +35,7 @@ import type { CheckboxChangeEvent } from 'primeng/checkbox';
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './order-list.component.html',
-  styleUrls: ['../../orders/orders.component.css'],
+  styleUrls: ['./order-list.component.scss'],
 })
 export class OrderListComponent {
   readonly cdr = inject(ChangeDetectorRef);

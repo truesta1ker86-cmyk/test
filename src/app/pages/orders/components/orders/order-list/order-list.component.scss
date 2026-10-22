@@ -1,6 +1,11 @@
 :host {
-  display: block;
   min-width: 0;
+  display: block;        
+  flex: 1 1 auto;        /* Занимает всё место внутри .panel */
+  min-height: 0;         /* Обязательно! */
+  overflow-y: auto;      /* Включаем скролл ЗДЕСЬ */
+  padding: 0 20px;
+  overscroll-behavior: contain;  
 }
 
 :host ::ng-deep .operational-table .order-items {
@@ -113,7 +118,8 @@
   color: var(--green);
   font-size: 10px;
 }
+
 .table-scroll {
-  max-height: clamp(360px, calc(100dvh - 300px), 860px);
-  overscroll-behavior: contain;
+  overflow: visible;
+  max-height: none;
 }

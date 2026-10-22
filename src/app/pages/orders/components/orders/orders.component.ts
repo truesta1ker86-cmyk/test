@@ -28,6 +28,9 @@ import {
   orderStatuses,
 } from '../../infrastructure/constants/operational-logic.constants';
 import { TABLE_DATA_SERVICE } from '../../../../shared/data-table/infrastructure/tokens/table-data-source.token';
+import { GroupsLabels } from './infrastructure/constants/groups-labels';
+import { Groups } from './infrastructure/enums/groups';
+import { GroupsList } from './infrastructure/constants/groups-list';
 
 @Component({
   providers: [{ provide: TABLE_DATA_SERVICE, useExisting: WorkspaceApi }, FilterService],
@@ -68,6 +71,10 @@ export class OrdersComponent {
       this.headingSort().desc,
     ),
   );
+
+  readonly groups = Groups;
+  readonly groupsLabels = GroupsLabels;
+  readonly groupsList = GroupsList;
 
   sortHeading(field: string) {
     this.headingSort.update((s) => ({
@@ -114,11 +121,20 @@ export class OrdersComponent {
     }
   });
 
-  readonly scopeTotal = computed(() =>
-    this.entity === 'orders'
-      ? this.data()?.summary?.[this.query().lifecycle === 'completed' ? 'completed' : 'current']
-      : this.data()?.summary?.total,
-  );
+  readonly scopeTotal = computed(() => {
+    const summary = this.data()?.summary;
+    if (!summary) return undefined;
+  
+    if (this.entity === 'orders') {
+      const lifecycle = this.query().lifecycle;
+      if (lifecycle && isSummaryKey(lifecycle)) {
+        return summary[lifecycle];
+      }
+      return summary.total; // fallback
+    }
+  
+    return summary.total;
+  });
 
   readonly statuses = computed(() =>
     [
@@ -152,11 +168,12 @@ export class OrdersComponent {
     this.route.queryParamMap
       .pipe(
         map((params) => {
+          const param = params.get('lifecycle') as keyof typeof Groups | null;
+
           const lifecycle =
             this.entity === 'orders'
-              ? params.get('lifecycle') === 'completed'
-                ? 'completed'
-                : 'current'
+              ? param && Groups[param]
+              ? Groups[param] : ''
               : '';
           let state = params.get('status') || '';
           if (state === 'awaiting_deliver') state = 'awaiting_delivering';
