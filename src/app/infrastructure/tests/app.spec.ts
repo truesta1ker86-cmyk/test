@@ -52,8 +52,15 @@ describe('Workspace access', () => {
       expires_in_seconds: 3600,
     });
     await fixture.whenStable();
-    expect(fixture.nativeElement.textContent).toContain('Магазин 4');
-    expect(fixture.nativeElement.textContent).toContain('Анна');
+    expect(TestBed.inject(SessionContext).session()).toMatchObject({
+      tenant_id: 4,
+      name: 'Магазин 4',
+      actor_name: 'Анна',
+      role: 'manager',
+    });
+    expect(fixture.nativeElement.querySelector('router-outlet')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Личный кабинет');
+    expect(fixture.nativeElement.textContent).not.toContain('Магазин 4');
     http.expectNone('/v2/api/account/shops');
   });
 

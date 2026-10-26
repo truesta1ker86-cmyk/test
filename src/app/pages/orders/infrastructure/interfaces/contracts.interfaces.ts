@@ -1,4 +1,5 @@
 import type { Amount } from '../../../../core/infrastructure/types/contracts.types';
+import type { DataTableToolbarFilterValue } from '../../../../shared/data-table-filter/infrastructure/interfaces/data-table-toolbar-filter.interfaces';
 
 export interface OrderItem {
   main_image?: string | null;
@@ -40,18 +41,7 @@ export interface ReturnRow {
   status: string | null;
 }
 
-export interface ListQuery {
-  column_filters?: string;
-  q: string;
-  status: string;
-  scheme: string;
-  lifecycle: string;
-  start: string;
-  end: string;
-  page: number;
-  page_size: number;
-  sort: string;
-}
+export interface ListQuery extends DataTableToolbarFilterValue {}
 
 export interface ColumnValuesPage {
   values: string[];

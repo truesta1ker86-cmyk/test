@@ -4,9 +4,6 @@
       <h1>Финансовый результат</h1>
       <p>Прибыль, начисления, продажи и себестоимость за отчётный период.</p>
     </div>
-    <span class="mode-note">{{
-      data()?.local_preview ? 'Локальный макет · тестовые данные' : 'Данные отдельной копии'
-    }}</span>
   </header>
   <nav class="tabs" aria-label="Финансовые отчёты">
     @for (item of tabs; track item[0]) {

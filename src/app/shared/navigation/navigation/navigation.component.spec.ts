@@ -51,9 +51,10 @@ describe('Employer navigation with Ozon and 1C routes', () => {
         'Команда',
       ],
     );
-    const destinations = fixture.debugElement
-      .queryAll(By.directive(RouterLink))
-      .map((node) => router.serializeUrl(node.injector.get(RouterLink).urlTree!));
+    const destinations = fixture.debugElement.queryAll(By.directive(RouterLink)).flatMap((node) => {
+      const target = node.injector.get(RouterLink).urlTree;
+      return target ? [router.serializeUrl(target)] : [];
+    });
     expect(destinations).toContain('/stocks?tab=reconciliation');
     expect(destinations).toContain('/stocks?tab=matrix');
     for (const path of [
@@ -129,5 +130,23 @@ describe('Employer navigation with Ozon and 1C routes', () => {
     expect(root.querySelector('[data-workspace=inventory]')!.classList.contains('active')).toBe(
       false,
     );
+  });
+  it('keeps named icon destinations working when the sidebar is collapsed', async () => {
+    const { fixture, root, router } = setup();
+    fixture.componentRef.setInput('collapsed', true);
+    await fixture.whenStable();
+    for (const item of root.querySelectorAll<HTMLElement>('.nav-item')) {
+      expect(item.getAttribute('aria-label')).toBeTruthy();
+      expect(item.getAttribute('title')).toBeTruthy();
+    }
+    const stocks = root.querySelector<HTMLButtonElement>('[data-tab=stocks]')!;
+    expect(stocks.hasAttribute('aria-expanded')).toBe(false);
+    expect(root.querySelector<HTMLElement>('#stocks-nav-children')!.hidden).toBe(true);
+    stocks.click();
+    await fixture.whenStable();
+    expect(router.url).toBe('/stocks?tab=reconciliation');
+    root.querySelector<HTMLButtonElement>('[data-tab=pricing]')!.click();
+    await fixture.whenStable();
+    expect(router.url).toBe('/pricing?workspace=calculation');
   });
 });

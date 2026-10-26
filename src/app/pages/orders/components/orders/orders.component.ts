@@ -17,7 +17,6 @@ import type {
   ListPage,
   ListQuery,
   Order,
-  ReturnRow,
 } from '../../infrastructure/interfaces/contracts.interfaces';
 import { downloadErrorMessage } from '../../../../core/infrastructure/utils/api.utils';
 import { status, download } from '../../infrastructure/utils/format.utils';
@@ -28,6 +27,11 @@ import {
   orderStatuses,
 } from '../../infrastructure/constants/operational-logic.constants';
 import { TABLE_DATA_SERVICE } from '../../../../shared/data-table/infrastructure/tokens/table-data-source.token';
+import {
+  ORDER_LIFECYCLES,
+  ORDER_SCHEMES,
+  ORDER_SORTS,
+} from '../../infrastructure/constants/order-filter.constants';
 
 @Component({
   providers: [{ provide: TABLE_DATA_SERVICE, useExisting: WorkspaceApi }, FilterService],
@@ -44,7 +48,9 @@ export class OrdersComponent {
   private readonly destroy = inject(DestroyRef);
 
   readonly databaseCopy = inject(SessionContext).databaseCopy;
-  readonly entity = this.route.snapshot.data['entity'] as 'orders' | 'returns';
+  readonly lifecycles = ORDER_LIFECYCLES;
+  readonly schemes = ORDER_SCHEMES;
+  readonly sorts = ORDER_SORTS;
 
   readonly data = signal<ListPage | null>(null);
   readonly loading = signal(true);
@@ -60,13 +66,14 @@ export class OrdersComponent {
   readonly detail = signal<string | null>(null);
   readonly headingSort = signal({ field: '', desc: false });
 
-  readonly rows = computed(() =>
-    sortOperational(
-      this.data()?.items || [],
-      this.entity,
-      this.headingSort().field,
-      this.headingSort().desc,
-    ),
+  readonly rows = computed(
+    () =>
+      sortOperational(
+        this.data()?.items || [],
+        'orders',
+        this.headingSort().field,
+        this.headingSort().desc,
+      ) as Order[],
   );
 
   sortHeading(field: string) {
@@ -80,7 +87,7 @@ export class OrdersComponent {
     q: '',
     status: '',
     scheme: '',
-    lifecycle: this.entity === 'orders' ? 'current' : '',
+    lifecycle: 'current',
     start: '',
     end: '',
     page: 1,
@@ -114,10 +121,8 @@ export class OrdersComponent {
     }
   });
 
-  readonly scopeTotal = computed(() =>
-    this.entity === 'orders'
-      ? this.data()?.summary?.[this.query().lifecycle === 'completed' ? 'completed' : 'current']
-      : this.data()?.summary?.total,
+  readonly scopeTotal = computed(
+    () => this.data()?.summary?.[this.query().lifecycle === 'completed' ? 'completed' : 'current'],
   );
 
   readonly statuses = computed(() =>
@@ -152,26 +157,13 @@ export class OrdersComponent {
     this.route.queryParamMap
       .pipe(
         map((params) => {
-          const lifecycle =
-            this.entity === 'orders'
-              ? params.get('lifecycle') === 'completed'
-                ? 'completed'
-                : 'current'
-              : '';
+          const lifecycle = params.get('lifecycle') === 'completed' ? 'completed' : 'current';
           let state = params.get('status') || '';
           if (state === 'awaiting_deliver') state = 'awaiting_delivering';
-          if (
-            this.entity === 'orders' &&
-            state &&
-            completedStatuses.has(state) !== (lifecycle === 'completed')
-          )
-            state = '';
+          if (state && completedStatuses.has(state) !== (lifecycle === 'completed')) state = '';
 
           const sort = params.get('sort') || 'date_desc';
-          const allowed =
-            this.entity === 'orders'
-              ? ['date_desc', 'date_asc', 'number_asc', 'number_desc']
-              : ['date_desc', 'date_asc', 'amount_desc'];
+          const allowed = ORDER_SORTS.map((option) => option.value);
 
           const query: ListQuery = {
             q: params.get('q') || '',
@@ -188,7 +180,7 @@ export class OrdersComponent {
             column_filters: params.get('column_filters') || '',
           };
 
-          this.detail.set(this.entity === 'orders' ? params.get('posting') : null);
+          this.detail.set(params.get('posting'));
 
           for (const [key, control] of Object.entries(this.form.controls)) {
             control.setValue(String(query[key as keyof ListQuery] ?? ''), { emitEvent: false });
@@ -222,7 +214,7 @@ export class OrdersComponent {
   reset() {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: this.entity === 'orders' ? { lifecycle: this.query().lifecycle } : {},
+      queryParams: { lifecycle: this.query().lifecycle },
     });
   }
 
@@ -376,10 +368,10 @@ export class OrdersComponent {
     if (this.exporting()) return;
     this.exporting.set(true);
     this.error.set('');
-    const request = this.api.export(this.entity, this.query(), excel ? 'xlsx' : 'csv');
+    const request = this.api.export('orders', this.query(), excel ? 'xlsx' : 'csv');
     request.pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: (blob) => {
-        download(blob, this.entity + '-v2.' + (excel ? 'xlsx' : 'csv'));
+        download(blob, 'orders-v2.' + (excel ? 'xlsx' : 'csv'));
         this.exporting.set(false);
       },
       error: async (e) => {

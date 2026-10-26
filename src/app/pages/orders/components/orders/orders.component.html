@@ -1,78 +1,57 @@
 <div class="operational-page workspace-surface">
   <div class="page-heading">
     <div>
-      <h1>{{ entity === 'orders' ? 'Заказы' : 'Возвраты' }}</h1>
-      <p>{{ entity === 'orders' ? 'Обработка FBS и контроль статусов FBO' : 'За весь период' }}</p>
+      <h1>Заказы</h1>
     </div>
     <div class="button-row">
       <button
-        class="button"
-        [class.primary]="entity === 'orders'"
+        class="button primary"
         [disabled]="loading()"
         [attr.aria-busy]="loading()"
         (click)="refresh()"
       >
-        <app-icon name="refresh" />{{ entity === 'orders' ? 'Обновить заказы' : 'Обновить' }}
+        <app-icon name="refresh" />Обновить заказы
       </button>
-      @if (entity === 'orders') {
-        <button
-          class="button"
-          [disabled]="loading() || exporting() || !data()?.meta?.total"
-          [attr.aria-busy]="exporting()"
-          (click)="export(true)"
-        >
-          <app-icon name="download" />{{ exporting() ? 'Готовим выгрузку…' : 'Скачать Excel' }}
-        </button>
-      }
+      <button
+        class="button"
+        [disabled]="loading() || exporting() || !data()?.meta?.total"
+        [attr.aria-busy]="exporting()"
+        (click)="export(true)"
+      >
+        <app-icon name="download" />{{ exporting() ? 'Готовим выгрузку…' : 'Скачать Excel' }}
+      </button>
     </div>
   </div>
-  <p class="workspace-context">
-    {{
-      databaseCopy()
-        ? 'Заказы и возвраты из копии рабочей базы. Действия в Ozon и 1С отключены.'
-        : entity === 'orders'
-          ? 'Локальный макет · тестовые данные. Упаковка меняет только снимок в памяти; PDF — тестовый образец. Подключения и отправки выключены.'
-          : 'Локальный макет · тестовые данные. Подключения и отправки выключены.'
-    }}
-  </p>
-  @if (entity === 'orders') {
-    <div class="orders-scheme-guide" role="note" aria-label="Как обрабатываются заказы">
-      <span><b class="status-pill">FBS</b> Вы собираете заказ и печатаете этикетку</span
-      ><span
-        ><b class="status-pill">FBO</b> Маркетплейс собирает заказ — вы контролируете статус</span
+  <div
+    class="lifecycle-tabs"
+    role="tablist"
+    aria-label="Состояние заказов"
+    (keydown)="tabKey($event)"
+  >
+    @for (group of ['current', 'completed']; track group) {
+      <button
+        role="tab"
+        [id]="'orders-tab-' + group"
+        [attr.data-lifecycle]="group"
+        aria-controls="operational-table"
+        [class.active]="query().lifecycle === group"
+        [attr.aria-selected]="query().lifecycle === group"
+        [attr.tabindex]="query().lifecycle === group ? 0 : -1"
+        (click)="lifecycle(group)"
       >
-    </div>
-    <div
-      class="lifecycle-tabs"
-      role="tablist"
-      aria-label="Состояние заказов"
-      (keydown)="tabKey($event)"
-    >
-      @for (group of ['current', 'completed']; track group) {
-        <button
-          role="tab"
-          [id]="'orders-tab-' + group"
-          [attr.data-lifecycle]="group"
-          aria-controls="operational-table"
-          [class.active]="query().lifecycle === group"
-          [attr.aria-selected]="query().lifecycle === group"
-          [attr.tabindex]="query().lifecycle === group ? 0 : -1"
-          (click)="lifecycle(group)"
-        >
-          {{ group === 'current' ? 'Текущие' : 'Завершённые' }}
-          <span>{{ data()?.summary?.[group === 'current' ? 'current' : 'completed'] ?? '—' }}</span>
-        </button>
-      }
-    </div>
-  }
+        {{ group === 'current' ? 'Текущие' : 'Завершённые' }}
+        <span>{{ data()?.summary?.[group === 'current' ? 'current' : 'completed'] ?? '—' }}</span>
+      </button>
+    }
+  </div>
   @if (notice()) {
     <p class="editor-success" role="status">{{ notice() }}</p>
   }
   <section class="panel operational-panel">
-    <app-order-filter
+    <app-data-table-toolbar-filter
       [filter]="query()"
-      [entity]="entity"
-      [statuses]="statusOptions()"
+      searchLabel="Артикул"
+      searchPlaceholder="Поиск по артикулу"
       [loading]="loading()"
       (filterChange)="onFilterChange($event)"
     /><span class="list-total"
@@ -83,21 +62,18 @@
         {{ error() }} <button class="text-button" (click)="refresh()">Повторить</button>
       </div>
     }
-    @if (entity === 'orders') {
-      <app-order-bulk-actions
-        [selectedCount]="selected().length"
-        [readyCount]="readyRows().length"
-        [hiddenCount]="hiddenSelected()"
-        [busy]="loading() || labelsBusy()"
-        [labelsAllowed]="!!data()?.local_preview"
-        (selectAvailable)="selectAvailable()"
-        (clearSelection)="clearSelection()"
-        (printLabels)="labels()"
-      />
-    }
+    <app-order-bulk-actions
+      [selectedCount]="selected().length"
+      [readyCount]="readyRows().length"
+      [hiddenCount]="hiddenSelected()"
+      [busy]="loading() || labelsBusy()"
+      [labelsAllowed]="!!data()?.local_preview"
+      (selectAvailable)="selectAvailable()"
+      (clearSelection)="clearSelection()"
+      (printLabels)="labels()"
+    />
     <app-order-list
       [orders]="rows()"
-      [entity]="entity"
       [data]="data()"
       [selected]="selected()"
       [labelsBusy]="labelsBusy()"

@@ -13,8 +13,3 @@ export const ORDER_SORTS = [
   { value: 'number_asc', label: 'По номеру ↑' },
   { value: 'number_desc', label: 'По номеру ↓' },
 ];
-export const RETURN_SORTS = [
-  { value: 'date_desc', label: 'Сначала новые' },
-  { value: 'date_asc', label: 'Сначала старые' },
-  { value: 'amount_desc', label: 'Сначала дорогие' },
-];

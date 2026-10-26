@@ -18,7 +18,6 @@ import type {
   ListPage,
   ListQuery,
   Order,
-  ReturnRow,
   ColumnValuesState,
 } from '../../../infrastructure/interfaces/contracts.interfaces';
 import type {
@@ -55,7 +54,7 @@ export class OrderListComponent {
     this.choiceRequest?.unsubscribe();
     this.choices.set({ field, values: [], busy: true, error: '', total: 0, hasMore: false });
     this.choiceRequest = this.api
-      .columnValues(this.entity(), this.filters(), field, request.search, request.page)
+      .columnValues('orders', this.filters(), field, request.search, request.page)
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (response) =>
@@ -79,8 +78,7 @@ export class OrderListComponent {
           }),
       });
   }
-  readonly entity = input<'orders' | 'returns'>('orders');
-  readonly rows = input<(Order | ReturnRow)[]>([], { alias: 'orders' });
+  readonly rows = input<Order[]>([], { alias: 'orders' });
   readonly data = input<ListPage | null>(null);
 
   readonly selected = input<Order[]>([]);
@@ -103,54 +101,39 @@ export class OrderListComponent {
 
   tableColumns1(): DataTableColumn[] {
     return [
-      ...(this.entity() === 'orders'
-        ? [
-            {
-              field: 'selection',
-              header: '',
-              styleClass: 'order-select-cell',
-              cellTemplate: { slot: 'cell6' },
-            },
-            { field: 'posting_number', header: 'Номер', cellTemplate: { slot: 'cell7' } },
-            { field: 'scheme', header: 'Схема', cellTemplate: { slot: 'cell8' } },
-            { field: 'status', header: 'Статус', cellTemplate: { slot: 'cell9' } },
-            {
-              field: 'date',
-              header: 'Дата заказа',
-              styleClass: 'order-date',
-              cellTemplate: { slot: 'cell10' },
-            },
-            {
-              field: 'items',
-              header: 'Состав',
-              styleClass: 'order-items',
-              cellTemplate: { slot: 'cell11' },
-            },
-            {
-              field: 'amount',
-              header: 'Сумма',
-              styleClass: 'numeric',
-              cellTemplate: { slot: 'cell12' },
-            },
-            {
-              field: 'actions',
-              header: 'Действие',
-              styleClass: 'order-row-actions',
-              cellTemplate: { slot: 'cell13' },
-            },
-          ]
-        : [
-            { field: 'posting_number', header: 'Номер', cellTemplate: { slot: 'cell1' } },
-            { field: 'offer_id', header: 'Артикул', cellTemplate: { slot: 'cell2' } },
-            {
-              field: 'amount',
-              header: 'Сумма возврата',
-              styleClass: 'numeric',
-              cellTemplate: { slot: 'cell3' },
-            },
-            { field: 'date', header: 'Дата возврата', cellTemplate: { slot: 'cell4' } },
-            { field: 'status', header: 'Статус', cellTemplate: { slot: 'cell5' } },
-          ]),
+      {
+        field: 'selection',
+        header: '',
+        styleClass: 'order-select-cell',
+        cellTemplate: { slot: 'cell6' },
+      },
+      { field: 'posting_number', header: 'Номер', cellTemplate: { slot: 'cell7' } },
+      { field: 'scheme', header: 'Схема', cellTemplate: { slot: 'cell8' } },
+      { field: 'status', header: 'Статус', cellTemplate: { slot: 'cell9' } },
+      {
+        field: 'date',
+        header: 'Дата заказа',
+        styleClass: 'order-date',
+        cellTemplate: { slot: 'cell10' },
+      },
+      {
+        field: 'items',
+        header: 'Состав',
+        styleClass: 'order-items',
+        cellTemplate: { slot: 'cell11' },
+      },
+      {
+        field: 'amount',
+        header: 'Сумма',
+        styleClass: 'numeric',
+        cellTemplate: { slot: 'cell12' },
+      },
+      {
+        field: 'actions',
+        header: 'Действие',
+        styleClass: 'order-row-actions',
+        cellTemplate: { slot: 'cell13' },
+      },
     ];
   }
 
@@ -163,11 +146,8 @@ export class OrderListComponent {
     return this.data()?.local_preview ? orderActionLabel(order) : 'Подробнее';
   }
 
-  order(row: Order | ReturnRow) {
-    return row as Order;
-  }
-  returned(row: Order | ReturnRow) {
-    return row as ReturnRow;
+  order(row: Order) {
+    return row;
   }
 
   onSelectionChange(newIds: Order[]) {

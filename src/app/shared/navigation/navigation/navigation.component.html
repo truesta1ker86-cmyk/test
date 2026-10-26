@@ -1,4 +1,4 @@
-<nav class="nav">
+<nav class="nav" [class.collapsed]="collapsed">
   @for (group of menuGroups; track group.title) {
     <div class="nav-label" [style.margin-top.px]="group.marginTop || null">
       {{ group.title }}
@@ -14,9 +14,13 @@
               [class.active]="isRouteActive(item.tab)"
               [attr.data-tab]="item.tab"
               [attr.data-sidebar-tooltip]="item.tooltip"
-              [attr.aria-expanded]="isGroupExpanded(item.tab)"
-              [attr.aria-controls]="item.tab + '-nav-children'"
-              (click)="toggleGroup(item.tab)"
+              [attr.aria-label]="item.label"
+              [attr.title]="collapsed ? item.tooltip : null"
+              [attr.aria-expanded]="collapsed ? null : isGroupExpanded(item.tab)"
+              [attr.aria-controls]="collapsed ? null : item.tab + '-nav-children'"
+              [routerLink]="collapsed ? [item.children[0]?.path || '/' + item.tab] : null"
+              [queryParams]="collapsed ? item.children[0]?.queryParams || null : null"
+              (click)="collapsed ? navigated.emit() : toggleGroup(item.tab)"
             >
               <svg class="icon-sm"><use [attr.href]="'#' + item.icon"></use></svg>
               <span class="nav-item-label">{{ item.label }}</span>
@@ -66,6 +70,8 @@
             routerLinkActive="active"
             [attr.data-tab]="item.tab"
             [attr.data-sidebar-tooltip]="item.tooltip"
+            [attr.aria-label]="item.label"
+            [attr.title]="collapsed ? item.tooltip : null"
           >
             <svg class="icon-sm"><use [attr.href]="'#' + item.icon"></use></svg>
             <span class="nav-item-label">{{ item.label }}</span>

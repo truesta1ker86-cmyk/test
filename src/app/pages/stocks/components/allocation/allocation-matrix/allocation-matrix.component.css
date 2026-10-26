@@ -129,13 +129,13 @@ small {
   grid-column: 1 / -1;
 }
 .allocation-scroll {
-  overflow: auto;
-  height: calc(100dvh - 120px);
-  min-height: 520px;
+  overflow-x: auto;
+  height: auto;
+  min-height: 0;
+  scrollbar-width: none;
   border: 1px solid var(--border);
   border-radius: 14px;
   background: var(--surface);
-  scrollbar-gutter: stable;
 }
 :host ::ng-deep .allocation-table {
   border-collapse: separate;

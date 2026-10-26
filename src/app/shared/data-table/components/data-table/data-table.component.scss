@@ -124,11 +124,9 @@
       background: var(--table-heading-bg);
     }
   }
-  .p-datatable-table-container {
-    overflow: visible;
-  }
   p-paginator.p-datatable-paginator-bottom {
     position: sticky;
+    left: 0;
     bottom: 0;
     z-index: 35;
   }
@@ -136,6 +134,28 @@
   .operation-table tbody tr.p-datatable-row-selected > td {
     background: var(--brand-soft);
   }
+}
+/* The section viewport owns both axes; PrimeNG's inline overflow otherwise
+   puts the horizontal scrollbar below every row inside a second viewport. */
+:host-context(.table-scroll) ::ng-deep .p-datatable-table-container,
+:host-context(.table-wrap) ::ng-deep .p-datatable-table-container,
+:host-context(.allocation-scroll) ::ng-deep .p-datatable-table-container {
+  overflow: visible !important;
+}
+
+:host-context(.table-scroll) ::ng-deep .operation-table thead,
+:host-context(.table-wrap) ::ng-deep .operation-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--table-heading-bg);
+}
+:host-context(.table-scroll) ::ng-deep .operation-table thead th,
+:host-context(.table-wrap) ::ng-deep .operation-table thead th {
+  top: auto;
+  background: var(--table-heading-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .table-error {
   display: flex;

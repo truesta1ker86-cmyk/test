@@ -177,6 +177,33 @@ textarea {
 body {
   margin: 0;
 }
+.page-content > :not(router-outlet) {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+.page-content .workspace-surface,
+.page-content .panel,
+.page-content .table-wrap,
+.page-content .table-scroll {
+  min-width: 0;
+  max-width: 100%;
+}
+.page-content .page-heading {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.page-content .page-heading > div,
+.page-content .button-row {
+  min-width: 0;
+}
+.page-content .button-row {
+  flex-wrap: wrap;
+}
+.page-content .table-wrap {
+  max-height: min(62dvh, 680px);
+  overscroll-behavior-x: contain;
+}
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

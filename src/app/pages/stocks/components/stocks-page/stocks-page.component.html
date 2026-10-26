@@ -2,74 +2,9 @@
   <header class="page-header">
     <div>
       <h1>{{ pageTitle() }}</h1>
-      @if (context()?.fact_sync; as sync) {
-        <p [attr.title]="'Снимок исходного магазина: ' + date(sync.source_snapshot_at)">
-          {{
-            sync.status === 'error'
-              ? 'Обновление приостановлено. Последняя копия:'
-              : 'Копия обновлена из v1:'
-          }}
-          {{ date(sync.copied_at) }}
-        </p>
-      } @else {
-        <p>Сверка с 1С, правила распределения и планы поступлений.</p>
-      }
+      <p>Сверка с 1С, правила распределения и планы поступлений.</p>
     </div>
-    <span class="mode-note">{{
-      context()?.local_preview
-        ? 'Локальный макет · отправка в Ozon выключена'
-        : 'Отправка в Ozon выключена'
-    }}</span>
   </header>
-  @if (facts()?.summary; as summary) {
-    <div class="stock-metrics" [class.compact]="tab() === 'matrix'">
-      <button
-        type="button"
-        class="stock-metric"
-        (click)="setChoice('rules_status', [])"
-        [attr.aria-pressed]="!filters['rules_status'].length"
-      >
-        <span>Всего по отбору</span
-        ><strong><app-animated-count [value]="summary['total'] || 0" /></strong
-        ><small>Все товары по остальным фильтрам</small>
-      </button>
-      <button
-        type="button"
-        class="stock-metric"
-        (click)="setChoice('rules_status', ['with_rules'])"
-        [attr.aria-pressed]="filters['rules_status'].includes('with_rules')"
-      >
-        <span>С правилами</span
-        ><strong><app-animated-count [value]="summary['with_rules'] || 0" /></strong
-        ><small>Включая нулевые и выключенные</small>
-      </button>
-      <button
-        type="button"
-        class="stock-metric"
-        (click)="setChoice('rules_status', ['without_rules'])"
-        [attr.aria-pressed]="filters['rules_status'].includes('without_rules')"
-      >
-        <span>Без правил</span
-        ><strong><app-animated-count [value]="summary['without_rules'] || 0" /></strong
-        ><small>Нет ни одной сохранённой записи</small>
-      </button>
-      <button
-        type="button"
-        class="stock-metric"
-        (click)="
-          setChoice(
-            'distribution_status',
-            filters['distribution_status'].length ? [] : ['distributed']
-          )
-        "
-        [attr.aria-pressed]="filters['distribution_status'].includes('distributed')"
-      >
-        <span>Распределены</span
-        ><strong><app-animated-count [value]="summary['distributed'] || 0" /></strong
-        ><small>Включённое положительное правило</small>
-      </button>
-    </div>
-  }
   <nav class="tabs" aria-label="Разделы остатков">
     @for (item of tabs; track item[0]) {
       <button type="button" [class.active]="tab() === item[0]" (click)="navigate(item[0])">
@@ -85,8 +20,62 @@
   @if (notice()) {
     <div class="notice" role="status">{{ notice() }}</div>
   }
-  @if (tab() === 'reconciliation' || tab() === 'matrix') {
-    <div class="stock-filter-toolbar">
+  <div class="stock-filter-toolbar">
+    @if (facts()?.summary; as summary) {
+      <app-popup-button
+        label="Быстрый отбор"
+        ariaLabel="Быстрый отбор остатков"
+        popupWidth="min(300px, calc(100vw - 32px))"
+        [count]="
+          (filters['rules_status'].length ? 1 : 0) + (filters['distribution_status'].length ? 1 : 0)
+        "
+      >
+        <div class="stock-quick-choices" role="group" aria-label="Сводка по остаткам">
+          <button
+            type="button"
+            class="stock-quick-choice"
+            (click)="setChoice('rules_status', [])"
+            [attr.aria-pressed]="!filters['rules_status'].length"
+          >
+            <span>Всего по отбору</span
+            ><strong><app-animated-count [value]="summary['total'] || 0" /></strong>
+          </button>
+          <button
+            type="button"
+            class="stock-quick-choice"
+            (click)="setChoice('rules_status', ['with_rules'])"
+            [attr.aria-pressed]="filters['rules_status'].includes('with_rules')"
+          >
+            <span>С правилами</span
+            ><strong><app-animated-count [value]="summary['with_rules'] || 0" /></strong>
+          </button>
+          <button
+            type="button"
+            class="stock-quick-choice"
+            (click)="setChoice('rules_status', ['without_rules'])"
+            [attr.aria-pressed]="filters['rules_status'].includes('without_rules')"
+          >
+            <span>Без правил</span
+            ><strong><app-animated-count [value]="summary['without_rules'] || 0" /></strong>
+          </button>
+          <button
+            type="button"
+            class="stock-quick-choice"
+            (click)="
+              setChoice(
+                'distribution_status',
+                filters['distribution_status'].length ? [] : ['distributed']
+              )
+            "
+            [attr.aria-pressed]="filters['distribution_status'].includes('distributed')"
+          >
+            <span>Распределены</span
+            ><strong><app-animated-count [value]="summary['distributed'] || 0" /></strong>
+          </button>
+        </div>
+      </app-popup-button>
+    }
+    @if (tab() === 'reconciliation' || tab() === 'matrix') {
       <app-inventory-filter
         [choices]="filterChoices()"
         [values]="filters"
@@ -104,7 +93,9 @@
         (selectFound)="selectAll()"
         (clearSelection)="clearSelection()"
       />
-    </div>
+    }
+  </div>
+  @if (tab() === 'reconciliation' || tab() === 'matrix') {
     @if (tab() === 'reconciliation') {
       <div class="selection-bar">
         <span

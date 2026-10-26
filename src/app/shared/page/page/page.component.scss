@@ -331,30 +331,3 @@ svg.icon-sm {
   padding: 24px;
   flex: 1;
 }
-
-@media (max-width: 768px) {
-  .layout {
-    --current-sidebar-w: 0px;
-  }
-
-  .sidebar {
-    transform: translateX(-100%);
-    width: var(--sidebar-w) !important;
-    transition:
-      transform 220ms $ease-out,
-      box-shadow 220ms $ease-out;
-
-    &.mobile-open {
-      transform: translateX(0);
-      box-shadow: var(--shadow-lg);
-    }
-  }
-
-  .mobile-burger {
-    display: block;
-  }
-
-  .main-head {
-    padding: 12px 16px;
-  }
-}
