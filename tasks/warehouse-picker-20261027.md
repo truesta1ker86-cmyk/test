@@ -23,3 +23,12 @@ Existing nonblocking stylesheet budget warnings remain.
 Deploy frontend through ii_test and verify the same flow with the real warehouse
 names on pujer.ru. No backend changes or saved stock operations are part of this
 release. Rollback with a normal revert and push through the existing CI.
+
+## Clean CI installation
+
+PrimeNG Listbox imports @angular/cdk/drag-drop. The previous lockfile contained
+CDK only as an automatically installed peer; CI's npm install --legacy-peer-deps
+omits it. A fresh isolated installation reproduced the unresolved-import failure.
+Declare @angular/cdk 22.2.3 explicitly, matching the version already verified
+locally. Production build then passes with the same legacy-peer-deps installation
+as CI. No framework upgrade or workflow change is needed.
