@@ -1,4 +1,11 @@
 export const iconPaths = {
+  truck:
+    'M3 5h11v12H3z M14 9h4l3 4v4h-7 M6 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4 M17 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4',
+  clipboard: 'M8 4H6a2 2 0 0 0-2 2v14h16V6a2 2 0 0 0-2-2h-2 M8 3h8v4H8z M8 11h8 M8 15h8',
+  database:
+    'M21 5c0 2-4 3-9 3S3 7 3 5s4-3 9-3 9 1 9 3 M3 5v14c0 2 4 3 9 3s9-1 9-3V5 M3 10c0 2 4 3 9 3s9-1 9-3 M3 15c0 2 4 3 9 3s9-1 9-3',
+  warehouse: 'M3 10l9-7 9 7v11H3z M3 10h18 M8 21V12h8v9 M11 15h2v6',
+
   printer:
     'M6 9V3h12v6 M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2 M6 14h12v7H6z M18 12h1',
   shield: 'M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3z',

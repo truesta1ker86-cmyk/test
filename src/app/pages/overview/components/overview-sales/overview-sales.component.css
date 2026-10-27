@@ -1,96 +1,116 @@
 :host {
   display: block;
-  margin-bottom: 24px;
   min-width: 0;
+  height: 100%;
 }
 .sales-panel {
+  height: 100%;
+  min-height: 396px;
+  border-radius: 13px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 .sales-heading {
-  gap: 16px;
+  gap: 10px;
   flex-wrap: wrap;
+  border: 0;
+  padding: 16px 18px 12px;
 }
 .sales-heading h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 17px;
+  font-weight: 700;
 }
 .sales-period {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  color: var(--muted);
+  display: inline-flex;
+  flex: none;
+  padding: 2px;
+  border: 1px solid #e1e7f1;
+  border-radius: 11px;
+  background: #f2f5fb;
 }
-.sales-period select {
-  min-width: 116px;
-  border: 1px solid var(--border);
-  background: var(--card, white);
-  color: var(--text);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font: inherit;
+.sales-period button {
+  padding: 7px 13px;
+  border-radius: 9px;
+  font-size: 11px;
+  color: #475467;
   cursor: pointer;
 }
-.sales-period select:focus-visible,
+.sales-period button.active {
+  color: #fff;
+  background: #005bff;
+  box-shadow: 0 1px 3px #005bff20;
+}
+.sales-period button:focus-visible,
 .sales-days summary:focus-visible {
   outline: 2px solid var(--brand);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 .sales-summary {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-  padding: 16px 24px 0;
-  margin: 0;
+  grid-template-columns: 1fr 1.35fr 1fr;
+  margin: 4px 0 0;
+  padding: 0 18px;
+}
+.sales-summary > div {
+  min-width: 0;
+  padding-right: 12px;
+}
+.sales-summary > div + div {
+  padding-left: 18px;
+  border-left: 1px solid var(--border);
 }
 .sales-summary dt {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
 }
 .sales-summary dd {
-  margin: 4px 0 0;
-  font-size: 21px;
-  font-weight: 600;
+  margin: 8px 0 0;
+  font-size: 23px;
+  font-weight: 720;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .sales-summary .sales-peak {
-  font-size: 15px;
-  line-height: 25px;
+  font-size: 13px;
+  line-height: 28px;
 }
 .sales-chart {
-  padding: 20px 20px 0;
+  padding: 20px 16px 0;
   height: 220px;
   min-width: 0;
+  flex: 1;
 }
 .sales-note,
 .sales-snapshot,
 .sales-empty {
-  margin: 14px 24px;
+  margin: 10px 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.5;
 }
 .sales-empty {
+  margin-inline: 18px;
   color: var(--text);
 }
 .sales-snapshot {
-  font-size: 11px;
-  margin-top: 12px;
+  font-size: 10px;
 }
 .sales-days {
-  border-top: 1px solid var(--border);
-  padding: 14px 24px;
-  font-size: 12px;
+  padding: 10px 18px 14px;
+  font-size: 11px;
 }
 .sales-days summary {
   width: fit-content;
   cursor: pointer;
-  color: var(--brand);
+  color: var(--muted);
 }
 .sales-table-scroll {
   overflow-x: auto;
   max-height: 320px;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 :host ::ng-deep .sales-table-scroll table {
   width: 100%;
@@ -99,13 +119,13 @@
 .sales-loading,
 .sales-error {
   padding: 24px;
-  min-height: 330px;
+  min-height: 300px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 .sales-skeleton {
   height: 200px;
-  background: linear-gradient(90deg, var(--brand-soft), #f4f6fa, var(--brand-soft));
+  background: #edf3ff;
   border-radius: 8px;
   margin-bottom: 18px;
 }
@@ -113,29 +133,39 @@
   margin: 0 0 12px;
   color: var(--red);
 }
-@media (max-width: 600px) {
-  .sales-summary {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    padding: 16px 16px 0;
-  }
-  .sales-summary > :last-child {
-    grid-column: 1 / -1;
-  }
+@media (max-width: 1100px) {
   .sales-summary dd {
-    font-size: 21px;
+    font-size: 20px;
+  }
+  .sales-summary > div + div {
+    padding-left: 10px;
+  }
+  .sales-summary .sales-peak {
+    font-size: 11px;
+  }
+}
+@media (max-width: 600px) {
+  .sales-heading {
+    padding: 14px;
+  }
+  .sales-summary {
+    grid-template-columns: 1fr 1.35fr;
+    padding: 0 14px;
+    gap: 14px 0;
+  }
+  .sales-summary > div:last-child {
+    grid-column: 1 / -1;
+    border: 0;
+    padding-left: 0;
+  }
+  .sales-summary .sales-peak {
+    font-size: 13px;
+    margin-top: 3px;
   }
   .sales-chart {
-    padding: 16px 10px 0;
-    height: 216px;
-  }
-  .sales-note,
-  .sales-snapshot,
-  .sales-empty {
-    margin-left: 16px;
-    margin-right: 16px;
+    padding: 16px 8px 0;
   }
   .sales-days {
-    padding: 14px 16px;
+    padding-inline: 14px;
   }
 }

@@ -1,7 +1,7 @@
 export const SALES_PERIODS = [
   { days: 7, label: '7 дней' },
-  { days: 14, label: '14 дней' },
   { days: 30, label: '30 дней' },
+  { days: 90, label: '90 дней' },
 ];
 export const SALES_DEFAULT_PERIOD = 30;
 export const SALES_COLORS = {

@@ -50,7 +50,9 @@ describe('overview delivered-sales dynamics', () => {
     initial.flush(result());
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('select').value).toBe('30');
+    expect(
+      fixture.nativeElement.querySelector('.sales-period [aria-pressed="true"]').textContent.trim(),
+    ).toBe('30 дней');
     expect(page.chartData()?.datasets[0].data).toEqual([2, 0, 3]);
     expect(salesChartData(result()).labels).toEqual(['18.10', '19.10', '20.10']);
     expect(fixture.nativeElement.textContent).toContain('80,30');
@@ -64,9 +66,7 @@ describe('overview delivered-sales dynamics', () => {
 
   it('cancels a slow prior period and displays only the newly selected period', () => {
     const { fixture, page, http, initial } = setup();
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
-    select.value = '7';
-    select.dispatchEvent(new Event('change'));
+    (fixture.nativeElement.querySelector('.sales-period button') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(initial.cancelled).toBe(true);
     http.expectOne((r) => r.url === endpoint && r.params.get('days') === '7').flush(result(7));
@@ -74,6 +74,13 @@ describe('overview delivered-sales dynamics', () => {
     expect(page.days()).toBe(7);
     expect(page.data()?.days).toBe(7);
     expect(page.loading()).toBe(false);
+    (
+      fixture.nativeElement.querySelector('.sales-period button:last-child') as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    http.expectOne((r) => r.url === endpoint && r.params.get('days') === '90').flush(result(90));
+    fixture.detectChanges();
+    expect(page.days()).toBe(90);
     http.verify();
   });
 
@@ -87,7 +94,7 @@ describe('overview delivered-sales dynamics', () => {
     expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
       'Снимок временно недоступен',
     );
-    (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('.sales-error button') as HTMLButtonElement).click();
     fixture.detectChanges();
     http.expectOne((r) => r.url === endpoint && r.params.get('days') === '30').flush(result());
     fixture.detectChanges();

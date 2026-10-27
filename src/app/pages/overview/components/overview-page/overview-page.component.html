@@ -1,179 +1,183 @@
 <div class="workspace-surface overview-page">
-  <div class="page-heading">
+  <header class="overview-header">
     <div>
-      <h1>Обзор</h1>
-      <p>Состояние данных, отправления и последние операции в отдельной v2.</p>
+      <nav class="overview-breadcrumb" aria-label="Хлебные крошки">
+        Рабочее пространство <span>/</span> Обзор
+      </nav>
+      <div class="overview-title">
+        <h1>Обзор магазина</h1>
+        <time>{{ today }}</time>
+      </div>
+      <p>Продажи, остатки и обмен с 1С</p>
     </div>
-    <button class="button" [disabled]="loading()" (click)="load()">Обновить экран</button>
-  </div>
-  <div class="overview-notice">
-    <span class="status-pill">Изолированная v2</span
-    ><span
-      >Отправки и автоматические действия в Ozon выключены. Основная версия продолжает
-      работать.</span
-    >
-  </div>
+    <button type="button" class="button overview-refresh" [disabled]="loading()" (click)="load()">
+      <app-icon name="refresh" />{{ loading() ? 'Обновляем…' : 'Обновить данные' }}
+    </button>
+  </header>
+  <div class="overview-notice"><span>Изолированная v2</span>Отправки в Ozon отключены.</div>
   @if (error()) {
     <div class="editor-error" role="alert">
       {{ error() }} <button class="text-button" (click)="load()">Повторить</button>
     </div>
   }
-  @if (loading()) {
-    <p class="overview-loading" role="status">Загружаем данные копии…</p>
+  @if (loading() && !data()) {
+    <p class="overview-loading" role="status">Загружаем данные магазина…</p>
   }
   @if (data(); as d) {
     <section class="overview-totals" aria-label="Данные магазина">
       <a routerLink="/products"
-        ><span>Товары</span><strong>{{ d.products }}</strong></a
-      ><a routerLink="/orders"
-        ><span>Отправления</span><strong>{{ d.status.totals.orders }}</strong></a
-      ><a routerLink="/returns"
-        ><span>Возвраты</span><strong>{{ d.status.totals.returns }}</strong></a
+        ><app-icon name="products" /><span
+          >Товары<strong>{{ units(d.products) }}</strong></span
+        ></a
       >
-      <div>
-        <span>Строки остатков</span><strong>{{ d.status.totals.stocks_rows }}</strong>
-      </div>
-      <div>
-        <span>Финансовые операции</span><strong>{{ d.status.totals.finance_rows }}</strong>
-      </div>
+      <a routerLink="/orders"
+        ><app-icon name="truck" /><span
+          >Отправления<strong>{{ units(d.status.totals.orders) }}</strong></span
+        ></a
+      >
+      <a routerLink="/returns"
+        ><app-icon name="returns" /><span
+          >Возвраты<strong>{{ units(d.status.totals.returns) }}</strong></span
+        ></a
+      >
+      <a routerLink="/stocks"
+        ><app-icon name="clipboard" /><span
+          >Строки остатков<strong>{{ units(d.status.totals.stocks_rows) }}</strong></span
+        ></a
+      >
+      <a routerLink="/finance" [queryParams]="{ view: 'operations' }"
+        ><app-icon name="database" /><span
+          >Финансовые операции<strong>{{ units(d.status.totals.finance_rows) }}</strong></span
+        ></a
+      >
     </section>
-    <app-overview-sales [refresh]="chartRefresh()" />
     <div class="overview-layout">
-      <section class="panel">
-        <div class="panel-heading">
-          <h2>Последние отправления</h2>
-          <a routerLink="/orders">Все заказы</a>
-        </div>
-        <div class="table-scroll">
-          <app-data-table
-            [data]="d.recent_orders"
-            selectionMode="none"
-            [columns]="tableColumns1()"
-            [headerTemplate]="tableHeader1"
-            [rowClickable]="false"
-            [lazy]="false"
-            [scrollable]="false"
-            tableStyleClass="operation-table"
-            dataKey="posting_number"
-            emptyMessage="В копии ещё нет отправлений."
-          >
-            <ng-template #tableHeader1>
-              <tr>
-                <th>Отправление</th>
-                <th>Статус</th>
-                <th>Создано</th>
-                <th class="numeric">Сумма</th>
-              </tr>
-            </ng-template>
-            <ng-template #cellTemplate let-order let-column="column" let-rowIndex="rowIndex">
-              @switch (column.cellTemplate.slot) {
-                @case ('cell1') {
-                  <span data-o1c-cell-content>
-                    <a
-                      routerLink="/orders"
-                      [queryParams]="{ posting: order.posting_number, lifecycle: '' }"
-                      >{{ order.posting_number }}</a
-                    ><small>{{ order.scheme?.toUpperCase() }}</small>
-                  </span>
-                }
-                @case ('cell2') {
-                  <span data-o1c-cell-content>{{ status(order.status, order.scheme) }}</span>
-                }
-                @case ('cell3') {
-                  <span data-o1c-cell-content>{{ date(order.in_process_at) }}</span>
-                }
-                @case ('cell4') {
-                  <span data-o1c-cell-content class="numeric">{{
-                    currency(order.total_price, order.currency)
-                  }}</span>
-                }
-              }
-            </ng-template>
-          </app-data-table>
-        </div>
-      </section>
+      <app-overview-sales [refresh]="chartRefresh()" />
       <aside class="overview-side">
-        <section class="panel">
-          <div class="panel-heading"><h2>Следующие задачи</h2></div>
-          <div class="task-links">
-            <a routerLink="/products/create"
-              >Создать карточку товара<span>Категория, свойства, фото и AI</span></a
-            ><a routerLink="/pricing"
-              >Проверить расчёт цен<span>Себестоимость, маржа и формула</span></a
-            ><a routerLink="/mapping" [queryParams]="{ mapping_status: 'unmapped' }"
-              >Сопоставить товары с 1С<span>Коды, артикулы и упаковки</span></a
-            >
+        <section class="overview-panel exchange-panel" aria-labelledby="overview-exchange-title">
+          <div class="panel-heading">
+            <h2 id="overview-exchange-title">Обмен с 1С</h2>
+            <span>Режим просмотра</span>
           </div>
+          <div class="exchange-flow" [attr.aria-label]="'Состояние 1С: ' + onec().label">
+            <span class="onec-brand" aria-label="1С">1С</span>
+            <span
+              class="exchange-connection"
+              [class.ready]="onec().tone === 'ready'"
+              [class.failed]="onec().tone === 'error'"
+            >
+              <i></i><i></i
+              ><b>{{ onec().tone === 'ready' ? '✓' : onec().tone === 'error' ? '!' : '·' }}</b
+              ><i></i><i></i>
+            </span>
+            <span class="ozon-brand">Ozon</span>
+          </div>
+          <p
+            class="exchange-state"
+            [class.failed]="onec().tone === 'error'"
+            [attr.title]="date(d.status.integrations.onec_last_snapshot_at)"
+          >
+            {{ onec().label }}
+          </p>
+          <ul class="exchange-statuses">
+            <li>
+              <app-icon name="products" /><span>Товары</span
+              ><small [class.loaded]="d.products > 0">{{
+                d.products > 0 ? 'Данные загружены' : 'Нет данных'
+              }}</small>
+            </li>
+            <li>
+              <app-icon name="clipboard" /><span>Остатки</span
+              ><small [class.loaded]="d.status.totals.stocks_rows > 0">{{
+                d.status.totals.stocks_rows > 0 ? 'Данные загружены' : 'Нет данных'
+              }}</small>
+            </li>
+            <li>
+              <app-icon name="truck" /><span>Заказы</span
+              ><small [class.loaded]="d.status.totals.orders > 0">{{
+                d.status.totals.orders > 0 ? 'Данные загружены' : 'Нет данных'
+              }}</small>
+            </li>
+          </ul>
+          <a class="overview-link exchange-journal" href="/overview#overview-history"
+            >Открыть журнал<app-icon name="arrow"
+          /></a>
         </section>
-        <section class="panel">
-          <div class="panel-heading"><h2>Состояние снимка</h2></div>
-          <dl class="snapshot-facts">
-            <dt>Последняя загрузка</dt>
-            <dd>{{ date(d.status.last_synced_at) }}</dd>
-            <dt>Снимок 1С</dt>
-            <dd>{{ date(d.status.integrations.onec_last_snapshot_at) }}</dd>
-            <dt>AI-подключение</dt>
-            <dd>
-              {{
-                d.status.integrations.ai_state === 'ready'
-                  ? 'Ключ настроен'
-                  : d.status.integrations.ai_state === 'disabled'
-                    ? 'Выключено'
-                    : 'Требует настройки'
-              }}
-            </dd>
-            <dt>Публикация в Ozon</dt>
-            <dd>Выключена в v2</dd>
-          </dl>
-        </section>
+        <a class="overview-stock-link" routerLink="/stocks" [queryParams]="{ tab: 'matrix' }">
+          <span class="stock-link-icon"><app-icon name="warehouse" /></span>
+          <span
+            ><strong>Управление остатками</strong><small>Распределение товаров по складам</small
+            ><b>Перейти к остаткам<app-icon name="arrow" /></b
+          ></span>
+        </a>
       </aside>
     </div>
-    <section class="panel overview-history">
+    <section
+      id="overview-history"
+      class="overview-panel overview-history"
+      aria-labelledby="overview-history-title"
+    >
       <div class="panel-heading">
-        <h2>Последние операции</h2>
-        <span>История данных копии</span>
+        <h2 id="overview-history-title">Последние операции</h2>
+        @if (d.operations.length > 5) {
+          <button
+            type="button"
+            class="overview-link"
+            [attr.aria-expanded]="allOperations()"
+            (click)="allOperations.set(!allOperations())"
+          >
+            {{ allOperations() ? 'Свернуть' : 'Все операции'
+            }}<app-icon [name]="allOperations() ? 'up' : 'arrow'" />
+          </button>
+        }
       </div>
       <div class="table-scroll">
         <app-data-table
-          [data]="d.operations"
+          [data]="operationRows()"
           selectionMode="none"
           [columns]="tableColumns2()"
-          [headerTemplate]="tableHeader2"
+          [headerTemplate]="tableHeader"
           [rowClickable]="false"
           [lazy]="false"
           [scrollable]="false"
           tableStyleClass="operation-table"
-          emptyMessage="Операций пока нет. Начните с карточек или расчёта цен."
+          emptyMessage="Операций пока нет."
         >
-          <ng-template #tableHeader2>
-            <tr>
-              <th>Когда</th>
-              <th>Раздел</th>
+          <ng-template #tableHeader
+            ><tr>
+              <th>Дата и время</th>
+              <th>Операция</th>
+              <th>Тип данных</th>
               <th>Результат</th>
-              <th class="numeric">Записей</th>
-              <th>Подробности</th>
-            </tr>
-          </ng-template>
-          <ng-template #cellTemplate let-op let-column="column" let-rowIndex="rowIndex">
+              <th>Комментарий</th>
+            </tr></ng-template
+          >
+          <ng-template #cellTemplate let-op let-column="column">
             @switch (column.cellTemplate.slot) {
               @case ('cell1') {
                 <span data-o1c-cell-content>{{ date(op.completed_at) }}</span>
               }
               @case ('cell2') {
-                <span data-o1c-cell-content>{{ operation(op.entity) }}</span>
+                <span data-o1c-cell-content>{{ action(op.entity) }}</span>
               }
               @case ('cell3') {
-                <span data-o1c-cell-content>
-                  <span class="status-pill" [class.failed]="op.status === 'error'">{{
-                    status(op.status)
-                  }}</span>
-                </span>
+                <span data-o1c-cell-content>{{ operation(op.entity) }}</span>
               }
               @case ('cell4') {
-                <span data-o1c-cell-content class="numeric">{{ op.affected ?? '—' }}</span>
+                <span data-o1c-cell-content
+                  ><span
+                    class="operation-status"
+                    [class.success]="op.status === 'success'"
+                    [class.failed]="op.status === 'error'"
+                    >{{ status(op.status) }}</span
+                  ></span
+                >
               }
               @case ('cell5') {
-                <span data-o1c-cell-content class="operation-error">{{ op.error || '—' }}</span>
+                <span data-o1c-cell-content class="operation-comment">{{
+                  op.error ||
+                    (op.affected !== null ? 'Обработано записей: ' + units(op.affected) : '—')
+                }}</span>
               }
             }
           </ng-template>

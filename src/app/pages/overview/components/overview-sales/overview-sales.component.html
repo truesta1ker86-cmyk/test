@@ -7,18 +7,18 @@
     <div>
       <h2 id="overview-sales-title">Динамика продаж</h2>
     </div>
-    <label class="sales-period"
-      >Период
-      <select
-        aria-label="Период динамики продаж"
-        [ngModel]="days()"
-        (ngModelChange)="setDays($event)"
-      >
-        @for (period of periods; track period.days) {
-          <option [value]="period.days">{{ period.label }}</option>
-        }
-      </select>
-    </label>
+    <div class="sales-period" role="group" aria-label="Период динамики продаж">
+      @for (period of periods; track period.days) {
+        <button
+          type="button"
+          [class.active]="days() === period.days"
+          [attr.aria-pressed]="days() === period.days"
+          (click)="setDays('' + period.days)"
+        >
+          {{ period.label }}
+        </button>
+      }
+    </div>
   </div>
   @if (loading()) {
     <div class="sales-loading" role="status">
@@ -41,7 +41,7 @@
         <dd>{{ money(d.total_revenue) }}</dd>
       </div>
       <div>
-        <dt>Самый активный день</dt>
+        <dt>Пик продаж</dt>
         <dd class="sales-peak">{{ peak() }}</dd>
       </div>
     </dl>
@@ -57,11 +57,12 @@
     @if (d.total_units === 0) {
       <p class="sales-empty" role="status">За выбранный период доставленных продаж нет.</p>
     }
-    <p class="sales-note">
-      Только доставленные заказы, по дате создания. Отмены и заказы в пути не учитываются.
-    </p>
     <details class="sales-days">
       <summary>Данные по дням</summary>
+      <p class="sales-note">
+        Только доставленные заказы, по дате создания. Отмены и заказы в пути не учитываются.
+      </p>
+
       <div
         class="sales-table-scroll"
         role="region"
@@ -93,9 +94,9 @@
           </ng-template>
         </app-data-table>
       </div>
+      @if (d.snapshot_at) {
+        <p class="sales-snapshot">Снимок магазина: {{ date(d.snapshot_at) }}</p>
+      }
     </details>
-    @if (d.snapshot_at) {
-      <p class="sales-snapshot">Снимок магазина: {{ date(d.snapshot_at) }}</p>
-    }
   }
 </section>

@@ -1,13 +1,20 @@
 import {
-  OVERVIEW_PAGE_TABLE_COLUMNS1,
+  OVERVIEW_ONEC_STATES,
   OVERVIEW_PAGE_TABLE_COLUMNS2,
 } from './infrastructure/constants/overview-page.constants';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import type { DataTableColumn } from '../../../../shared/data-table/infrastructure/interfaces/data-table-config.interfaces';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { WorkspaceApi } from '../../../orders/infrastructure/services/workspace-api.service';
 import type { Overview } from '../../../orders/infrastructure/interfaces/contracts.interfaces';
-import { currency, status } from '../../../orders/infrastructure/utils/format.utils';
+import { status } from '../../../orders/infrastructure/utils/format.utils';
 import { date } from '../../../../core/infrastructure/utils/format.utils';
 import { errorMessage } from '../../../../core/infrastructure/utils/api.utils';
 
@@ -21,9 +28,6 @@ import { errorMessage } from '../../../../core/infrastructure/utils/api.utils';
   styleUrl: './overview-page.component.css',
 })
 export class OverviewPage {
-  tableColumns1(): DataTableColumn[] {
-    return OVERVIEW_PAGE_TABLE_COLUMNS1;
-  }
   tableColumns2(): DataTableColumn[] {
     return OVERVIEW_PAGE_TABLE_COLUMNS2;
   }
@@ -32,7 +36,27 @@ export class OverviewPage {
   readonly loading = signal(true);
   readonly error = signal('');
   readonly chartRefresh = signal(0);
-  readonly currency = currency;
+  readonly units = (value: number) => value.toLocaleString('ru-RU');
+  readonly today = new Intl.DateTimeFormat('ru-RU', {
+    timeZone: 'Europe/Moscow',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+    .format(new Date())
+    .replace(' г.', '');
+  readonly allOperations = signal(false);
+  readonly operationRows = computed(() => {
+    const rows = this.data()?.operations || [];
+    return this.allOperations() ? rows : rows.slice(0, 5);
+  });
+  readonly onec = computed(
+    () =>
+      OVERVIEW_ONEC_STATES[this.data()?.status.integrations.onec_state || ''] || {
+        label: 'Нет данных о подключении',
+        tone: 'muted',
+      },
+  );
   readonly status = status;
   readonly date = date;
   private readonly api = inject(WorkspaceApi);
@@ -57,6 +81,12 @@ export class OverviewPage {
           this.loading.set(false);
         },
       });
+  }
+  action(entity: string) {
+    if (entity === 'product_mapping') return 'Сопоставление с 1С';
+    if (entity === 'pricing') return 'Расчёт цен';
+    if (entity === 'product_card_draft') return 'Изменение карточки';
+    return 'Обновление данных';
   }
   operation(value: string) {
     const names: Record<string, string> = {
