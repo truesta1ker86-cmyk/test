@@ -95,38 +95,45 @@ small {
 .warehouse-defaults-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
-  margin-top: 14px;
+  gap: 8px;
+  margin-top: 8px;
 }
 .warehouse-default-card {
-  padding: 14px;
+  padding: 8px;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface-2);
+  border-radius: 8px;
 }
 .warehouse-default-card header {
   display: flex;
   gap: 8px;
   align-items: center;
-  font-size: 12px;
-  margin-bottom: 12px;
+  font-size: 11px;
+  margin-bottom: 6px;
 }
 .warehouse-default-card header > span {
   color: var(--muted);
-  font-size: 10px;
 }
 .warehouse-default-card header > button {
   margin-left: auto;
-  font-size: 11px;
 }
 .column-defaults {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 12px;
+  grid-template-columns: minmax(0, 1fr) 65px 75px;
+  gap: 6px;
+  align-items: end;
+  margin-bottom: 6px;
 }
-.default-mode {
-  grid-column: 1 / -1;
+.column-defaults label {
+  min-width: 0;
+  font-size: 9px;
+  gap: 3px;
+}
+:host .column-defaults :is(input, select),
+.warehouse-default-card > .button {
+  min-height: 27px;
+  height: 27px;
+  padding: 3px 5px;
+  font-size: 10px;
 }
 .allocation-scroll {
   overflow-x: auto;

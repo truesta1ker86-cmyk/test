@@ -98,14 +98,17 @@ describe('Select dropdown viewport bounds', () => {
     const state = setup();
     try {
       state.show();
-      state.flush();
+      const openingTop = state.panel.style.top;
       expect(state.panel.style.position).toBe('fixed');
       expect(parseFloat(state.panel.style.top)).toBeGreaterThanOrEqual(12);
       expect(parseFloat(state.panel.style.top) + 304).toBeLessThanOrEqual(window.innerHeight - 12);
       state.size.height = 420;
       state.resize();
       state.flush();
-      expect(parseFloat(state.panel.style.top) + 420).toBeLessThanOrEqual(window.innerHeight - 12);
+      expect(state.panel.style.top).toBe(openingTop);
+      expect(
+        parseFloat(state.panel.style.top) + parseFloat(state.panel.style.maxHeight),
+      ).toBeLessThanOrEqual(window.innerHeight - 12);
       state.panel.style.insetInlineStart = '999px';
       state.mutate();
       state.flush();
@@ -140,7 +143,7 @@ describe('Select dropdown viewport bounds', () => {
       state.show();
       state.flush();
       expect(state.panel.style.top).toBe('64px');
-      expect(state.panel.style.maxHeight).toBe('404px');
+      expect(state.panel.style.maxHeight).toBe('360px');
       state.hide();
     } finally {
       state.panel.remove();

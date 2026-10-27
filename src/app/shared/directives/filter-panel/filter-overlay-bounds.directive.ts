@@ -28,6 +28,7 @@ export class FilterOverlayBoundsDirective {
     this.mutationObserver.observe(panel, { attributes: true, attributeFilter: ['style'] });
     window.addEventListener('resize', this.queue);
     window.addEventListener('scroll', this.queue, true);
+    this.place();
     this.queue();
   }
 
@@ -48,9 +49,9 @@ export class FilterOverlayBoundsDirective {
     const minimumTop = nativeDialog
       ? 12
       : Math.max(12, (content?.getBoundingClientRect().top || 0) + 12);
-    const availableHeight = Math.max(1, window.innerHeight - minimumTop - 12);
+    const availableHeight = Math.max(1, Math.min(360, window.innerHeight - minimumTop - 12));
     const width = panel.offsetWidth;
-    const height = Math.min(panel.offsetHeight, availableHeight);
+    const height = availableHeight;
     const below = anchor.bottom + 6;
     const preferred = below + height <= window.innerHeight - 12 ? below : anchor.top - height - 6;
     const top = Math.max(minimumTop, Math.min(preferred, window.innerHeight - height - 12));

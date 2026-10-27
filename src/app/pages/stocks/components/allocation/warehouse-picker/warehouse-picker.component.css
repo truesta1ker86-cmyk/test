@@ -36,8 +36,8 @@
   position: fixed;
   top: 12px;
   right: 12px;
-  width: min(520px, calc(100vw - 24px));
-  height: min(640px, calc(100dvh - 24px));
+  width: min(440px, calc(100vw - 24px));
+  height: min(440px, calc(100dvh - 24px));
   display: flex;
   flex-direction: column;
   background: var(--surface);
@@ -50,12 +50,12 @@
   display: flex;
   flex: 1;
   min-height: 0;
-  padding: 10px;
+  padding: 6px;
 }
 @media (max-width: 1023px) {
   .warehouse-menu {
     top: 64px;
-    height: min(640px, calc(100dvh - 76px));
+    height: min(440px, calc(100dvh - 76px));
   }
 }
 .warehouse-selection-control {
@@ -70,7 +70,7 @@ header {
   justify-content: space-between;
   align-items: start;
   gap: 12px;
-  padding: 12px;
+  padding: 8px 10px;
   border-bottom: 1px solid var(--border);
 }
 header strong {
@@ -133,7 +133,7 @@ label small {
 }
 .scheme,
 .added-badge {
-  padding: 2px 6px;
+  padding: 0 4px;
   border-radius: 20px;
   font-weight: 550;
 }
@@ -196,17 +196,18 @@ footer > small:nth-child(2) {
 }
 .warehouse-option-copy strong {
   display: block;
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 11px;
+  line-height: 1.25;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
 .warehouse-option-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 5px;
-  font-size: 11px;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 9px;
+  line-height: 1.2;
 }
 :host ::ng-deep .warehouse-menu .p-listbox-option:has(.is-added) {
   background: #ecfdf3 !important;
@@ -222,4 +223,20 @@ footer > small:nth-child(2) {
 :host ::ng-deep .warehouse-menu .p-listbox-option[aria-disabled='true'] .p-checkbox-box {
   background: #98a2b3;
   border-color: #98a2b3;
+}
+
+:host ::ng-deep .warehouse-menu .inline-choice-list .p-listbox-option {
+  gap: 7px;
+  padding: 5px 7px;
+  margin-bottom: 4px;
+  border-radius: 7px;
+}
+:host ::ng-deep .warehouse-menu .inline-choice-list .p-listbox-header {
+  padding-bottom: 5px;
+}
+:host .warehouse-menu ::ng-deep input.p-listbox-filter {
+  min-height: 30px;
+  height: 30px;
+  padding-block: 4px;
+  font-size: 11px;
 }

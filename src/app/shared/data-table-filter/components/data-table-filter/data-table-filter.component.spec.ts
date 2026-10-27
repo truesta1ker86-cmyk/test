@@ -57,7 +57,7 @@ describe('One table-column popup', () => {
     ).toBeTruthy();
   });
 
-  it('repositions after async size changes and scroll, and releases its observer on close', async () => {
+  it('keeps its opening position while options load, follows scroll and releases its observer', async () => {
     let resized!: () => void;
     const disconnect = vi.fn();
     vi.stubGlobal(
@@ -86,7 +86,7 @@ describe('One table-column popup', () => {
       const oldTop = component.position().top;
       height = 420;
       resized();
-      expect(component.position().top).toBeLessThan(oldTop);
+      expect(component.position().top).toBe(oldTop);
       expect(component.position().top + height).toBeLessThanOrEqual(window.innerHeight - 12);
       anchorTop = 0;
       window.dispatchEvent(new Event('scroll'));

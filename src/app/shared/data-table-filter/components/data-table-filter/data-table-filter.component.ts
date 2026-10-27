@@ -91,6 +91,7 @@ export class DataTableFilterComponent {
     effect((onCleanup) => {
       const dialog = this.dialog()?.nativeElement;
       if (!dialog) return;
+      dialog.style.visibility = 'hidden';
       if (!dialog.open) dialog.showModal();
       const place = () => {
         const anchor = this.trigger()?.nativeElement.getBoundingClientRect();
@@ -99,7 +100,7 @@ export class DataTableFilterComponent {
         const next = filterPosition(
           anchor,
           size.width,
-          size.height,
+          Math.min(420, window.innerHeight - 24),
           window.innerWidth,
           window.innerHeight,
         );
@@ -108,6 +109,10 @@ export class DataTableFilterComponent {
         );
       };
       place();
+      const position = untracked(this.position);
+      dialog.style.left = `${position.left}px`;
+      dialog.style.top = `${position.top}px`;
+      dialog.style.visibility = 'visible';
       const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(place);
       observer?.observe(dialog);
       window.addEventListener('resize', place);
