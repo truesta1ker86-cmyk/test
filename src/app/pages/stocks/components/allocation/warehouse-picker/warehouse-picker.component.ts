@@ -38,27 +38,27 @@ export class WarehousePickerComponent implements OnChanges {
     const full = this.tempSelected.length >= 12;
     return this.warehouses.map((w) => ({
       value: w.warehouse_id,
-      label:
-        w.warehouse_name +
-        ' · ' +
-        this.getWarehouseScheme(w.warehouse_id) +
-        (this.isWarehouseAdded(w.warehouse_id) ? ' · Уже добавлен' : ''),
+      label: w.warehouse_name + ' · ' + this.getWarehouseScheme(w.warehouse_id),
       disabled:
         this.disabled ||
-        this.isWarehouseAdded(w.warehouse_id) ||
-        w.available === false ||
+        (w.available === false &&
+          !this.isWarehouseAdded(w.warehouse_id) &&
+          !this.isWarehouseSelected(w.warehouse_id)) ||
         (full && !this.isWarehouseSelected(w.warehouse_id)),
     }));
   }
+  private validSelection(ids: string[]): string[] {
+    return [...new Set(ids)]
+      .filter((id) =>
+        this.warehouses.some(
+          (w) => w.warehouse_id === id && (w.available !== false || this.isWarehouseAdded(id)),
+        ),
+      )
+      .slice(0, 12);
+  }
   selectionChanged(ids: string[]) {
-    this.tempSelected = [
-      ...this.selectedWarehouseIds,
-      ...ids.filter(
-        (id) =>
-          !this.isWarehouseAdded(id) &&
-          this.warehouses.some((w) => w.warehouse_id === id && w.available !== false),
-      ),
-    ].slice(0, 12);
+    if (this.disabled) return;
+    this.tempSelected = this.validSelection(ids);
   }
 
   constructor(private cdr: ChangeDetectorRef) {
@@ -76,76 +76,24 @@ export class WarehousePickerComponent implements OnChanges {
     }
   }
 
-  get addedCount(): number {
-    return this.selectedWarehouseIds.length;
-  }
-
-  get selectedCount(): number {
-    return this.tempSelected.filter((id) => !this.selectedWarehouseIds.includes(id)).length;
-  }
-
-  get canAddMore(): boolean {
-    return this.selectedWarehouseIds.length < 12;
-  }
-
   get hasWarehouses(): boolean {
-    return this.warehouses && this.warehouses.length > 0;
+    return this.warehouses.length > 0;
   }
-
-  get triggerLabel(): string {
-    if (!this.hasWarehouses) {
-      return 'Нет активных складов';
-    }
-    if (this.selectedCount > 0) {
-      return `Выбрано новых складов: ${this.selectedCount}`;
-    }
-    if (this.addedCount >= 12 && this.addedCount < this.warehouses.length) {
-      return 'Достигнут лимит складов';
-    }
-    if (this.addedCount >= this.warehouses.length) {
-      return 'Все склады уже добавлены';
-    }
-    return 'Выберите склады';
-  }
-
-  get triggerMeta(): string {
-    if (!this.hasWarehouses) {
-      return '';
-    }
-    if (this.selectedCount > 0) {
-      return `${this.addedCount} добавлено`;
-    }
-    if (this.addedCount >= 12 && this.addedCount < this.warehouses.length) {
-      return '12 из 12';
-    }
-    if (this.addedCount >= this.warehouses.length) {
-      return `${this.addedCount} из ${this.warehouses.length}`;
-    }
-    return `${this.addedCount} добавлено`;
-  }
-
-  get statusText(): string {
-    if (!this.hasWarehouses) {
-      return 'Список складов пуст';
-    }
-    if (this.selectedCount > 0) {
-      return `Выбрано: ${this.selectedCount} · уже в таблице: ${this.addedCount}`;
-    }
-    if (this.addedCount >= 12 && this.addedCount < this.warehouses.length) {
-      return 'В таблице уже находятся максимально доступные 12 складов';
-    }
-    if (this.addedCount >= this.warehouses.length) {
-      return `Все ${this.addedCount} складов уже находятся в таблице`;
-    }
-    return `Добавлено: ${this.addedCount} · доступно: ${this.warehouses.length - this.addedCount}`;
-  }
-
-  get isAddButtonDisabled(): boolean {
+  get hasChanges(): boolean {
+    const next = this.validSelection(this.tempSelected);
     return (
-      !this.hasWarehouses ||
-      !this.canAddMore ||
-      this.tempSelected.every((id) => this.selectedWarehouseIds.includes(id))
+      next.length !== this.selectedWarehouseIds.length ||
+      next.some((id) => !this.selectedWarehouseIds.includes(id))
     );
+  }
+  get triggerLabel(): string {
+    return this.hasWarehouses ? 'Склады в таблице' : 'Нет активных складов';
+  }
+  get triggerMeta(): string {
+    return `${this.selectedWarehouseIds.length} из ${this.warehouses.length}`;
+  }
+  get statusText(): string {
+    return `Выбрано: ${this.tempSelected.length} · максимум 12`;
   }
 
   togglePopover(): void {
@@ -160,41 +108,26 @@ export class WarehousePickerComponent implements OnChanges {
   }
 
   closePopover(): void {
+    this.tempSelected = [...this.selectedWarehouseIds];
     this.popoverOpen = false;
     this.cdr.markForCheck();
   }
 
   toggleWarehouseSelection(warehouseId: string, checked: boolean): void {
-    if (
-      this.disabled ||
-      this.isWarehouseAdded(warehouseId) ||
-      !this.warehouses.some((w) => w.warehouse_id === warehouseId && w.available !== false)
-    )
-      return;
-    if (checked) {
-      if (!this.tempSelected.includes(warehouseId) && this.tempSelected.length < 12) {
-        this.tempSelected = [...this.tempSelected, warehouseId];
-      }
-    } else {
-      this.tempSelected = this.tempSelected.filter((id) => id !== warehouseId);
-    }
+    if (this.disabled) return;
+    this.selectionChanged(
+      checked
+        ? [...this.tempSelected, warehouseId]
+        : this.tempSelected.filter((id) => id !== warehouseId),
+    );
     this.cdr.markForCheck();
   }
 
-  addSelectedWarehouses(): void {
+  applySelection(): void {
     if (this.disabled) return;
-    const newIds = this.tempSelected.filter(
-      (id) =>
-        !this.selectedWarehouseIds.includes(id) &&
-        this.warehouses.some((w) => w.warehouse_id === id && w.available !== false),
-    );
-    if (this.selectedWarehouseIds.length + newIds.length > 12) return;
-    if (newIds.length) {
-      this.warehousesChange.emit([...this.selectedWarehouseIds, ...newIds]);
-    }
-    this.tempSelected = [...this.selectedWarehouseIds];
+    const next = this.validSelection(this.tempSelected);
+    if (this.hasChanges) this.warehousesChange.emit(next);
     this.closePopover();
-    this.cdr.markForCheck();
   }
 
   isWarehouseSelected(warehouseId: string): boolean {

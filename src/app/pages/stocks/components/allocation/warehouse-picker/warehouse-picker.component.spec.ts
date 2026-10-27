@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { FilterMultiselectComponent } from '../../../../../shared/directives/filter-panel/components/filter-multiselect/filter-multiselect.component';
 import { WarehousePickerComponent } from './warehouse-picker.component';
 
-describe('Adding warehouse columns', () => {
+describe('Selecting warehouse columns', () => {
   function setup() {
     const fixture = TestBed.createComponent(WarehousePickerComponent);
     fixture.componentRef.setInput(
@@ -28,9 +28,8 @@ describe('Adding warehouse columns', () => {
     expect([
       ...picker.tempSelected.filter((id) => !picker.selectedWarehouseIds.includes(id)),
     ]).toEqual(['1', '2']);
-    picker.addSelectedWarehouses();
+    picker.applySelection();
     expect(emitted).toEqual([['0', '1', '2']]);
-    expect(picker.selectedCount).toBe(0);
     expect(picker.popoverOpen).toBe(false);
   });
   it('limits visible columns to twelve and allows removing a pending choice', () => {
@@ -46,7 +45,7 @@ describe('Adding warehouse columns', () => {
     ]).toEqual(['11']);
     picker.toggleWarehouseSelection('11', false);
     picker.toggleWarehouseSelection('12', true);
-    picker.addSelectedWarehouses();
+    picker.applySelection();
     expect(emitted[0]).toHaveLength(12);
     expect(emitted[0].at(-1)).toBe('12');
   });
@@ -56,8 +55,49 @@ describe('Adding warehouse columns', () => {
     fixture.componentRef.setInput('warehouses', [
       { warehouse_id: '1', warehouse_name: 'One', available: false },
     ]);
-    picker.addSelectedWarehouses();
+    picker.applySelection();
+    expect(emitted).toEqual([[]]);
+  });
+  it('removes applied columns, including all columns, without re-adding them', async () => {
+    const { fixture, picker, emitted } = setup();
+    await fixture.whenStable();
+    picker.togglePopover();
+    await fixture.whenStable();
+    const option = fixture.nativeElement.querySelector('[role="option"]') as HTMLElement;
+    option.click();
+    await fixture.whenStable();
+    expect(picker.tempSelected).toEqual([]);
+    expect(picker.hasChanges).toBe(true);
+    expect(option.getAttribute('aria-selected')).toBe('false');
+    picker.applySelection();
+    expect(emitted).toEqual([[]]);
+    fixture.componentRef.setInput('selectedWarehouseIds', []);
+    await fixture.whenStable();
+    picker.togglePopover();
+    expect(picker.tempSelected).toEqual([]);
+  });
+  it('cancels removals and additions without changing the table', () => {
+    const { picker, emitted } = setup();
+    picker.togglePopover();
+    picker.selectionChanged(['1', '2']);
+    picker.closePopover();
+    picker.togglePopover();
+    expect(picker.tempSelected).toEqual(['0']);
     expect(emitted).toEqual([]);
+  });
+  it('replaces a warehouse at the twelve-column limit', () => {
+    const { fixture, picker, emitted } = setup();
+    fixture.componentRef.setInput(
+      'selectedWarehouseIds',
+      Array.from({ length: 12 }, (_, i) => String(i)),
+    );
+    picker.togglePopover();
+    picker.toggleWarehouseSelection('0', false);
+    picker.toggleWarehouseSelection('12', true);
+    picker.applySelection();
+    expect(emitted[0]).toHaveLength(12);
+    expect(emitted[0]).not.toContain('0');
+    expect(emitted[0]).toContain('12');
   });
   it('uses the shared inline filter and retains selected warehouses while searching', async () => {
     const { fixture, picker } = setup();
@@ -66,12 +106,14 @@ describe('Adding warehouse columns', () => {
     await fixture.whenStable();
     const root = fixture.nativeElement as HTMLElement;
     expect(picker.tempSelected).toEqual(['0']);
-    expect(fixture.debugElement.query(By.directive(FilterMultiselectComponent)).componentInstance.value).toEqual(['0']);
+    expect(
+      fixture.debugElement.query(By.directive(FilterMultiselectComponent)).componentInstance.value,
+    ).toEqual(['0']);
     expect(root.querySelector('p-select')).toBeNull();
     const options = [...root.querySelectorAll<HTMLElement>('[role="option"]')];
-    expect(options[0].getAttribute('aria-disabled')).toBe('true');
+    expect(options[0].getAttribute('aria-disabled')).toBe('false');
     expect(options[0].getAttribute('aria-selected')).toBe('true');
-    expect(options[0].textContent).toContain('Уже добавлен');
+    expect(options[0].textContent).toContain('В таблице');
     options[1].click();
     await fixture.whenStable();
     options[2].click();

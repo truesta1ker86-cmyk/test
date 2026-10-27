@@ -305,12 +305,12 @@ describe('Warehouse allocation editing', () => {
     expect(result).toEqual([]);
   });
   it('retains drafts across sections while separating shops', () => {
-    const drafts = new StockDrafts();
+    const drafts = TestBed.inject(StockDrafts);
     drafts.forShop(4).selection.set(new Set(['A']));
     drafts.forShop(4).columns.set(['W1']);
     expect(drafts.forShop(4).selection().has('A')).toBe(true);
     expect(drafts.forShop(5).selection().size).toBe(0);
-    expect(drafts.forShop(5).columns()).toBeNull();
+    expect(drafts.forShop(5).columns()).toEqual([]);
   });
   it('keeps an invalid field blocked while another field is edited', () => {
     const { component } = setup();

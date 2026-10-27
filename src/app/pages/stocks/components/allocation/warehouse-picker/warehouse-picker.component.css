@@ -7,9 +7,8 @@
   z-index: 80;
 }
 .picker-actions {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 7px;
+  display: flex;
+  flex-direction: column;
 }
 .picker-trigger {
   display: flex;
