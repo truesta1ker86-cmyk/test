@@ -115,6 +115,15 @@
   background: #dce8ff !important;
   box-shadow: inset 0 0 0 2px var(--brand) !important;
 }
+:host ::ng-deep .operation-table > tbody > tr:nth-child(odd) > td {
+  background: #ffffff;
+}
+:host ::ng-deep .operation-table > tbody > tr:nth-child(even) > td {
+  background: #eff4ff;
+}
+:host ::ng-deep .operation-table > tbody > tr:hover > td {
+  background: #dce8ff;
+}
 :host ::ng-deep td[data-finance-value] {
   cursor: cell;
 }
