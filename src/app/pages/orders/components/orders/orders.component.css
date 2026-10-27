@@ -79,12 +79,11 @@
   border-collapse: separate;
   border-spacing: 0;
 }
-:host ::ng-deep .operational-table th {
+:host ::ng-deep .orders-page .operational-table thead th {
   padding: 6px 10px;
 }
-:host ::ng-deep .operational-table td {
+:host ::ng-deep .orders-page .operational-table tbody td {
   padding: 7px 10px;
-  font-size: 12px;
   line-height: 1.35;
 }
 :host ::ng-deep .operational-table small {
@@ -313,4 +312,12 @@
   .order-bulk-bar .button-row {
     flex-wrap: wrap;
   }
+}
+
+:host ::ng-deep .orders-page .order-row-actions .button {
+  display: inline-flex;
+  min-height: 26px;
+  padding: 4px 6px;
+  margin: 0 4px 4px 0;
+  font-size: 10px;
 }
