@@ -100,8 +100,9 @@ small {
 }
 .warehouse-default-card {
   padding: 8px;
-  border: 1px solid var(--border);
+  border: 1px solid #d0d5dd;
   border-radius: 8px;
+  background: #f4f5f7;
 }
 .warehouse-default-card header {
   display: flex;
@@ -471,9 +472,6 @@ small {
   .allocation-tools {
     grid-template-columns: minmax(100px, 1fr) auto;
   }
-}
-
-@media (max-width: 720px) {
   :host ::ng-deep .product-cell > div {
     max-width: 180px;
   }
