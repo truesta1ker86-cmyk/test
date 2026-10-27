@@ -19,6 +19,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { ListboxModule } from 'primeng/listbox';
+import { FilterOverlayBoundsDirective } from './filter-overlay-bounds.directive';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SliderModule } from 'primeng/slider';
@@ -35,6 +36,7 @@ import { FilterService } from './infrastructure/services/filter.service';
     FilterPanelDirective,
     FilterGroupDirective,
     FilterControlDirective,
+    FilterOverlayBoundsDirective,
 
     // Базовый компонент
     FilterBaseComponent,
@@ -70,6 +72,7 @@ import { FilterService } from './infrastructure/services/filter.service';
     TooltipModule,
   ],
   exports: [
+    FilterOverlayBoundsDirective,
     // Директивы
     FilterPanelDirective,
     FilterGroupDirective,

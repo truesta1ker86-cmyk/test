@@ -29,3 +29,17 @@ Deploy frontend through ii_test, then repeat authenticated live checks. No backe
 changes, saved views, business operations or database changes are part of this
 release. Revert this frontend commit and push normally to ii_test for rollback.
 Record final deployment and live evidence separately after the workflow finishes.
+
+## Shared select bounds
+
+A subsequent live mobile check found a financial brand dropdown extending to
+540px in a 480px-high viewport after its content loaded. Shared select wrappers
+now use FilterOverlayBoundsDirective. It listens to PrimeNG's public show/hide
+events and observes the owned overlay's size and library alignment updates,
+keeping its fixed rectangle within viewport margins. Search realignment and
+async options preserve the same boundary. Observers/listeners/animation frames
+are released when the overlay closes. No selection or query logic changes.
+
+Validation: 359 tests in 69 files, architecture/employer/filter integration
+checks, production build and synthetic browser search/resize behavior. Native
+dialog dropdown ownership and the inline warehouse checklist remain unchanged.
