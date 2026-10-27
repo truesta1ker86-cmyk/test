@@ -13,7 +13,7 @@
 @if (opened()) {
   <dialog
     #drawer
-    class="stock-filter-panel"
+    class="stock-filter-panel pricing-filter-dialog"
     aria-label="Фильтры расчёта цен"
     appModalFocus
     (modalEscape)="opened.set(false)"
@@ -53,6 +53,7 @@
       ></label>
       @for (field of fields; track field[0]) {
         <app-filter-multiselect
+          [appendTo]="filterOverlays"
           [key]="field[0]"
           [label]="field[1]"
           [options]="options(field[0])"
@@ -81,6 +82,7 @@
       ></label>
       <label class="full-width"
         >Акционная цена ниже минималки<app-filter-select
+          [appendTo]="filterOverlays"
           [ngModel]="draft().promo_below_minimum"
           (ngModelChange)="set('promo_below_minimum', $event)"
           [options]="promoBelowMinimumOptions()"
@@ -93,6 +95,7 @@
         <summary>Условия отбора строк</summary>
         <label
           >Соответствие<app-filter-select
+            [appendTo]="filterOverlays"
             [ngModel]="draft().logic"
             (ngModelChange)="set('logic', $event)"
             [options]="logicOptions()"
@@ -104,6 +107,7 @@
         @for (c of conditions(); track $index; let i = $index) {
           <div class="condition-row">
             <app-filter-select
+              [appendTo]="filterOverlays"
               [ngModel]="c.field"
               (ngModelChange)="changeCondition(i, 'field', $event)"
               [options]="conditionFieldOptions()"
@@ -112,6 +116,7 @@
               [showLabel]="false"
             ></app-filter-select>
             <app-filter-select
+              [appendTo]="filterOverlays"
               [ngModel]="c.operator"
               (ngModelChange)="changeCondition(i, 'operator', $event)"
               [options]="conditionOperatorOptions()"
@@ -143,6 +148,7 @@
         <summary>Сохранённые отборы</summary>
         <label
           >Отбор<app-filter-select
+            [appendTo]="filterOverlays"
             [ngModel]="viewId"
             [options]="viewIdOptions()"
             label="Сохранённый отбор"
@@ -193,5 +199,6 @@
       <button class="button" type="button" (click)="reset()">Сбросить фильтры</button
       ><button class="button primary" type="button" (click)="apply()">Применить</button>
     </footer>
+    <div #filterOverlays class="filter-overlay-layer"></div>
   </dialog>
 }

@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { Api } from '../../../../core/infrastructure/services/api.service';
 import { FilterMultiselectComponent } from '../../../../shared/directives/filter-panel/components/filter-multiselect/filter-multiselect.component';
 import { FilterSelectComponent } from '../../../../shared/directives/filter-panel/components/filter-select/filter-select.component';
+import { Select } from 'primeng/select';
 import { PricingFiltersModule } from './pricing-filters.module';
 import { PricingFilters } from './pricing-filters.component';
 import { parsePricingQuery } from '../../infrastructure/utils/pricing-query.utils';
@@ -83,6 +84,17 @@ describe('Pricing filters through original controls and FilterService', () => {
       }),
     );
     expect(fixture.nativeElement.querySelectorAll('app-stock-choice')).toHaveLength(0);
+  });
+
+  it('keeps dropdowns in the dialog outside its scrolling fields', async () => {
+    const { fixture } = await setup();
+    const dialog = fixture.nativeElement.querySelector('dialog');
+    const layer = dialog.querySelector('.filter-overlay-layer');
+    expect(dialog.contains(layer)).toBe(true);
+    expect(dialog.querySelector('.stock-filter-grid').contains(layer)).toBe(false);
+    for (const select of fixture.debugElement.queryAll(By.directive(Select))) {
+      expect(select.componentInstance.appendTo()).toBe(layer);
+    }
   });
   it('loads a saved query through the actual original select and resets its controls', async () => {
     const { fixture, page, control } = await setup();

@@ -57,6 +57,48 @@ describe('One table-column popup', () => {
     ).toBeTruthy();
   });
 
+  it('repositions after async size changes and scroll, and releases its observer on close', async () => {
+    let resized!: () => void;
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          resized = callback;
+        }
+        observe() {}
+        disconnect = disconnect;
+      },
+    );
+    try {
+      const { component, fixture, root } = await setup();
+      const dialog = root.querySelector('dialog')!;
+      const trigger = root.querySelector('button')!;
+      let height = 180;
+      let anchorTop = window.innerHeight - 50;
+      vi.spyOn(dialog, 'getBoundingClientRect').mockImplementation(
+        () => new DOMRect(0, 0, 300, height),
+      );
+      vi.spyOn(trigger, 'getBoundingClientRect').mockImplementation(
+        () => new DOMRect(500, anchorTop, 28, 28),
+      );
+      resized();
+      const oldTop = component.position().top;
+      height = 420;
+      resized();
+      expect(component.position().top).toBeLessThan(oldTop);
+      expect(component.position().top + height).toBeLessThanOrEqual(window.innerHeight - 12);
+      anchorTop = 0;
+      window.dispatchEvent(new Event('scroll'));
+      expect(component.position().top).toBe(34);
+      component.close();
+      await fixture.whenStable();
+      expect(disconnect).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('searches all options, selects found values and cancels without changing the committed rule', async () => {
     const { fixture, component, root, changes } = await setup();
     const search = root.querySelector<HTMLInputElement>(

@@ -180,73 +180,79 @@
       </button>
     </header>
     <form [formGroup]="form" (ngSubmit)="applyMappingFilters()">
-      <label
-        >Номенклатура<app-filter-text
-          formControlName="name_search"
-          label="Номенклатура"
-          key="name_search"
-          [showLabel]="false"
-        ></app-filter-text></label
-      ><label
-        >Артикул<app-filter-text
-          formControlName="q"
-          placeholder="Артикул Ozon, код или артикул 1С"
-          label="Артикул"
-          key="q"
-          [showLabel]="false"
-        ></app-filter-text
-      ></label>
-      <label
-        >Статус<app-filter-select
-          formControlName="mapping_status"
-          [options]="mappingStatusOptions()"
-          label="Статус"
-          key="mapping_status"
-          [showLabel]="false"
-        ></app-filter-select
-      ></label>
-      <label
-        >Почему не сопоставлен<app-filter-select
-          formControlName="mapping_reason"
-          [options]="mappingReasonOptions()"
-          label="Почему не сопоставлен"
-          key="mapping_reason"
-          [showLabel]="false"
-        ></app-filter-select
-      ></label>
-      @for (field of mappingFacets; track field.key) {
-        <app-filter-multiselect
-          [key]="field.key"
-          [label]="field.label"
-          [options]="facetOptions(field.key)"
-          [ngModel]="form.controls[field.key].value | filterValues"
-          (ngModelChange)="setFacet(field.key, $event)"
-          [ngModelOptions]="{ standalone: true }"
-        />
-      }
-      <label
-        >Список артикулов<app-filter-text
-          formControlName="articles"
-          placeholder="Через пробел или с новой строки"
-          label="Список артикулов"
-          [multiline]="true"
-          key="articles"
-          [showLabel]="false"
-        ></app-filter-text></label
-      ><label class="check"
-        ><app-filter-boolean
-          [formControl]="excludeArticles"
-          label="Исключить перечисленные артикулы"
-          key="excludeArticles"
-          [showLabel]="false"
-        ></app-filter-boolean
-        >Исключить перечисленные артикулы</label
-      >
+      <div class="mapping-filter-body">
+        <label
+          >Номенклатура<app-filter-text
+            formControlName="name_search"
+            label="Номенклатура"
+            key="name_search"
+            [showLabel]="false"
+          ></app-filter-text></label
+        ><label
+          >Артикул<app-filter-text
+            formControlName="q"
+            placeholder="Артикул Ozon, код или артикул 1С"
+            label="Артикул"
+            key="q"
+            [showLabel]="false"
+          ></app-filter-text
+        ></label>
+        <label
+          >Статус<app-filter-select
+            [appendTo]="filterOverlays"
+            formControlName="mapping_status"
+            [options]="mappingStatusOptions()"
+            label="Статус"
+            key="mapping_status"
+            [showLabel]="false"
+          ></app-filter-select
+        ></label>
+        <label
+          >Почему не сопоставлен<app-filter-select
+            [appendTo]="filterOverlays"
+            formControlName="mapping_reason"
+            [options]="mappingReasonOptions()"
+            label="Почему не сопоставлен"
+            key="mapping_reason"
+            [showLabel]="false"
+          ></app-filter-select
+        ></label>
+        @for (field of mappingFacets; track field.key) {
+          <app-filter-multiselect
+            [appendTo]="filterOverlays"
+            [key]="field.key"
+            [label]="field.label"
+            [options]="facetOptions(field.key)"
+            [ngModel]="form.controls[field.key].value | filterValues"
+            (ngModelChange)="setFacet(field.key, $event)"
+            [ngModelOptions]="{ standalone: true }"
+          />
+        }
+        <label
+          >Список артикулов<app-filter-text
+            formControlName="articles"
+            placeholder="Через пробел или с новой строки"
+            label="Список артикулов"
+            [multiline]="true"
+            key="articles"
+            [showLabel]="false"
+          ></app-filter-text></label
+        ><label class="check"
+          ><app-filter-boolean
+            [formControl]="excludeArticles"
+            label="Исключить перечисленные артикулы"
+            key="excludeArticles"
+            [showLabel]="false"
+          ></app-filter-boolean
+          >Исключить перечисленные артикулы</label
+        >
+      </div>
       <footer>
         <button class="button" type="button" (click)="resetMappingFilters()">Сбросить</button
         ><button class="button primary" type="submit">Применить фильтры</button>
       </footer>
     </form>
+    <div #filterOverlays class="filter-overlay-layer"></div>
   </dialog>
 }
 @if (productDetails(); as row) {

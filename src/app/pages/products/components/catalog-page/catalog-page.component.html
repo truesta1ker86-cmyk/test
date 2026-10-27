@@ -305,138 +305,149 @@
       </button>
     </header>
     <form [formGroup]="form" (ngSubmit)="applyProductFilters()" class="catalog-filters">
-      <div class="catalog-search">
-        <label
-          >Номенклатура<app-filter-text
-            formControlName="name_search"
-            placeholder="Название товара"
-            label="Номенклатура"
-            key="name_search"
-            [showLabel]="false"
-          ></app-filter-text
-        ></label>
-        <label
-          >Артикул<app-filter-text
-            formControlName="q"
-            placeholder="Артикул, SKU или код 1С"
-            label="Артикул"
-            key="q"
-            [showLabel]="false"
-          ></app-filter-text
-        ></label>
-        <label
-          >Сопоставление<app-filter-select
-            formControlName="mapping_status"
-            (userChange)="
-              mode === 'mapping' && setMappingGroup(form.controls['mapping_status'].value)
-            "
-            [options]="mappingStatusOptions()"
-            label="Сопоставление"
-            key="mapping_status"
-            [showLabel]="false"
-          ></app-filter-select
-        ></label>
-        @if (mode === 'mapping') {
+      <div class="catalog-filter-body">
+        <div class="catalog-search">
           <label
-            >Почему не сопоставлен<app-filter-select
-              formControlName="mapping_reason"
+            >Номенклатура<app-filter-text
+              formControlName="name_search"
+              placeholder="Название товара"
+              label="Номенклатура"
+              key="name_search"
+              [showLabel]="false"
+            ></app-filter-text
+          ></label>
+          <label
+            >Артикул<app-filter-text
+              formControlName="q"
+              placeholder="Артикул, SKU или код 1С"
+              label="Артикул"
+              key="q"
+              [showLabel]="false"
+            ></app-filter-text
+          ></label>
+          <label
+            >Сопоставление<app-filter-select
+              [appendTo]="filterOverlays"
+              formControlName="mapping_status"
               (userChange)="
-                form.controls['mapping_reason'].value &&
-                  form.controls['mapping_status'].setValue('unmatched');
-                applyFilters()
+                mode === 'mapping' && setMappingGroup(form.controls['mapping_status'].value)
               "
-              [options]="mappingReasonOptions()"
-              label="Почему не сопоставлен"
-              key="mapping_reason"
+              [options]="mappingStatusOptions()"
+              label="Сопоставление"
+              key="mapping_status"
               [showLabel]="false"
             ></app-filter-select
           ></label>
-        }
-        @if (mode === 'products') {
-          <label
-            >Продажи за период<app-filter-select
-              formControlName="days"
-              [options]="daysOptions()"
-              label="Продажи за период"
-              key="days"
-              [showLabel]="false"
-            ></app-filter-select
-          ></label>
-        }
-      </div>
-      <div class="catalog-more">
-        <div class="catalog-facet-grid">
-          @for (field of fields; track field.key) {
-            <app-filter-multiselect
-              [key]="field.key"
-              [label]="field.label"
-              [options]="facetOptions(field.key)"
-              [ngModel]="form.controls[field.key].value | filterValues"
-              (ngModelChange)="setFacet(field.key, $event)"
-              [ngModelOptions]="{ standalone: true }"
-            />
+          @if (mode === 'mapping') {
+            <label
+              >Почему не сопоставлен<app-filter-select
+                [appendTo]="filterOverlays"
+                formControlName="mapping_reason"
+                (userChange)="
+                  form.controls['mapping_reason'].value &&
+                    form.controls['mapping_status'].setValue('unmatched');
+                  applyFilters()
+                "
+                [options]="mappingReasonOptions()"
+                label="Почему не сопоставлен"
+                key="mapping_reason"
+                [showLabel]="false"
+              ></app-filter-select
+            ></label>
           }
+          @if (mode === 'products') {
+            <label
+              >Продажи за период<app-filter-select
+                [appendTo]="filterOverlays"
+                formControlName="days"
+                [options]="daysOptions()"
+                label="Продажи за период"
+                key="days"
+                [showLabel]="false"
+              ></app-filter-select
+            ></label>
+          }
+        </div>
+        <div class="catalog-more">
+          <div class="catalog-facet-grid">
+            @for (field of fields; track field.key) {
+              <app-filter-multiselect
+                [appendTo]="filterOverlays"
+                [key]="field.key"
+                [label]="field.label"
+                [options]="facetOptions(field.key)"
+                [ngModel]="form.controls[field.key].value | filterValues"
+                (ngModelChange)="setFacet(field.key, $event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            }
+            <label
+              >Себестоимость<app-filter-select
+                [appendTo]="filterOverlays"
+                formControlName="cost_mode"
+                [options]="costModeOptions()"
+                label="Себестоимость"
+                key="cost_mode"
+                [showLabel]="false"
+              ></app-filter-select
+            ></label>
+            <label class="article-list"
+              >Артикулы продавца<app-filter-text
+                formControlName="articles"
+                placeholder="Через пробел, запятую или с новой строки"
+                label="Артикулы продавца"
+                [multiline]="true"
+                key="articles"
+                [showLabel]="false"
+              ></app-filter-text>
+            </label>
+            <label class="check-label"
+              ><app-filter-boolean
+                [formControl]="excludeArticles"
+                label="Исключить перечисленные артикулы"
+                key="excludeArticles"
+                [showLabel]="false"
+              ></app-filter-boolean
+              >Исключить перечисленные артикулы</label
+            >
+          </div>
+        </div>
+        <div class="catalog-sort">
           <label
-            >Себестоимость<app-filter-select
-              formControlName="cost_mode"
-              [options]="costModeOptions()"
-              label="Себестоимость"
-              key="cost_mode"
+            >Сортировка<app-filter-select
+              [appendTo]="filterOverlays"
+              formControlName="sort"
+              [options]="sortOptions()"
+              label="Сортировка"
+              key="sort"
+              [showLabel]="false"
+            ></app-filter-select></label
+          ><label
+            >Порядок<app-filter-select
+              [appendTo]="filterOverlays"
+              formControlName="direction"
+              [options]="directionOptions()"
+              label="Порядок"
+              key="direction"
+              [showLabel]="false"
+            ></app-filter-select></label
+          ><label
+            >На странице<app-filter-select
+              [appendTo]="filterOverlays"
+              formControlName="page_size"
+              [options]="pageSizeOptions()"
+              label="На странице"
+              key="page_size"
               [showLabel]="false"
             ></app-filter-select
           ></label>
-          <label class="article-list"
-            >Артикулы продавца<app-filter-text
-              formControlName="articles"
-              placeholder="Через пробел, запятую или с новой строки"
-              label="Артикулы продавца"
-              [multiline]="true"
-              key="articles"
-              [showLabel]="false"
-            ></app-filter-text>
-          </label>
-          <label class="check-label"
-            ><app-filter-boolean
-              [formControl]="excludeArticles"
-              label="Исключить перечисленные артикулы"
-              key="excludeArticles"
-              [showLabel]="false"
-            ></app-filter-boolean
-            >Исключить перечисленные артикулы</label
-          >
         </div>
-      </div>
-      <div class="catalog-sort">
-        <label
-          >Сортировка<app-filter-select
-            formControlName="sort"
-            [options]="sortOptions()"
-            label="Сортировка"
-            key="sort"
-            [showLabel]="false"
-          ></app-filter-select></label
-        ><label
-          >Порядок<app-filter-select
-            formControlName="direction"
-            [options]="directionOptions()"
-            label="Порядок"
-            key="direction"
-            [showLabel]="false"
-          ></app-filter-select></label
-        ><label
-          >На странице<app-filter-select
-            formControlName="page_size"
-            [options]="pageSizeOptions()"
-            label="На странице"
-            key="page_size"
-            [showLabel]="false"
-          ></app-filter-select
-        ></label>
       </div>
       <footer>
         <button type="button" class="button" (click)="resetProductFilters()">Сбросить</button
         ><button type="submit" class="button primary">Применить фильтры</button>
       </footer>
     </form>
+    <div #filterOverlays class="filter-overlay-layer"></div>
   </dialog>
 }

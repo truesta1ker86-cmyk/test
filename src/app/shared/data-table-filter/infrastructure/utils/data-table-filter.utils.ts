@@ -15,6 +15,7 @@ export function filterPosition(
 ) {
   const left = Math.max(12, Math.min(anchor.right - width, viewportWidth - width - 12));
   const below = anchor.bottom + 6;
-  const top = below + height <= viewportHeight - 12 ? below : Math.max(12, anchor.top - height - 6);
+  const preferred = below + height <= viewportHeight - 12 ? below : anchor.top - height - 6;
+  const top = Math.max(12, Math.min(preferred, viewportHeight - height - 12));
   return { left, top };
 }

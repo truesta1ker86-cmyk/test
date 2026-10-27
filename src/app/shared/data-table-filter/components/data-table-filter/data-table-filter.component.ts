@@ -88,17 +88,35 @@ export class DataTableFilterComponent {
   private selectingFound: Set<string> | null = null;
 
   constructor() {
-    effect(() => {
+    effect((onCleanup) => {
       const dialog = this.dialog()?.nativeElement;
-      if (!dialog || dialog.open) return;
-      dialog.showModal();
-      const anchor = this.trigger()?.nativeElement.getBoundingClientRect();
-      if (anchor) {
+      if (!dialog) return;
+      if (!dialog.open) dialog.showModal();
+      const place = () => {
+        const anchor = this.trigger()?.nativeElement.getBoundingClientRect();
+        if (!anchor) return;
         const size = dialog.getBoundingClientRect();
-        this.position.set(
-          filterPosition(anchor, size.width, size.height, window.innerWidth, window.innerHeight),
+        const next = filterPosition(
+          anchor,
+          size.width,
+          size.height,
+          window.innerWidth,
+          window.innerHeight,
         );
-      }
+        this.position.update((current) =>
+          current.left === next.left && current.top === next.top ? current : next,
+        );
+      };
+      place();
+      const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(place);
+      observer?.observe(dialog);
+      window.addEventListener('resize', place);
+      window.addEventListener('scroll', place, true);
+      onCleanup(() => {
+        observer?.disconnect();
+        window.removeEventListener('resize', place);
+        window.removeEventListener('scroll', place, true);
+      });
     });
     effect(() => {
       this.options();

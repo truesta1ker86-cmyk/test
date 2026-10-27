@@ -383,3 +383,14 @@ body.o1c-ui {
     animation-duration: 2s;
   }
 }
+
+/* Owned by its dialog, outside scrolling fields; PrimeNG uses viewport coordinates. */
+.filter-overlay-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+.filter-overlay-layer > .p-overlay {
+  pointer-events: auto;
+}

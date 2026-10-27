@@ -7,7 +7,17 @@
   margin-bottom: 16px;
 }
 .catalog-filters {
-  padding: 18px 20px 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.catalog-filter-body {
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 .catalog-search {
   display: flex;
@@ -116,21 +126,25 @@ summary {
   margin-left: auto;
 }
 .catalog-filter-dialog {
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
   width: 780px;
   max-width: calc(100vw - 24px);
+  height: min(760px, calc(100dvh - 24px));
   max-height: calc(100dvh - 24px);
   border: 1px solid var(--border);
   border-radius: var(--panel-radius);
   padding: 0;
   background: var(--surface);
   color: var(--text);
-  overflow: auto;
+  overflow: visible;
 }
 .catalog-filter-dialog::backdrop {
   background: #10182866;
 }
 .catalog-filter-dialog header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -138,6 +152,7 @@ summary {
   border-bottom: 1px solid var(--border);
 }
 .catalog-filter-dialog h2 {
+  margin: 0;
   font-size: 16px;
 }
 .catalog-filter-dialog input:not([type='checkbox']),
@@ -146,12 +161,20 @@ summary {
   border-radius: var(--control-radius);
 }
 .catalog-filter-dialog footer {
+  flex-shrink: 0;
+  position: static;
+  z-index: auto;
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 14px 0;
+  padding: 10px 16px;
   border-top: 1px solid var(--border);
+}
+.catalog-filter-dialog footer .button {
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 12px;
 }
 :host ::ng-deep .catalog-table {
   min-width: 1280px;
@@ -308,8 +331,14 @@ summary {
   }
   .catalog-sort label {
     flex: 1;
+    flex-direction: column;
+    align-items: stretch;
+    white-space: normal;
   }
-  .catalog-filters {
-    padding: 14px 12px 0;
+  .catalog-filter-body {
+    padding: 12px;
+  }
+  .catalog-search > label:first-child {
+    min-width: 0;
   }
 }

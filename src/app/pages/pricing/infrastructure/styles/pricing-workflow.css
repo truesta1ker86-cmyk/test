@@ -1,6 +1,24 @@
 .full-width {
   grid-column: 1 / -1;
 }
+dialog.stock-filter-panel.pricing-filter-dialog {
+  position: fixed;
+  inset: 12px 12px 12px auto;
+  margin: 0;
+  width: min(720px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  height: calc(100dvh - 24px);
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  overflow: visible;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+}
+.pricing-filter-dialog::backdrop {
+  background: #10182866;
+}
 .workflow-error {
   color: var(--danger, #b42318);
 }
