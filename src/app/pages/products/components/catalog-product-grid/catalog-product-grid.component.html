@@ -4,6 +4,7 @@
     [data]="loading() ? [] : rows()"
     selectionMode="none"
     [columns]="tableColumns1()"
+    [tableStyle]="tableStyle"
     [selection]="visibleTableSelection()"
     [headerTemplate]="tableHeader1"
     [rowClickable]="false"
@@ -15,7 +16,7 @@
   >
     <ng-template #tableHeader1>
       <tr>
-        <th class="check-cell">
+        <th class="check-cell" [style.width]="columnWidth('selection')">
           <input
             type="checkbox"
             aria-label="Выбрать все товары текущего фильтра"
@@ -26,6 +27,7 @@
         </th>
         @for (col of columns; track col.key) {
           <th
+            [style.width]="columnWidth(col.key)"
             [attr.data-column-label]="col.label"
             [class.name-cell]="col.key === 'name'"
             [attr.aria-sort]="
@@ -55,7 +57,7 @@
             </div>
           </th>
         }
-        <th>Действия</th>
+        <th [style.width]="columnWidth('actions')">Действия</th>
       </tr>
     </ng-template>
     <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">

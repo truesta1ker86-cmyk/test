@@ -16,6 +16,7 @@ import { MappingWorkspaceModule } from '../../../mapping/components/mapping-work
 import { MappingMoreModule } from '../../../mapping/directives/mapping-more/mapping-more.module';
 import { MappingModalModule } from '../../../mapping/directives/mapping-modal/mapping-modal.module';
 import { ModalFocusModule } from '../../../../shared/directives/modal-focus/modal-focus.module';
+import { PopupButtonModule } from '../../../../shared/popup-button/popup-button.module';
 
 @NgModule({
   declarations: [CatalogPageComponent],
@@ -36,6 +37,7 @@ import { ModalFocusModule } from '../../../../shared/directives/modal-focus/moda
     MappingMoreModule,
     MappingModalModule,
     ModalFocusModule,
+    PopupButtonModule,
   ],
   exports: [CatalogPageComponent],
 })

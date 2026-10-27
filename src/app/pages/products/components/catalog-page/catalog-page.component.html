@@ -52,17 +52,73 @@
     </button>
     @if (canManage() && mode === 'products') {
       <div class="button-row catalog-actions">
-        <button
-          class="button"
-          [disabled]="!selected().size || busy()"
-          (click)="attributeHistoryOnly.set(false); attributeBulk.set(true)"
-        >
-          Характеристики
-        </button>
+        <fieldset class="catalog-action-control" [disabled]="!selected().size || busy()">
+          <app-popup-button
+            icon="i-edit"
+            label="Действия"
+            ariaLabel="Действия с выбранными товарами"
+            triggerClass="button catalog-action-trigger"
+            popoverClass="catalog-action-menu"
+            popupWidth="min(300px, calc(100vw - 24px))"
+            [showCount]="false"
+            [open]="actionsOpen()"
+            (openChange)="actionsOpen.set($event)"
+          >
+            <div
+              class="catalog-action-items"
+              role="group"
+              aria-label="Действия с выбранными товарами"
+            >
+              <button
+                class="button"
+                [disabled]="!selected().size || busy()"
+                (click)="
+                  actionsOpen.set(false); attributeHistoryOnly.set(false); attributeBulk.set(true)
+                "
+              >
+                Характеристики
+              </button>
+              @if (mode === 'products') {
+                <button
+                  class="button"
+                  [disabled]="!selected().size || busy()"
+                  (click)="actionsOpen.set(false); edit('finance')"
+                >
+                  Категория, тип и маржа
+                </button>
+                <button
+                  class="button"
+                  [disabled]="!selected().size || busy()"
+                  (click)="actionsOpen.set(false); openStocks()"
+                >
+                  Остатки
+                </button>
+              }
+              @if (selected().size) {
+                <button
+                  class="button"
+                  [disabled]="!selected().size || busy()"
+                  (click)="actionsOpen.set(false); edit('mapping')"
+                >
+                  Сопоставить с 1С</button
+                ><button
+                  class="button"
+                  [disabled]="!selected().size || busy()"
+                  (click)="actionsOpen.set(false); edit('cost')"
+                >
+                  Стоимость и квант</button
+                ><button
+                  class="button"
+                  [disabled]="!selected().size || busy()"
+                  (click)="actionsOpen.set(false); edit('labels')"
+                >
+                  Изменить поля
+                </button>
+              }
+            </div>
+          </app-popup-button>
+        </fieldset>
         @if (mode === 'products') {
-          <button class="button" [disabled]="!selected().size || busy()" (click)="edit('finance')">
-            Категория, тип и маржа
-          </button>
           <button
             class="button"
             [disabled]="!selected().size || busy()"
@@ -76,18 +132,6 @@
             (click)="campaignOffers.set(selectedOffers())"
           >
             Конкретная акция…
-          </button>
-          <button class="button" [disabled]="!selected().size || busy()" (click)="openStocks()">
-            Остатки
-          </button>
-        }
-        @if (selected().size) {
-          <button class="button" [disabled]="!selected().size || busy()" (click)="edit('mapping')">
-            Сопоставить с 1С</button
-          ><button class="button" [disabled]="!selected().size || busy()" (click)="edit('cost')">
-            Стоимость и квант</button
-          ><button class="button" [disabled]="!selected().size || busy()" (click)="edit('labels')">
-            Изменить поля
           </button>
         }
       </div>

@@ -50,6 +50,7 @@ import { CatalogSelections } from '../../infrastructure/services/catalog-selecti
   changeDetection: ChangeDetectionStrategy.OnPush,
 
   selector: 'app-catalog-page',
+  host: { '[class.product-catalog-page]': "mode === 'products'" },
 
   templateUrl: './catalog-page.component.html',
   styleUrl: '../../infrastructure/styles/catalog.css',
@@ -70,6 +71,7 @@ export class CatalogPageComponent {
     return this.mode === 'products' ? 'Карточки товаров' : 'Связь товаров с 1С';
   }
   readonly productFiltersOpen = signal(false);
+  readonly actionsOpen = signal(false);
   applyProductFilters() {
     this.clearRules();
     this.applyFilters();

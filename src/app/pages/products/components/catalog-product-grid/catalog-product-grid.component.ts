@@ -8,6 +8,7 @@ import {
 import {
   CATALOG_PRODUCT_GRID_TABLE_COLUMNS1,
   CATALOG_PRODUCT_GRID_COLUMNS,
+  CATALOG_PRODUCT_GRID_TABLE_STYLE,
 } from './infrastructure/constants/catalog-product-grid.constants';
 import type { DataTableColumn } from '../../../../shared/data-table/infrastructure/interfaces/data-table-config.interfaces';
 import type { CatalogRow } from '../../infrastructure/interfaces/contracts.interfaces';
@@ -29,6 +30,10 @@ import { ColumnChange, ColumnRules } from '../../../../shared/directives/filter-
   ],
 })
 export class CatalogProductGrid {
+  readonly tableStyle = CATALOG_PRODUCT_GRID_TABLE_STYLE;
+  columnWidth(field: string): string | undefined {
+    return CATALOG_PRODUCT_GRID_TABLE_COLUMNS1.find((column) => column.field === field)?.width;
+  }
   readonly visibleTableSelection = selectionComputed(() =>
     this.rows().filter((row) => this.selected().has(row.offer_id)),
   );

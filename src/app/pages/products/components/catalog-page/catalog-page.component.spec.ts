@@ -89,11 +89,17 @@ describe('Local catalog selection and refresh', () => {
     expect(toolbar.textContent).toContain('Остатки');
     page.toggle('A-001');
     fixture.detectChanges();
+    (
+      toolbar.querySelector('[aria-label="Действия с выбранными товарами"]') as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    expect(page.actionsOpen()).toBe(true);
     const cost = [...toolbar.querySelectorAll('button')].find((b) =>
       b.textContent.includes('Стоимость и квант'),
     )!;
     expect(cost.disabled).toBe(false);
     cost.click();
+    expect(page.actionsOpen()).toBe(false);
     expect(page.action()?.kind).toBe('cost');
     expect(page.action()?.offers).toEqual(['A-001']);
     http.verify();
