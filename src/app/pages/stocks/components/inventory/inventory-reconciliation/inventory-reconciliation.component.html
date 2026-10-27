@@ -1,4 +1,9 @@
-<div class="table-wrap" [attr.aria-busy]="loading">
+<div
+  class="table-wrap"
+  tabindex="0"
+  aria-label="Таблица общего остатка с прокруткой"
+  [attr.aria-busy]="loading"
+>
   <app-data-table
     [data]="items"
     selectionMode="none"

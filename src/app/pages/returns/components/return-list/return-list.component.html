@@ -1,0 +1,96 @@
+<div class="table-scroll" tabindex="0" aria-label="Таблица возвратов с прокруткой">
+  <app-data-table
+    class="returns-table"
+    [columns]="columns"
+    [headerTemplate]="tableHeader"
+    entity="returns"
+    [filters]="filters()"
+    [data]="returns()"
+    [refreshToken]="refreshToken()"
+    dataKey="return_id"
+    selectionMode="none"
+    [rowClickable]="false"
+    [scrollable]="false"
+    tableStyleClass="operation-table operational-table"
+    emptyMessage="Нет данных"
+    (sortChange)="sortChange.emit($event)"
+    (pageChange)="pageChange.emit($event)"
+    (dataLoaded)="dataLoaded.emit($any($event))"
+    (dataError)="dataFailed.emit($event)"
+  >
+    <ng-template #tableHeader>
+      <tr>
+        @for (col of columns; track col.field) {
+          <th
+            [attr.data-column-label]="col.header"
+            [attr.aria-sort]="
+              headingSort().field === col.field
+                ? headingSort().desc
+                  ? 'descending'
+                  : 'ascending'
+                : 'none'
+            "
+          >
+            <div class="column-heading">
+              <button class="heading-sort" (click)="sortChange.emit(col.field)">
+                {{ col.header }}
+                <span aria-hidden="true">{{
+                  headingSort().field === col.field ? (headingSort().desc ? '↓' : '↑') : '↕'
+                }}</span>
+              </button>
+              <app-data-table-filter
+                [field]="col.field"
+                [label]="col.header"
+                [numeric]="col.field === 'amount'"
+                [rule]="columnRules()[col.field]"
+                [remoteOptions]="true"
+                [counts]="choices().field === col.field ? choices().counts || {} : {}"
+                [options]="choices().field === col.field ? choices().values : []"
+                [optionsBusy]="choices().field === col.field && choices().busy"
+                [optionsError]="choices().field === col.field ? choices().error : ''"
+                [optionsTotal]="choices().field === col.field ? choices().total : 0"
+                [optionsHasMore]="choices().field === col.field && choices().hasMore"
+                (optionsRequested)="loadChoices(col.field, $event)"
+                (changed)="columnChange.emit($event)"
+              />
+            </div>
+          </th>
+        }
+      </tr>
+    </ng-template>
+    <ng-template #cellTemplate let-row let-column="column">
+      @switch (column.cellTemplate.slot) {
+        @case ('posting') {
+          <span data-o1c-cell-content>{{ row.posting_number || '—' }}</span>
+        }
+        @case ('offer') {
+          <span data-o1c-cell-content>
+            @if (row.offer_id) {
+              <a
+                [appProductName]="row"
+                routerLink="/products/card"
+                [queryParams]="{ offer_id: row.offer_id }"
+                >{{ row.offer_id }}</a
+              >
+            } @else {
+              —
+            }
+          </span>
+        }
+        @case ('amount') {
+          <span data-o1c-cell-content class="numeric">{{
+            currency(row.returns_amount, row.currency)
+          }}</span>
+        }
+        @case ('date') {
+          <span data-o1c-cell-content>{{ date(row.returned_at).split(',')[0] }}</span>
+        }
+        @case ('status') {
+          <span data-o1c-cell-content
+            ><span class="status-pill">{{ status(row.status) }}</span></span
+          >
+        }
+      }
+    </ng-template>
+  </app-data-table>
+</div>

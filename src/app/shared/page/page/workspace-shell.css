@@ -1,0 +1,191 @@
+:host {
+  display: block;
+  height: 100dvh;
+  min-height: 0;
+}
+.layout {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  --current-sidebar-w: 248px;
+}
+.layout.collapsed {
+  --current-sidebar-w: 80px;
+}
+.sidebar {
+  width: var(--current-sidebar-w);
+  z-index: 60;
+}
+.layout.collapsed .sidebar-head {
+  position: relative;
+  justify-content: center;
+  padding: 16px 8px;
+}
+.layout.collapsed .sidebar .logo-text {
+  display: none;
+}
+.layout.collapsed .sidebar-collapse {
+  position: absolute;
+  top: 20px;
+  right: -14px;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+}
+.layout.collapsed .sidebar-profile {
+  justify-content: center;
+  padding: 12px 8px;
+}
+.main {
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  height: 100dvh;
+  width: calc(100% - var(--current-sidebar-w));
+  margin-left: var(--current-sidebar-w);
+  overflow: hidden;
+  transition: none;
+}
+.main-head {
+  display: none;
+}
+.page-content {
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 16px;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+:host ::ng-deep .main .page-content :is(.page-heading, .page-header) {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 0;
+  margin: 0 0 6px;
+  padding: 0;
+}
+:host ::ng-deep .main .page-content :is(.page-heading, .page-header) > div:first-child {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+:host ::ng-deep .main .page-content :is(.page-heading, .page-header) h1 {
+  flex: 0 0 auto;
+  max-width: 100%;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.25;
+  letter-spacing: 0;
+  font-weight: 650;
+}
+:host ::ng-deep .main .page-content :is(.page-heading, .page-header) p {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.3;
+}
+:host ::ng-deep .main .page-content :is(.page-heading, .page-header) .eyebrow {
+  display: none;
+}
+:host ::ng-deep .main .page-content :is(.page-heading, .page-header) .button {
+  min-height: 32px;
+  padding: 5px 8px;
+  gap: 6px;
+  font-size: 12px;
+}
+.mobile-burger,
+.menu-scrim {
+  display: none;
+}
+@media (max-width: 1023px) {
+  .layout,
+  .layout.collapsed {
+    --current-sidebar-w: 0px;
+  }
+  .sidebar,
+  .layout.collapsed .sidebar {
+    width: min(280px, calc(100vw - 44px));
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 160ms var(--ease);
+  }
+  .layout.menu-open .sidebar {
+    transform: none;
+    visibility: visible;
+  }
+  .layout.collapsed .sidebar .logo-text {
+    display: block;
+    opacity: 1;
+    width: auto;
+    pointer-events: auto;
+  }
+  .layout.collapsed .profile-copy {
+    display: block;
+  }
+  .layout.collapsed .sidebar-head,
+  .layout.collapsed .sidebar-profile {
+    justify-content: flex-start;
+    padding-left: 16px;
+  }
+  .sidebar-collapse {
+    display: none;
+  }
+  .main-head {
+    display: flex;
+    position: relative;
+    flex: 0 0 auto;
+    min-height: 52px;
+    height: 52px;
+    padding: 6px 16px;
+    gap: 12px;
+  }
+  .main-head-leading,
+  .main-head-right {
+    min-width: 0;
+  }
+  .main-head-right .button {
+    padding: 6px 12px;
+    min-height: 36px;
+  }
+  .mobile-burger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--control-radius);
+  }
+  .page-content {
+    padding: 8px 12px;
+  }
+  .menu-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    border: 0;
+    background: rgb(16 24 40 / 30%);
+    z-index: 59;
+  }
+}
+@media (max-width: 600px) {
+  :host ::ng-deep .main .page-content :is(.page-heading, .page-header) {
+    flex-wrap: wrap;
+  }
+  :host ::ng-deep .main .page-content :is(.page-heading, .page-header) p {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main,
+  .sidebar {
+    transition: none;
+  }
+}

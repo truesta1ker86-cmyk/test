@@ -1,22 +1,15 @@
-<div
-  class="table-scroll"
-  tabindex="0"
-  [attr.aria-label]="
-    entity() === 'orders' ? 'Таблица заказов с прокруткой' : 'Таблица возвратов с прокруткой'
-  "
->
+<div class="table-scroll" tabindex="0" aria-label="Таблица заказов с прокруткой">
   <app-data-table
-    [class.orders-table]="entity() === 'orders'"
-    [class.returns-table]="entity() === 'returns'"
+    class="orders-table"
     [columns]="tableColumns1()"
     [headerTemplate]="tableHeader1"
-    [entity]="entity()"
+    entity="orders"
     [filters]="filters()"
     [data]="rows()"
     [refreshToken]="refreshToken()"
     [selection]="selected()"
     [dataKey]="'posting_number'"
-    [selectionMode]="entity() === 'orders' ? 'multiple' : 'none'"
+    selectionMode="multiple"
     [rowClickable]="false"
     [scrollable]="false"
     tableStyleClass="operation-table operational-table"
@@ -99,41 +92,6 @@
 
     <ng-template #cellTemplate let-row let-column="column" let-rowIndex="rowIndex">
       @switch (column.cellTemplate.slot) {
-        @case ('cell1') {
-          @let r = returned(row);
-          <span data-o1c-cell-content>{{ r.posting_number || '—' }}</span>
-        }
-        @case ('cell2') {
-          @let r = returned(row);
-          <span data-o1c-cell-content>
-            @if (r.offer_id) {
-              <a
-                [appProductName]="r"
-                routerLink="/products/card"
-                [queryParams]="{ offer_id: r.offer_id }"
-                >{{ r.offer_id }}</a
-              >
-            } @else {
-              —
-            }
-          </span>
-        }
-        @case ('cell3') {
-          @let r = returned(row);
-          <span data-o1c-cell-content class="numeric">{{
-            currency(r.returns_amount, r.currency)
-          }}</span>
-        }
-        @case ('cell4') {
-          @let r = returned(row);
-          <span data-o1c-cell-content>{{ date(r.returned_at).split(',')[0] }}</span>
-        }
-        @case ('cell5') {
-          @let r = returned(row);
-          <span data-o1c-cell-content>
-            <span class="status-pill">{{ status(r.status) }}</span>
-          </span>
-        }
         @case ('cell6') {
           @let o = order(row);
           <span data-o1c-cell-content class="order-select-cell">

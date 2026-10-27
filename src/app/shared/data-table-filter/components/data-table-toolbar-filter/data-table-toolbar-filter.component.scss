@@ -1,5 +1,6 @@
 :host {
   display: block;
+  min-width: 0;
 }
 
 .operational-filters {
@@ -10,25 +11,22 @@
   padding: 14px 16px;
 }
 
-.operational-filters label {
-  min-width: 120px;
-  flex: 1;
-}
-
-.operational-filters .list-search {
-  flex: 2;
-  min-width: 200px;
-}
-
-.operational-filters input,
-.operational-filters select {
-  height: 37px;
-}
 .operational-filters > app-filter-select {
   flex: 1;
   min-width: 120px;
 }
+
 .operational-filters > app-filter-text {
-  flex: 2;
-  min-width: 200px;
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 480px;
+}
+
+@media (max-width: 700px) {
+  .operational-filters > app-filter-select,
+  .operational-filters > app-filter-text {
+    flex-basis: 100%;
+    min-width: 0;
+    max-width: none;
+  }
 }

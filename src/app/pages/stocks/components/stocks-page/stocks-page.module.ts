@@ -13,6 +13,7 @@ import { InventoryFilterModule } from '../inventory/inventory-filter/inventory-f
 import { AnimatedCountModule } from '../../../../shared/ui/animated-count/components/animated-count/animated-count.module';
 import { StockPagerModule } from '../stock-pager/stock-pager.module';
 import { StockRunPanelModule } from '../stock-run-preview/stock-run-preview.module';
+import { PopupButtonModule } from '../../../../shared/popup-button/popup-button.module';
 
 @NgModule({
   declarations: [StocksPage],
@@ -30,6 +31,7 @@ import { StockRunPanelModule } from '../stock-run-preview/stock-run-preview.modu
     AnimatedCountModule,
     StockPagerModule,
     StockRunPanelModule,
+    PopupButtonModule,
   ],
   exports: [StocksPage],
 })

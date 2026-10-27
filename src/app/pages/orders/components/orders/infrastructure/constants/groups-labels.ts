@@ -1,4 +1,4 @@
-import { Groups } from "../enums/groups";
+import { Groups } from "../types/groups";
 
 export const GroupsLabels: Record<Groups, string> = {
     [Groups.current]: 'Текущие',

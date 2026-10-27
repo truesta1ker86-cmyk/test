@@ -110,7 +110,8 @@
 }
 <div
   class="allocation-scroll"
-  tabindex="0"
+  [appMatrixPageScroll]="matrixHorizontal"
+  role="region"
   aria-label="Распределение по складам, таблица прокручивается по горизонтали"
 >
   <app-data-table
@@ -378,6 +379,14 @@
       }
     </ng-template>
   </app-data-table>
+</div>
+<div
+  #matrixHorizontal
+  class="allocation-horizontal-scroll"
+  tabindex="0"
+  aria-label="Прокрутка складов по горизонтали"
+>
+  <div class="allocation-horizontal-content" aria-hidden="true"></div>
 </div>
 <p class="matrix-help">
   Для доли расчёт идёт из базовых единиц 1С с учётом упаковки и округления вниз. Фиксированное

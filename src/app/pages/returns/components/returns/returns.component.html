@@ -1,0 +1,56 @@
+<div class="operational-page workspace-surface">
+  <div class="page-heading">
+    <div>
+      <h1>Возвраты</h1>
+      <p>За весь период</p>
+    </div>
+    <div class="button-row">
+      <button
+        class="button"
+        [disabled]="loading()"
+        [attr.aria-busy]="loading()"
+        (click)="refresh()"
+      >
+        <app-icon name="refresh" />Обновить
+      </button>
+    </div>
+  </div>
+  <section class="panel operational-panel">
+    <app-data-table-toolbar-filter
+      [filter]="query()"
+      [sorts]="sorts"
+      [loading]="loading()"
+      (filterChange)="onFilterChange($event)"
+    />
+    <span class="list-total"
+      >Показано {{ data()?.items?.length ?? '—' }} из {{ data()?.meta?.total ?? '—' }}</span
+    >
+    @if (error()) {
+      <div class="editor-error" role="alert">
+        {{ error() }} <button class="text-button" (click)="refresh()">Повторить</button>
+      </div>
+    }
+    <app-return-list
+      [returns]="rows()"
+      [filters]="query()"
+      [headingSort]="headingSort()"
+      [columnRules]="columnRules()"
+      [refreshToken]="refreshVersion()"
+      (dataLoaded)="onDataLoaded($event)"
+      (dataFailed)="onDataError()"
+      (pageChange)="onPageChange($event)"
+      (sortChange)="sortHeading($event)"
+      (columnChange)="columnChanged($event)"
+    />
+    <div class="operational-export">
+      <button
+        class="text-button"
+        [disabled]="loading() || exporting() || !data()?.meta?.total"
+        [attr.aria-busy]="exporting()"
+        (click)="export()"
+      >
+        Выгрузить отбор CSV
+      </button>
+    </div>
+  </section>
+</div>

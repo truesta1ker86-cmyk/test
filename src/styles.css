@@ -177,6 +177,33 @@ textarea {
 body {
   margin: 0;
 }
+.page-content > :not(router-outlet) {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+.page-content .workspace-surface,
+.page-content .panel,
+.page-content .table-wrap,
+.page-content .table-scroll {
+  min-width: 0;
+  max-width: 100%;
+}
+.page-content .page-heading {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.page-content .page-heading > div,
+.page-content .button-row {
+  min-width: 0;
+}
+.page-content .button-row {
+  flex-wrap: wrap;
+}
+.page-content .table-wrap {
+  max-height: min(62dvh, 680px);
+  overscroll-behavior-x: contain;
+}
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -330,13 +357,6 @@ small {
   font-size: 12px;
   margin-bottom: 6px;
 }
-
-.page-heading,
-.sections,
-.page-description {
-  padding: 0 20px;
-}
-
 .page-heading {
   display: flex;
   align-items: center;
@@ -373,13 +393,10 @@ small {
   border-radius: 50%;
 }
 .panel {
+  background: var(--surface);
   border: 1px solid var(--border);
-  
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;   /* Занимает всё место под верхним родителем */
-  min-height: 0;    /* Обязательно! */
-  overflow: hidden; /* Обрезаем, чтобы скролл ушёл внутрь app-order-list */
+  border-radius: var(--panel-radius);
+  overflow: hidden;
 }
 .panel-heading {
   display: flex;
@@ -463,11 +480,12 @@ select {
   margin-left: auto;
 }
 .table-scroll {
+  overflow: auto;
   width: 100%;
+  max-height: min(62vh, 680px);
   border-top: 1px solid var(--border);
   border-radius: var(--panel-radius);
-  overflow: visible;
-  max-height: none;
+  overscroll-behavior: contain;
 }
 .panel > .table-scroll {
   border-radius: 0;
@@ -910,16 +928,6 @@ dd {
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   font-family: var(--font-ui);
 }
-
-.workspace-surface,
-.operational-page {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-}
-
 .workspace-surface .button {
   border-radius: 10px;
   transition:

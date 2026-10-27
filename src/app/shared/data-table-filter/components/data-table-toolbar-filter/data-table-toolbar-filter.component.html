@@ -1,5 +1,5 @@
 <form class="operational-filters filter-bar" (ngSubmit)="applyFilter()">
-  @if (entity === 'orders') {
+  @if (lifecycles.length) {
     <app-filter-select
       key="lifecycle"
       label="Жизненный цикл"
@@ -8,6 +8,8 @@
       name="lifecycle"
       (userChange)="status = ''; applyFilter()"
     />
+  }
+  @if (statuses.length) {
     <app-filter-select
       key="status"
       label="Статус"
@@ -16,6 +18,8 @@
       name="status"
       (userChange)="applyFilter()"
     />
+  }
+  @if (schemes.length) {
     <app-filter-select
       key="scheme"
       label="Схема"
@@ -27,20 +31,23 @@
   }
   <app-filter-text
     key="search"
-    label="Поиск"
-    placeholder="Номер, артикул…"
+    [label]="searchLabel"
+    [placeholder]="searchPlaceholder"
     [(ngModel)]="search"
     name="search"
   />
-  <app-filter-select
-    key="sort"
-    label="Порядок"
-    [options]="entity === 'orders' ? sorts : returnSorts"
-    [(ngModel)]="sort"
-    name="sort"
-    (userChange)="applyFilter()"
-  />
+  @if (sorts.length) {
+    <app-filter-select
+      key="sort"
+      label="Порядок"
+      [options]="sorts"
+      [(ngModel)]="sort"
+      name="sort"
+      (userChange)="applyFilter()"
+    />
+  }
   <button class="button primary" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
-    Применить</button
-  ><button class="button" type="button" (click)="resetFilter()">Сбросить</button>
+    Применить
+  </button>
+  <button class="button" type="button" (click)="resetFilter()">Сбросить</button>
 </form>

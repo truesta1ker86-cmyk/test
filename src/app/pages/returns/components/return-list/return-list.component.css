@@ -1,0 +1,57 @@
+:host {
+  display: block;
+}
+:host ::ng-deep .operational-table {
+  min-width: 750px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+:host ::ng-deep .operational-table th {
+  padding: 9px 14px;
+}
+:host ::ng-deep .operational-table td {
+  padding: 10px 14px;
+  line-height: 1.35;
+  vertical-align: top;
+}
+:host ::ng-deep .operational-table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+}
+:host ::ng-deep .operational-table td:first-child {
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 1;
+  min-width: 160px;
+}
+.column-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.heading-sort {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.heading-sort span {
+  flex: none;
+  color: var(--muted);
+  margin-left: 4px;
+}
+:host ::ng-deep th[aria-sort='ascending'] .heading-sort span,
+:host ::ng-deep th[aria-sort='descending'] .heading-sort span {
+  color: var(--brand);
+}

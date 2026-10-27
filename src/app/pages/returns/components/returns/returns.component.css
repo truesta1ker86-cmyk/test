@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+.workspace-context {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 18px;
+}
+.list-total {
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.operational-export {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  text-align: right;
+  font-size: 11px;
+}

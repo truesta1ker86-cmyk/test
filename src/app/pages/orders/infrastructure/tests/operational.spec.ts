@@ -1,9 +1,9 @@
-import { OrdersPageModule } from '../../components/orders/orders.module';
-import { OrderDetailsModule } from '../../components/order-detail/order-detail.module';
+import { OrdersModule } from '../../orders.module';
+import { ReturnsModule } from '../../../returns/returns.module';
+import { ReturnsComponent } from '../../../returns/components/returns/returns.component';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { OrderFilterComponent } from '../../components/orders/order-filter/order-filter.component';
-import { FilterSelectComponent } from '../../../../shared/directives/filter-panel/components/filter-select/filter-select.component';
+import { DataTableToolbarFilterComponent } from '../../../../shared/data-table-filter/components/data-table-toolbar-filter/data-table-toolbar-filter.component';
 import { FilterTextComponent } from '../../../../shared/directives/filter-panel/components/filter-text/filter-text.component';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
@@ -104,33 +104,12 @@ function configure(entity = 'orders') {
   };
 }
 
-function setup(entity = 'orders') {
-  const env = configure(entity),
+function setup() {
+  const env = configure(),
     fixture = TestBed.createComponent(OrdersComponent),
     page = fixture.componentInstance;
   fixture.detectChanges();
-  env.http
-    .expectOne((r) => r.url.endsWith('/' + entity))
-    .flush(
-      entity === 'orders'
-        ? response()
-        : {
-            ...response(),
-            items: [
-              {
-                return_id: 1,
-                posting_number: 'QA-7',
-                offer_id: 'A-001',
-                name: 'Желоб',
-                scheme: 'fbs',
-                returned_at: null,
-                returns_amount: '0',
-                currency: 'RUB',
-                status: 'ReceivedBySeller',
-              },
-            ],
-          },
-    );
+  env.http.expectOne((request) => request.url.endsWith('/orders')).flush(response());
   fixture.detectChanges();
   return {
     ...env,
@@ -143,7 +122,41 @@ function setup(entity = 'orders') {
   };
 }
 
-describe('v1 orders and returns', () => {
+function setupReturns() {
+  const env = configure(),
+    fixture = TestBed.createComponent(ReturnsComponent);
+  fixture.detectChanges();
+  env.http
+    .expectOne((request) => request.url.endsWith('/returns'))
+    .flush({
+      ...response(),
+      items: [
+        {
+          return_id: 1,
+          posting_number: 'QA-7',
+          offer_id: 'A-001',
+          name: 'Желоб',
+          scheme: 'fbs',
+          returned_at: null,
+          returns_amount: '0',
+          currency: 'RUB',
+          status: 'ReceivedBySeller',
+        },
+      ],
+    });
+  fixture.detectChanges();
+  return {
+    ...env,
+    fixture,
+    page: fixture.componentInstance,
+    setParams: (value: ReturnType<typeof convertToParamMap>) => {
+      env.params.next(value);
+      fixture.detectChanges();
+    },
+  };
+}
+
+describe('V2 orders and separate returns pages', () => {
   it('updates selection exactly once when the rendered checkbox is clicked', () => {
     const { fixture, page, http } = setup();
     const checkbox = fixture.nativeElement.querySelectorAll(
@@ -177,8 +190,8 @@ describe('v1 orders and returns', () => {
     );
     http.expectOne((r) => r.url.endsWith('/orders')).flush(response());
     fixture.detectChanges();
-    const filter = fixture.debugElement.query(By.directive(OrderFilterComponent))
-      .componentInstance as OrderFilterComponent;
+    const filter = fixture.debugElement.query(By.directive(DataTableToolbarFilterComponent))
+      .componentInstance as DataTableToolbarFilterComponent;
     filter.resetFilter();
     expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({
       column_filters: '',
@@ -193,15 +206,15 @@ describe('v1 orders and returns', () => {
   it('preserves unfinished search while the original status options refresh', async () => {
     const { fixture, page, navigate, http } = setup();
     await fixture.whenStable();
-    const filter = fixture.debugElement.query(By.directive(OrderFilterComponent));
+    const filter = fixture.debugElement.query(By.directive(DataTableToolbarFilterComponent));
     const text = filter.query(By.directive(FilterTextComponent))
       .componentInstance as FilterTextComponent;
     (text as any).updateValue('A-001');
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     await fixture.whenStable();
-    expect((filter.componentInstance as OrderFilterComponent).search).toBe('A-001');
-    (filter.componentInstance as OrderFilterComponent).applyFilter();
+    expect((filter.componentInstance as DataTableToolbarFilterComponent).search).toBe('A-001');
+    (filter.componentInstance as DataTableToolbarFilterComponent).applyFilter();
     expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({
       q: 'A-001',
       lifecycle: 'current',
@@ -211,31 +224,56 @@ describe('v1 orders and returns', () => {
     http.verify();
   });
   it('keeps order lifecycle out of the returns query when reusing the original filter', async () => {
-    const { fixture, navigate, http } = setup('returns');
+    const { fixture, navigate, http } = setupReturns();
     await fixture.whenStable();
     (
-      fixture.debugElement.query(By.directive(OrderFilterComponent))
-        .componentInstance as OrderFilterComponent
+      fixture.debugElement.query(By.directive(DataTableToolbarFilterComponent))
+        .componentInstance as DataTableToolbarFilterComponent
     ).applyFilter();
     expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({ lifecycle: '', page: 1 });
     http.verify();
   });
-  it('applies the original order filter to the existing query and preserves hidden selection', async () => {
+  it('keeps scheme filtering in the column header and preserves hidden selection', async () => {
     const { fixture, page, navigate, http } = setup();
     await fixture.whenStable();
     page.selected.set([{ ...ready, posting_number: 'HIDDEN' }]);
-    const filter = fixture.debugElement.query(By.directive(OrderFilterComponent));
-    const scheme = filter
-      .queryAll(By.directive(FilterSelectComponent))
-      .map((n) => n.componentInstance as FilterSelectComponent)
-      .find((c) => c.key === 'scheme')!;
-    (scheme as any).updateValue('fbo');
+    const filter = fixture.debugElement.query(By.directive(DataTableToolbarFilterComponent));
+    expect(filter.nativeElement.querySelectorAll('app-filter-select')).toHaveLength(0);
+    expect(filter.nativeElement.textContent).toContain('Артикул');
+    expect(fixture.nativeElement.querySelector('[aria-label="Фильтр: Схема"]')).not.toBeNull();
+    page.columnChanged({
+      field: 'scheme',
+      rule: { values: ['FBO'], text: '', operator: 'contains', min: '', max: '' },
+    });
     expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({
-      scheme: 'fbo',
       lifecycle: 'current',
       page: 1,
     });
+    expect(
+      JSON.parse(navigate.mock.calls.at(-1)?.[1]?.queryParams!['column_filters']).scheme.values,
+    ).toEqual(['FBO']);
     expect(page.selected().map((row) => row.posting_number)).toEqual(['HIDDEN']);
+    http.verify();
+  });
+  it('keeps the completed tab when applying or clearing the article search', async () => {
+    const { fixture, setParams, navigate, http } = setup();
+    setParams(convertToParamMap({ lifecycle: 'completed', q: 'A-001' }));
+    http.expectOne((request) => request.url.endsWith('/orders')).flush(response());
+    await fixture.whenStable();
+    const filter = fixture.debugElement.query(By.directive(DataTableToolbarFilterComponent))
+      .componentInstance as DataTableToolbarFilterComponent;
+    filter.applyFilter();
+    expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({
+      lifecycle: 'completed',
+      q: 'A-001',
+      page: 1,
+    });
+    filter.resetFilter();
+    expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({
+      lifecycle: 'completed',
+      q: '',
+      page: 1,
+    });
     http.verify();
   });
   it('sorts headings locally in both directions without losing the selection', () => {
@@ -400,7 +438,7 @@ describe('v1 orders and returns', () => {
     http.verify();
   });
   it('keeps returns as one source table and retains zero amount and article preview', () => {
-    const { fixture, http } = setup('returns'),
+    const { fixture, http } = setupReturns(),
       root: HTMLElement = fixture.nativeElement;
     expect(root.querySelectorAll('[role=tab]').length).toBe(0);
     expect(root.querySelectorAll('thead th').length).toBe(5);
@@ -409,6 +447,71 @@ describe('v1 orders and returns', () => {
     expect(root.textContent).toContain('0,00');
     expect(root.querySelector('[data-product-preview="A-001"]')).not.toBeNull();
     expect(root.querySelector('[formControlName=scheme]')).toBeNull();
+    http.verify();
+  });
+  it('loads return-specific URL filters and pagination without order lifecycle or detail requests', () => {
+    const { page, http, setParams } = setupReturns();
+    const column_filters = '{"amount":{"min":"1000"}}';
+    setParams(
+      convertToParamMap({
+        q: 'RETURN-42',
+        lifecycle: 'completed',
+        posting: 'QA-10',
+        page: '2',
+        page_size: '25',
+        sort: 'amount_desc',
+        column_filters,
+      }),
+    );
+    const request = http.expectOne((request) => request.url.endsWith('/returns'));
+    expect(request.request.params.get('q')).toBe('RETURN-42');
+    expect(request.request.params.get('page')).toBe('2');
+    expect(request.request.params.get('page_size')).toBe('25');
+    expect(request.request.params.get('sort')).toBe('amount_desc');
+    expect(request.request.params.get('lifecycle')).toBe('');
+    expect(request.request.params.get('column_filters')).toBe(column_filters);
+    request.flush({ ...response(), items: [] });
+    expect(page.loading()).toBe(false);
+    http.expectNone((request) => request.url.includes('/orders'));
+    http.verify();
+  });
+  it('requests return column choices with the active return query', () => {
+    const { fixture, page, http } = setupReturns();
+    fixture.nativeElement.querySelector('[aria-label="Фильтр: Сумма возврата"]').click();
+    fixture.detectChanges();
+    const request = http.expectOne((request) => request.url.endsWith('/column-values'));
+    expect(request.request.params.get('entity')).toBe('returns');
+    expect(request.request.params.get('field')).toBe('amount');
+    expect(request.request.params.get('lifecycle')).toBe('');
+    request.flush({
+      values: ['0'],
+      counts: { '0': 1 },
+      meta: { total: 1, page: 1, has_more: false },
+    });
+    expect(page.error()).toBe('');
+    http.verify();
+  });
+  it('exports the active returns filter without reading order pages and recovers from a download error', async () => {
+    const { page, http, setParams, fixture } = setupReturns();
+    setParams(convertToParamMap({ q: 'QA-7', sort: 'amount_desc' }));
+    http
+      .expectOne((request) => request.url.endsWith('/returns'))
+      .flush({ ...response(), items: [] });
+    page.export();
+    const request = http.expectOne('/v2/api/workspace-v2/export');
+    expect(request.request.body).toMatchObject({
+      entity: 'returns',
+      format: 'csv',
+      q: 'QA-7',
+      sort: 'amount_desc',
+      lifecycle: '',
+    });
+    expect(page.exporting()).toBe(true);
+    request.error(new ProgressEvent('error'));
+    await fixture.whenStable();
+    expect(page.exporting()).toBe(false);
+    expect(page.error()).not.toBe('');
+    http.expectNone((request) => request.url.endsWith('/orders'));
     http.verify();
   });
   it('enforces legacy label status and realFBS/FBO eligibility', () => {
@@ -528,6 +631,4 @@ describe('Local order action preview', () => {
   });
 });
 
-beforeEach(() =>
-  TestBed.configureTestingModule({ imports: [OrdersPageModule, OrderDetailsModule] }),
-);
+beforeEach(() => TestBed.configureTestingModule({ imports: [OrdersModule, ReturnsModule] }));

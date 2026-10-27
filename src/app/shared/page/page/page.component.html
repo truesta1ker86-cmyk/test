@@ -16,7 +16,7 @@
         [attr.aria-expanded]="!isSidebarCollapsed"
         data-sidebar-tooltip="Свернуть боковое меню"
         (click)="toggleSidebarCollapsed()"
-        title="Свернуть боковое меню"
+        [attr.title]="isSidebarCollapsed ? 'Развернуть боковое меню' : 'Свернуть боковое меню'"
       >
         <svg class="icon-sm" aria-hidden="true">
           <!-- Динамическая иконка или разворот CSS-стилями -->
@@ -25,7 +25,10 @@
       </button>
     </div>
 
-    <app-navigation [collapsed]="isSidebarCollapsed" (navigated)="closeMenu()"></app-navigation>
+    <app-navigation
+      [collapsed]="isSidebarCollapsed && !mobileMenu"
+      (navigated)="closeMenu()"
+    ></app-navigation>
     <a
       class="sidebar-profile"
       routerLink="/account"
@@ -33,12 +36,9 @@
       aria-label="Открыть личный кабинет"
       (click)="closeMenu()"
     >
-      <span class="profile-avatar" aria-hidden="true">{{
-        (context.session()?.name || 'М').charAt(0)
-      }}</span>
+      <span class="profile-avatar" aria-hidden="true">ЛК</span>
       <span class="profile-copy"
-        ><strong>{{ context.session()?.name }}</strong
-        ><small>Личный кабинет</small></span
+        ><strong>Личный кабинет</strong><small>Настройки и доступ</small></span
       >
     </a>
   </aside>
@@ -64,39 +64,25 @@
         >
           <svg class="icon-sm"><use href="#i-menu"></use></svg>
         </button>
-        <div class="main-head-copy">
-          <h2>{{ currentTitle }}</h2>
-          @if (currentSubtitle) {
-            <div class="sub">{{ currentSubtitle }}</div>
-          }
-        </div>
       </div>
       <div class="main-head-right">
         <div id="pageActions"></div>
-        <div class="shop-context">
-          <span class="shop-dot" aria-hidden="true"></span>
-          <div>
-            <strong>{{ context.session()?.name }}</strong
-            ><small>{{ context.session()?.actor_name }}</small>
-          </div>
-          <a
-            routerLink="/account"
-            [queryParams]="{ tab: 'shops' }"
-            class="icon-button"
-            aria-label="Открыть управление магазинами"
-            >↗</a
-          >
-        </div>
+        <a
+          routerLink="/account"
+          [queryParams]="{ tab: 'shops' }"
+          class="button"
+          aria-label="Открыть управление магазинами"
+          >Магазины</a
+        >
       </div>
     </div>
 
-    <main id="main-content" class="page-content" appProductHoverPreview>
-      @if (context.databaseCopy()) {
-        <p class="database-copy-note" role="note">
-          Копия данных магазина. Изменения сохраняются только в копии. Синхронизации, AI и отправки
-          отключены.
-        </p>
-      }
+    <main
+      id="main-content"
+      class="page-content"
+      [attr.aria-label]="currentTitle"
+      appProductHoverPreview
+    >
       <ng-content></ng-content>
     </main>
   </div>

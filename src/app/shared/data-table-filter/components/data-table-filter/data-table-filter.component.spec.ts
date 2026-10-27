@@ -92,6 +92,50 @@ describe('One table-column popup', () => {
     });
   });
 
+  it('applies two checked values together and restores them on reopening', async () => {
+    const { fixture, root, component, changes } = await setup(true);
+    fixture.componentRef.setInput('options', ['ONE', 'TWO', 'THREE']);
+    await fixture.whenStable();
+    [...root.querySelectorAll<HTMLButtonElement>('.choice-actions button')]
+      .find((button) => button.textContent?.trim() === 'Снять все')!
+      .click();
+    await fixture.whenStable();
+    const checkbox = (value: string) =>
+      [...root.querySelectorAll<HTMLLabelElement>('.values-list label')]
+        .find((label) => label.textContent?.trim().startsWith(value))!
+        .querySelector<HTMLInputElement>('input')!;
+    checkbox('ONE').click();
+    await fixture.whenStable();
+    checkbox('TWO').click();
+    await fixture.whenStable();
+    expect(changes).not.toHaveBeenCalled();
+    root.querySelector<HTMLButtonElement>('footer button.primary')!.click();
+    const rule = changes.mock.lastCall![0].rule;
+    expect(rule.values).toEqual(['ONE', 'TWO']);
+    fixture.componentRef.setInput('rule', rule);
+    component.open();
+    await fixture.whenStable();
+    expect(checkbox('ONE').checked).toBe(true);
+    expect(checkbox('TWO').checked).toBe(true);
+    expect(checkbox('THREE').checked).toBe(false);
+  });
+
+  it('keeps checked values from the previous page when another remote page arrives', async () => {
+    const { fixture, root, component, changes } = await setup(true);
+    component.state.all(false);
+    const checkbox = (value: string) =>
+      [...root.querySelectorAll<HTMLLabelElement>('.values-list label')]
+        .find((label) => label.textContent?.trim().startsWith(value))!
+        .querySelector<HTMLInputElement>('input')!;
+    await fixture.whenStable();
+    checkbox('ONE').click();
+    fixture.componentRef.setInput('options', ['THREE', 'FOUR']);
+    await fixture.whenStable();
+    checkbox('THREE').click();
+    component.apply();
+    expect(changes.mock.lastCall![0].rule.values).toEqual(['ONE', 'THREE']);
+  });
+
   it('selects all found remote pages instead of only the currently visible page', async () => {
     const { fixture, component } = await setup(true);
     const requests = vi.fn();

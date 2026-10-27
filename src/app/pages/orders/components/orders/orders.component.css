@@ -1,9 +1,5 @@
 :host {
-  display: flex; 
-  flex-direction: column; 
-  flex: 1 1 auto; 
-  min-height: 0; 
-  overflow: hidden;
+  display: block;
 }
 .workspace-context {
   display: flex;
@@ -243,12 +239,6 @@
 }
 :host ::ng-deep .operational-table tr.selected > td {
   background-color: var(--brand-soft);
-}
-:host ::ng-deep .returns-table {
-  min-width: 750px;
-}
-:host ::ng-deep .returns-table td:first-child {
-  min-width: 160px;
 }
 .operational-export {
   padding: 10px 16px;

@@ -34,7 +34,7 @@ class FilterFormsHost {
   scheme = new FormControl('fbs', { nonNullable: true });
   search = new FormControl('артикул', { nonNullable: true });
   start = new FormControl('2026-10-01', { nonNullable: true });
-  options = [
+  options: { value: string; label: string; disabled?: boolean }[] = [
     { value: 'fbs', label: 'FBS' },
     { value: 'fbo', label: 'FBO' },
   ];
@@ -45,6 +45,27 @@ class FilterFormsHost {
 }
 
 describe('Original filter controls with business forms', () => {
+  const matchMedia = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+  beforeAll(() =>
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (media: string) => ({
+        media,
+        matches: false,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: () => true,
+      }),
+    }),
+  );
+  afterAll(() =>
+    matchMedia
+      ? Object.defineProperty(window, 'matchMedia', matchMedia)
+      : Reflect.deleteProperty(window, 'matchMedia'),
+  );
   beforeEach(() => TestBed.configureTestingModule({ imports: [FilterFormsHost] }));
   it('uses the scoped original service and preserves other fields when options load', async () => {
     const fixture = TestBed.createComponent(FilterFormsHost);
@@ -112,6 +133,67 @@ describe('Original filter controls with business forms', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     expect(control.value).toEqual([]);
+  });
+  it('adds and removes values through the rendered multiple-choice dropdown', async () => {
+    const fixture = TestBed.createComponent(FilterFormsHost);
+    await fixture.whenStable();
+    const root = fixture.debugElement.query(By.directive(FilterMultiselectComponent))
+      .nativeElement as HTMLElement;
+    root.querySelector<HTMLElement>('[role=combobox]')!.click();
+    await fixture.whenStable();
+    const option = (label: string) =>
+      [...document.querySelectorAll<HTMLElement>('[role=option]')].find(
+        (element) => element.textContent?.trim() === label,
+      )!;
+    option('FBO').click();
+    await fixture.whenStable();
+    expect(JSON.parse(fixture.componentInstance.facet)).toEqual(['fbs', 'fbo']);
+    expect(option('FBO').getAttribute('aria-selected')).toBe('true');
+    expect(option('FBS').getAttribute('aria-selected')).toBe('true');
+    option('FBS').click();
+    await fixture.whenStable();
+    expect(JSON.parse(fixture.componentInstance.facet)).toEqual(['fbo']);
+    root
+      .querySelector('.p-select-clear-icon')!
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.facet).toBe('[]');
+    fixture.nativeElement.querySelector('#reset-facets').click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.facet).toBe('[]');
+    expect(option('FBO').getAttribute('aria-selected')).toBe('false');
+  });
+  it('keeps previously selected values while searching for and selecting another option', async () => {
+    const fixture = TestBed.createComponent(FilterFormsHost);
+    await fixture.whenStable();
+    const root = fixture.debugElement.query(By.directive(FilterMultiselectComponent))
+      .nativeElement as HTMLElement;
+    root.querySelector<HTMLElement>('[role=combobox]')!.click();
+    await fixture.whenStable();
+    const search = document.querySelector<HTMLInputElement>('[role=searchbox]')!;
+    search.value = 'FBO';
+    search.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    const options = [...document.querySelectorAll<HTMLElement>('[role=option]')];
+    expect(options).toHaveLength(1);
+    options[0].click();
+    await fixture.whenStable();
+    expect(JSON.parse(fixture.componentInstance.facet)).toEqual(['fbs', 'fbo']);
+  });
+  it('does not add an unavailable option to the selected values', async () => {
+    const fixture = TestBed.createComponent(FilterFormsHost);
+    fixture.componentInstance.options.push({ value: 'rfbs', label: 'realFBS', disabled: true });
+    await fixture.whenStable();
+    const root = fixture.debugElement.query(By.directive(FilterMultiselectComponent))
+      .nativeElement as HTMLElement;
+    root.querySelector<HTMLElement>('[role=combobox]')!.click();
+    await fixture.whenStable();
+    const unavailable = [...document.querySelectorAll<HTMLElement>('[role=option]')].find(
+      (element) => element.textContent?.includes('realFBS'),
+    )!;
+    unavailable.click();
+    await fixture.whenStable();
+    expect(JSON.parse(fixture.componentInstance.facet)).toEqual(['fbs']);
   });
   it('propagates the original service reset back to business forms', async () => {
     const fixture = TestBed.createComponent(FilterFormsHost);

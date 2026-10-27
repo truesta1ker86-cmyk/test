@@ -26,6 +26,9 @@
       background: rgba(247, 248, 250, 0.97);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
+      box-shadow:
+        0 1px 0 var(--hair-2),
+        0 8px 18px rgba(16, 24, 40, 0.04);
       text-align: left;
       font-size: 11px;
       font-weight: 600;
@@ -111,7 +114,8 @@
     tbody td {
       padding: 9px 12px;
       font-size: 11px;
-      border-right: 1px solid var(--hair);
+      border-right: 1px solid var(--table-grid);
+      border-bottom: 1px solid var(--table-row-line);
     }
     thead th {
       color: var(--text);
@@ -120,14 +124,38 @@
       background: var(--table-heading-bg);
     }
   }
-  .p-datatable-table-container {
-    overflow: visible;
+  p-paginator.p-datatable-paginator-bottom {
+    position: sticky;
+    left: 0;
+    bottom: 0;
+    z-index: 35;
   }
-
   .operation-table tbody tr.selected > td,
   .operation-table tbody tr.p-datatable-row-selected > td {
     background: var(--brand-soft);
   }
+}
+/* The section viewport owns both axes; PrimeNG's inline overflow otherwise
+   puts the horizontal scrollbar below every row inside a second viewport. */
+:host-context(.table-scroll) ::ng-deep .p-datatable-table-container,
+:host-context(.table-wrap) ::ng-deep .p-datatable-table-container,
+:host-context(.allocation-scroll) ::ng-deep .p-datatable-table-container {
+  overflow: visible !important;
+}
+
+:host-context(.table-scroll) ::ng-deep .operation-table thead,
+:host-context(.table-wrap) ::ng-deep .operation-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--table-heading-bg);
+}
+:host-context(.table-scroll) ::ng-deep .operation-table thead th,
+:host-context(.table-wrap) ::ng-deep .operation-table thead th {
+  top: auto;
+  background: var(--table-heading-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .table-error {
   display: flex;

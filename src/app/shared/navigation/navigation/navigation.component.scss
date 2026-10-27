@@ -6,6 +6,27 @@ $control-radius: var(--control-radius, 10px);
 svg.icon-sm {
   width: 16px;
   height: 16px;
+  flex: 0 0 16px;
+}
+
+.nav.collapsed {
+  padding: 10px;
+  gap: 6px;
+
+  .nav-label,
+  .nav-item-label,
+  .nav-stock-chevron,
+  .nav-stock-children,
+  .count {
+    display: none;
+  }
+
+  .nav-item {
+    justify-content: center;
+    min-height: 40px;
+    padding: 0;
+    gap: 0;
+  }
 }
 
 .nav {
@@ -15,12 +36,13 @@ svg.icon-sm {
   padding: 8px 12px;
 
   &-label {
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--faint, #98a2b3);
-    padding: 16px 12px 6px;
+    color: var(--muted, #667085);
+    padding: 6px 12px 3px;
     user-select: none;
   }
 

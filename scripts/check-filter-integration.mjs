@@ -14,7 +14,11 @@ let controls = 0,
 const sections = new Set();
 const filterAreas =
   /(?:^|\s)(?:catalog-filters|catalog-filter-dialog|mapping-filter-dialog|operational-filters|filter-bar|stock-filter-grid|profit-filters|finance-filters|finance-extra-filters|promo-toolbar|plan-filters)(?:\s|$)/;
-for (const file of files('src/app/pages').filter((file) => file.endsWith('.component.ts'))) {
+const componentFiles = [
+  ...files('src/app/pages'),
+  ...files('src/app/shared/data-table-filter/components/data-table-toolbar-filter'),
+];
+for (const file of componentFiles.filter((file) => file.endsWith('.component.ts'))) {
   const source = ts.createSourceFile(
     file,
     fs.readFileSync(file, 'utf8'),
@@ -97,10 +101,15 @@ for (const file of files('src/app/pages').filter((file) => file.endsWith('.compo
 }
 const required = {
   'src/app/pages/orders/components/orders/orders.component.html': [
-    'app-order-filter',
+    'app-data-table-toolbar-filter',
     'app-order-bulk-actions',
     'app-order-list',
   ],
+  'src/app/pages/returns/components/returns/returns.component.html': [
+    'app-data-table-toolbar-filter',
+    'app-return-list',
+  ],
+  'src/app/pages/returns/components/return-list/return-list.component.html': ['app-data-table'],
   'src/app/pages/stocks/components/stocks-page/stocks-page.component.html': [
     'app-inventory-filter',
     'app-inventory-reconciliation',
