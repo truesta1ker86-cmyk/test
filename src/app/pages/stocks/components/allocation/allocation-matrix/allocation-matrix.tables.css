@@ -41,3 +41,8 @@
   z-index: 5;
   transform: translateY(var(--matrix-header-offset, 0px));
 }
+:host(app-allocation-matrix) ::ng-deep th.warehouse-column > .warehouse-name {
+  display: block;
+  font-weight: 800;
+  color: var(--text);
+}

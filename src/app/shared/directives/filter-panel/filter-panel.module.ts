@@ -18,6 +18,7 @@ import { FilterColorComponent } from './components/filter-color/filter-color.com
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
+import { ListboxModule } from 'primeng/listbox';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SliderModule } from 'primeng/slider';
@@ -58,6 +59,7 @@ import { FilterService } from './infrastructure/services/filter.service';
     InputTextModule,
     InputNumberModule,
     SelectModule,
+    ListboxModule,
     MultiSelectModule,
     DatePickerModule,
     SliderModule,

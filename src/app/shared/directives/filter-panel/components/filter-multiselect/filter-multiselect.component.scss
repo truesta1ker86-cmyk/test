@@ -60,3 +60,43 @@
     cursor: not-allowed;
   }
 }
+
+.inline-choice-list {
+  flex: 1;
+  min-height: 0;
+}
+:host ::ng-deep .inline-choice-list p-listbox {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+:host ::ng-deep .inline-choice-list .p-listbox-header {
+  flex-shrink: 0;
+  padding: 0 0 8px;
+}
+:host ::ng-deep .inline-choice-list .p-listbox-list-container {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+:host ::ng-deep .inline-choice-list .p-listbox-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:host ::ng-deep .inline-choice-list .p-listbox-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  white-space: normal;
+  cursor: pointer;
+}

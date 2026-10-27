@@ -3,6 +3,9 @@
   position: relative;
   z-index: 8;
 }
+:host:has(.warehouse-menu) {
+  z-index: 80;
+}
 .picker-actions {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -30,17 +33,33 @@
   white-space: nowrap;
 }
 .warehouse-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  width: min(420px, calc(100vw - 24px));
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  width: min(520px, calc(100vw - 24px));
+  height: min(640px, calc(100dvh - 24px));
+  display: flex;
+  flex-direction: column;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
   box-shadow: 0 14px 40px #152b4b1f;
-  overflow: hidden;
+  overflow: visible;
+}
+.warehouse-menu-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 10px;
+}
+.warehouse-selection-control {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
 }
 header {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: start;
@@ -49,7 +68,8 @@ header {
   border-bottom: 1px solid var(--border);
 }
 header strong {
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 750;
 }
 small {
   display: block;
@@ -119,6 +139,9 @@ label small {
   color: #148455;
 }
 footer {
+  flex-shrink: 0;
+  position: static;
+  z-index: auto;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -127,16 +150,15 @@ footer {
   border-top: 1px solid var(--border);
   background: var(--surface-2);
 }
+footer .button {
+  min-height: 32px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
 footer > small:nth-child(2) {
   margin-left: auto;
 }
 @media (max-width: 640px) {
-  .warehouse-menu {
-    position: fixed;
-    top: 15dvh;
-    left: 12px;
-    width: calc(100vw - 24px);
-  }
   .picker-trigger {
     max-width: 100%;
     flex-wrap: nowrap;
@@ -160,4 +182,38 @@ footer > small:nth-child(2) {
   padding: 5px 8px;
   font-size: 10px;
   white-space: nowrap;
+}
+.warehouse-option-copy {
+  display: block;
+  min-width: 0;
+  flex: 1;
+}
+.warehouse-option-copy strong {
+  display: block;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.warehouse-option-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 5px;
+  font-size: 11px;
+}
+:host ::ng-deep .warehouse-menu .p-listbox-option:has(.is-added) {
+  background: #ecfdf3 !important;
+  border-color: #b7dec9;
+}
+:host ::ng-deep .warehouse-menu .p-listbox-option[aria-disabled='true'] {
+  opacity: 1;
+  cursor: default;
+}
+:host ::ng-deep .warehouse-menu .p-listbox-option[aria-disabled='true'] .p-checkbox {
+  opacity: 0.5;
+}
+:host ::ng-deep .warehouse-menu .p-listbox-option[aria-disabled='true'] .p-checkbox-box {
+  background: #98a2b3;
+  border-color: #98a2b3;
 }

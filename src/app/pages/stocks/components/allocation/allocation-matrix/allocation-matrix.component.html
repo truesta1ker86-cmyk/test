@@ -174,7 +174,8 @@
         </th>
         @for (w of visible(); track w.warehouse_id) {
           <th class="warehouse-column">
-            {{ w.warehouse_name }}<small>{{ w.is_rfbs ? 'rFBS' : 'FBS' }}</small>
+            <strong class="warehouse-name">{{ w.warehouse_name }}</strong
+            ><small>{{ w.is_rfbs ? 'rFBS' : 'FBS' }}</small>
           </th>
         }
       </tr>

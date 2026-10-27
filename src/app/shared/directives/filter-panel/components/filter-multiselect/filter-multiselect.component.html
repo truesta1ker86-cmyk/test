@@ -1,53 +1,91 @@
-<div class="filter-control" [class.has-error]="!!error" [class.disabled]="disabled">
+<div
+  class="filter-control"
+  [class.has-error]="!!error"
+  [class.disabled]="disabled"
+  [class.inline-choice-list]="inline"
+>
   <label *ngIf="showLabel" class="filter-label" [for]="key">
     {{ getDisplayLabel() }}
     <span class="required" *ngIf="filterConfig?.validation">*</span>
   </label>
 
-  <p-select
-    [appendTo]="appendTo"
-    [ariaLabel]="getDisplayLabel()"
-    [id]="key"
-    [options]="filterConfig?.options || []"
-    optionLabel="label"
-    optionValue="value"
-    [ngModelOptions]="{ standalone: true }"
-    [(ngModel)]="value"
-    (ngModelChange)="updateValue($event)"
-    [placeholder]="getPlaceholder() || 'Выберите...'"
-    [disabled]="disabled"
-    [multiple]="true"
-    [showClear]="true"
-    [style]="{ width: '100%' }"
-    [class.ng-invalid]="!!error"
-    [filter]="true"
-    [virtualScroll]="(filterConfig?.options?.length || 0) > 200"
-    [virtualScrollItemSize]="32"
-    scrollHeight="240px"
-    (onFilter)="filterChanged.emit($event.filter)"
-    [filterBy]="'label'"
-  >
-    <!-- Кастомный шаблон для выбранных элементов -->
-    <ng-template pTemplate="selectedItems" let-selectedItems>
-      <span *ngIf="(selectedItems?.length || 0) === 0" class="placeholder-text">
-        {{ getPlaceholder() || 'Выберите...' }}
-      </span>
-      <span *ngIf="(selectedItems?.length || 0) > 0">
-        Выбрано: {{ selectedItems?.length || 0 }}
-      </span>
-    </ng-template>
+  @if (inline) {
+    <p-listbox
+      [id]="key"
+      [ariaLabel]="getDisplayLabel()"
+      [options]="filterConfig?.options || []"
+      optionLabel="label"
+      optionValue="value"
+      optionDisabled="disabled"
+      [ngModelOptions]="{ standalone: true }"
+      [(ngModel)]="value"
+      (ngModelChange)="updateValue($event)"
+      [disabled]="disabled"
+      [multiple]="true"
+      [checkbox]="true"
+      [showToggleAll]="false"
+      [filter]="true"
+      filterBy="label"
+      [filterPlaceHolder]="listSearchPlaceholder"
+      scrollHeight="flex"
+    >
+      <ng-template #item let-option>
+        @if (optionTemplate) {
+          <ng-container
+            [ngTemplateOutlet]="optionTemplate"
+            [ngTemplateOutletContext]="{ $implicit: option }"
+          />
+        } @else {
+          <span>{{ option.label }}</span>
+        }
+      </ng-template>
+    </p-listbox>
+  } @else {
+    <p-select
+      [appendTo]="appendTo"
+      [ariaLabel]="getDisplayLabel()"
+      [id]="key"
+      [options]="filterConfig?.options || []"
+      optionLabel="label"
+      optionValue="value"
+      [ngModelOptions]="{ standalone: true }"
+      [(ngModel)]="value"
+      (ngModelChange)="updateValue($event)"
+      [placeholder]="getPlaceholder() || 'Выберите...'"
+      [disabled]="disabled"
+      [multiple]="true"
+      [showClear]="true"
+      [style]="{ width: '100%' }"
+      [class.ng-invalid]="!!error"
+      [filter]="true"
+      [virtualScroll]="(filterConfig?.options?.length || 0) > 200"
+      [virtualScrollItemSize]="32"
+      scrollHeight="240px"
+      (onFilter)="filterChanged.emit($event.filter)"
+      [filterBy]="'label'"
+    >
+      <!-- Кастомный шаблон для выбранных элементов -->
+      <ng-template pTemplate="selectedItems" let-selectedItems>
+        <span *ngIf="(selectedItems?.length || 0) === 0" class="placeholder-text">
+          {{ getPlaceholder() || 'Выберите...' }}
+        </span>
+        <span *ngIf="(selectedItems?.length || 0) > 0">
+          Выбрано: {{ selectedItems?.length || 0 }}
+        </span>
+      </ng-template>
 
-    <!-- Кастомный шаблон для элементов в выпадающем списке -->
-    <ng-template let-option pTemplate="item">
-      <div class="multiselect-item">
-        <span>{{ option.label }}</span>
-        <span *ngIf="option.disabled" class="disabled-tag">(недоступно)</span>
-      </div>
-    </ng-template>
-  </p-select>
+      <!-- Кастомный шаблон для элементов в выпадающем списке -->
+      <ng-template let-option pTemplate="item">
+        <div class="multiselect-item">
+          <span>{{ option.label }}</span>
+          <span *ngIf="option.disabled" class="disabled-tag">(недоступно)</span>
+        </div>
+      </ng-template>
+    </p-select>
+  }
 
   <!-- Информация о выбранных элементах -->
-  <div class="selected-count" *ngIf="value?.length > 0">Выбрано: {{ value.length }}</div>
+  <div class="selected-count" *ngIf="!inline && value?.length > 0">Выбрано: {{ value.length }}</div>
 
   <!-- Ошибка -->
   <small *ngIf="error" class="p-error">{{ error }}</small>

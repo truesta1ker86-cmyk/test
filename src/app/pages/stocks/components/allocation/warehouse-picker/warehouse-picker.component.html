@@ -22,23 +22,45 @@
   @if (popoverOpen) {
     <section
       class="warehouse-menu"
+      role="dialog"
       aria-label="Склады маркетплейса"
       appModalFocus
       (modalEscape)="closePopover()"
     >
       <header>
-        <strong>Склады маркетплейса</strong
-        ><button type="button" aria-label="Закрыть выбор складов" (click)="closePopover()">
-          ×
-        </button>
+        <div>
+          <strong>Склады маркетплейса</strong><small>Можно выбрать несколько складов сразу</small>
+        </div>
+        <button type="button" aria-label="Закрыть выбор складов" (click)="closePopover()">×</button>
       </header>
-      <app-filter-multiselect
-        key="warehouses"
-        label="Склады маркетплейса"
-        [options]="warehouseOptions()"
-        [ngModel]="tempSelected"
-        (ngModelChange)="selectionChanged($event)"
-      />
+      <div class="warehouse-menu-body">
+        <app-filter-multiselect
+          class="warehouse-selection-control"
+          key="warehouses"
+          label="Склады маркетплейса"
+          [showLabel]="false"
+          [inline]="true"
+          [optionTemplate]="warehouseOption"
+          listSearchPlaceholder="Найти склад…"
+          [options]="warehouseOptions()"
+          [ngModel]="tempSelected"
+          (ngModelChange)="selectionChanged($event)"
+        />
+        <ng-template #warehouseOption let-option>
+          <span
+            class="warehouse-option-copy"
+          [class.is-added]="isWarehouseAdded(option.value)"
+          >
+            <strong>{{ getWarehouseName(option.value) }}</strong>
+            <span class="warehouse-option-meta">
+              <span class="scheme">{{ getWarehouseScheme(option.value) }}</span>
+              @if (isWarehouseAdded(option.value)) {
+                <span class="added-badge">✓ Уже добавлен</span>
+              }
+            </span>
+          </span>
+        </ng-template>
+      </div>
       <footer>
         <small>{{ statusText }}</small
         ><button

@@ -1,5 +1,7 @@
 import { WarehousePickerModule } from './warehouse-picker.module';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { FilterMultiselectComponent } from '../../../../../shared/directives/filter-panel/components/filter-multiselect/filter-multiselect.component';
 import { WarehousePickerComponent } from './warehouse-picker.component';
 
 describe('Adding warehouse columns', () => {
@@ -56,6 +58,31 @@ describe('Adding warehouse columns', () => {
     ]);
     picker.addSelectedWarehouses();
     expect(emitted).toEqual([]);
+  });
+  it('uses the shared inline filter and retains selected warehouses while searching', async () => {
+    const { fixture, picker } = setup();
+    await fixture.whenStable();
+    picker.togglePopover();
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(picker.tempSelected).toEqual(['0']);
+    expect(fixture.debugElement.query(By.directive(FilterMultiselectComponent)).componentInstance.value).toEqual(['0']);
+    expect(root.querySelector('p-select')).toBeNull();
+    const options = [...root.querySelectorAll<HTMLElement>('[role="option"]')];
+    expect(options[0].getAttribute('aria-disabled')).toBe('true');
+    expect(options[0].getAttribute('aria-selected')).toBe('true');
+    expect(options[0].textContent).toContain('Уже добавлен');
+    options[1].click();
+    await fixture.whenStable();
+    options[2].click();
+    await fixture.whenStable();
+    expect(picker.tempSelected).toEqual(['0', '1', '2']);
+    const search = root.querySelector<HTMLInputElement>('input.p-listbox-filter')!;
+    search.value = 'Warehouse 2';
+    search.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    expect(root.querySelectorAll('[role="option"]').length).toBe(1);
+    expect(picker.tempSelected).toEqual(['0', '1', '2']);
   });
 });
 
