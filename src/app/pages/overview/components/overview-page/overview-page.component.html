@@ -14,7 +14,6 @@
       <app-icon name="refresh" />{{ loading() ? 'Обновляем…' : 'Обновить данные' }}
     </button>
   </header>
-  <div class="overview-notice"><span>Изолированная v2</span>Отправки в Ozon отключены.</div>
   @if (error()) {
     <div class="editor-error" role="alert">
       {{ error() }} <button class="text-button" (click)="load()">Повторить</button>
