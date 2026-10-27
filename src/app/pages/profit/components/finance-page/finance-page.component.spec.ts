@@ -34,7 +34,7 @@ describe('Financial view adapters', () => {
     page.setFacet('brand', []);
     expect(page.filterTypes()).toEqual(['T2', 'T3']);
   });
-  it('transfers text and the applied calendar period to the unchanged reporting query', async () => {
+  it('applies hidden-panel filters and the calendar through the existing reporting query', async () => {
     TestBed.configureTestingModule({
       imports: [FinancePageModule],
       providers: [
@@ -55,11 +55,17 @@ describe('Financial view adapters', () => {
     });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     await fixture.whenStable();
+    const filters = fixture.nativeElement.querySelector('#finance-report-filters') as HTMLElement;
+    expect(filters.hidden).toBe(true);
+    (fixture.nativeElement.querySelector('.finance-filters-toggle') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(filters.hidden).toBe(false);
     const search = fixture.debugElement
       .queryAll(By.directive(FilterTextComponent))
       .map((n) => n.componentInstance as FilterTextComponent)
       .find((c) => c.key === 'q')!;
     (search as any).updateValue('A-001');
+    page.setFacet('brand', ['Brand A', 'Brand B']);
     const calendar = fixture.debugElement.query(By.directive(PeriodPickerComponent))
       .componentInstance as PeriodPickerComponent;
     calendar.applied.emit({ start: '2026-10-01', end: '2026-10-17', period: 'custom' });
@@ -68,6 +74,16 @@ describe('Financial view adapters', () => {
       start: '2026-10-01',
       end: '2026-10-17',
       period: 'custom',
+      facets: '{"brand":["Brand A","Brand B"]}',
+    });
+    fixture.debugElement
+      .query(By.css('#finance-report-filters form'))
+      .triggerEventHandler('ngSubmit');
+    await fixture.whenStable();
+    expect(filters.hidden).toBe(true);
+    expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({
+      q: 'A-001',
+      facets: '{"brand":["Brand A","Brand B"]}',
     });
   });
   function setup(view: string, report: Record<string, unknown>, q = '') {

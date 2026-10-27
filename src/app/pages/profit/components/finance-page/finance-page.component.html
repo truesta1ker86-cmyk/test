@@ -20,108 +20,203 @@
   @if (notice()) {
     <div class="notice" role="status">{{ notice() }}</div>
   }
-  <form class="toolbar" (ngSubmit)="navigate()">
+  <form class="toolbar finance-toolbar" (ngSubmit)="navigate()">
     <app-period-picker
       [start]="start"
       [end]="end"
       [period]="period"
       (applied)="applyPeriod($event)"
     />
-    <label class="search"
-      >Поиск<app-filter-text
-        name="q"
-        [ngModel]="q"
-        [disabled]="view() === 'common' || view() === 'accruals'"
-        placeholder="Товар, артикул, отправление"
-        label="Поиск"
-        key="q"
-        [showLabel]="false"
-        (ngModelChange)="q = $event"
-      ></app-filter-text
-    ></label>
-    @if (view() === 'operations') {
-      <label
-        >Тип операции<app-filter-select
-          name="type"
-          [ngModel]="operationType"
-          [options]="typeOptions()"
-          label="Тип операции"
-          key="type"
-          [showLabel]="false"
-          (ngModelChange)="operationType = $event"
-        ></app-filter-select
-      ></label>
-    }
     <button class="button primary" type="submit" [disabled]="loading()">
       <app-icon name="pricing" />Рассчитать
     </button>
+    <div class="finance-export-actions">
+      <button
+        class="button"
+        type="button"
+        (click)="export()"
+        [disabled]="busy() || loading() || !data()"
+      >
+        <app-icon name="download" />{{ exporting() ? 'Формируем файл…' : 'Excel с расшифровкой' }}
+      </button>
+      <button
+        class="button export-options-toggle"
+        type="button"
+        aria-label="Вид выгрузки Excel"
+        aria-controls="finance-export-options"
+        [attr.aria-expanded]="toolbarPanel() === 'export'"
+        (click)="toolbarPanel.set(toolbarPanel() === 'export' ? null : 'export')"
+      >
+        <app-icon [name]="toolbarPanel() === 'export' ? 'up' : 'down'" />
+      </button>
+    </div>
     <button class="button" type="button" (click)="reload()" [disabled]="loading()">
       <app-icon name="refresh" />Сверить локальный снимок
     </button>
+    <button
+      class="button finance-filters-toggle"
+      type="button"
+      aria-controls="finance-report-filters"
+      [attr.aria-expanded]="toolbarPanel() === 'filters'"
+      (click)="toolbarPanel.set(toolbarPanel() === 'filters' ? null : 'filters')"
+    >
+      <app-icon name="filter" />Фильтры
+    </button>
   </form>
-  @if (productView()) {
-    <div class="finance-filters" aria-label="Отбор финансового отчёта">
-      <label
-        >Категория<app-filter-select
-          [ngModel]="category"
-          [options]="categoryOptions()"
-          label="Категория отчёта"
-          key="category"
-          [showLabel]="false"
-          (ngModelChange)="category = $event; hierarchyChanged(true)"
-        ></app-filter-select
-      ></label>
-      <label
-        >Тип в отчёте<app-filter-select
-          [ngModel]="productType"
-          [options]="productTypeOptions()"
-          label="Тип финансового отчёта"
-          key="productType"
-          [showLabel]="false"
-          (ngModelChange)="productType = $event; hierarchyChanged()"
-        ></app-filter-select
-      ></label>
-      <label
-        >Номенклатура / артикул<app-filter-select
-          [ngModel]="product"
-          [options]="productOptions()"
-          label="Товар финансового отчёта"
-          key="product"
-          [showLabel]="false"
-          (ngModelChange)="product = $event; navigate()"
-        ></app-filter-select
-      ></label>
-      <label
-        >Артикул<app-filter-text
-          [ngModel]="article"
-          (keydown.enter)="navigate()"
-          label="Поиск по артикулу финансового отчёта"
-          key="article"
-          [showLabel]="false"
-          (ngModelChange)="article = $event"
-        ></app-filter-text
-      ></label>
-      <button type="button" class="button" (click)="navigate()">Применить отбор</button>
+  <section
+    id="finance-export-options"
+    class="finance-controls-panel"
+    [hidden]="toolbarPanel() !== 'export'"
+    aria-label="Настройки выгрузки Excel"
+  >
+    <div class="section-title">
+      <h2>Настройки выгрузки Excel</h2>
+      <button type="button" class="text-button" (click)="toolbarPanel.set(null)">Закрыть</button>
     </div>
-    <details class="finance-extra-filters">
-      <summary><app-icon name="filter" />Фильтры товаров · множественный выбор</summary>
-      <div class="finance-facet-grid">
-        @for (field of facetFields; track field[0]) {
-          <app-filter-multiselect
-            [key]="field[0]"
-            [label]="field[1]"
-            [options]="facetOptions(field[0])"
-            [ngModel]="facets | filterValues: field[0]"
-            (ngModelChange)="setFacet(field[0], $event)"
-            [ngModelOptions]="{ standalone: true }"
-          />
+    <div class="toolbar">
+      <label
+        >Вид выгрузки<select [(ngModel)]="exportKind">
+          <option value="view">Текущая вкладка · {{ viewLabel() }}</option>
+          <option value="summary">Финрезультат · сводная v1</option>
+          <option value="gross">Валовая · формулы и начисления</option>
+          <option value="excel">
+            {{
+              data()?.local_preview
+                ? 'Все финансовые отчёты'
+                : 'Сводка, заказы, финансы, остатки, цены'
+            }}
+          </option>
+          <option value="backup">
+            {{
+              data()?.local_preview
+                ? 'Финансы, цены и заказы · локальный набор'
+                : 'Полная рабочая выгрузка'
+            }}
+          </option>
+        </select></label
+      >
+    </div>
+    @if (data()?.local_preview) {
+      <p class="explanation">
+        Текущая вкладка и валовая выгружаются с её отбором; операции — все подходящие строки,
+        включая следующие страницы. «Сводная» v1 охватывает весь магазин за период. Все данные
+        тестовые, внешние API не используются.
+      </p>
+    }
+    @if (exporting()) {
+      <p class="explanation" role="status">
+        Готовим выгрузку. Полная история может потребовать больше времени.
+      </p>
+    }
+  </section>
+  <section
+    id="finance-report-filters"
+    class="finance-controls-panel"
+    [hidden]="toolbarPanel() !== 'filters'"
+    aria-label="Фильтры финансового отчёта"
+  >
+    <div class="section-title">
+      <h2>Фильтры</h2>
+      <button type="button" class="text-button" (click)="toolbarPanel.set(null)">Закрыть</button>
+    </div>
+    <form (ngSubmit)="applyFacets()">
+      <div class="finance-filters">
+        <label class="search"
+          >Поиск<app-filter-text
+            name="q"
+            [ngModel]="q"
+            [disabled]="view() === 'common' || view() === 'accruals'"
+            placeholder="Товар, артикул, отправление"
+            label="Поиск"
+            key="q"
+            [showLabel]="false"
+            (ngModelChange)="q = $event"
+          ></app-filter-text
+        ></label>
+        @if (view() === 'operations') {
+          <label
+            >Тип операции<app-filter-select
+              name="type"
+              [ngModel]="operationType"
+              [options]="typeOptions()"
+              label="Тип операции"
+              key="type"
+              [showLabel]="false"
+              (ngModelChange)="operationType = $event"
+            ></app-filter-select
+          ></label>
         }
       </div>
-      <button type="button" class="button" (click)="applyFacets()">
-        Применить фильтры товаров
-      </button>
-    </details>
-  }
+      @if (productView()) {
+        <div class="finance-filters" aria-label="Отбор финансового отчёта">
+          <label
+            >Категория<app-filter-select
+              [ngModel]="category"
+              [ngModelOptions]="{ standalone: true }"
+              [options]="categoryOptions()"
+              label="Категория отчёта"
+              key="category"
+              [showLabel]="false"
+              (ngModelChange)="category = $event; hierarchyChanged(true)"
+            ></app-filter-select
+          ></label>
+          <label
+            >Тип в отчёте<app-filter-select
+              [ngModel]="productType"
+              [ngModelOptions]="{ standalone: true }"
+              [options]="productTypeOptions()"
+              label="Тип финансового отчёта"
+              key="productType"
+              [showLabel]="false"
+              (ngModelChange)="productType = $event; hierarchyChanged()"
+            ></app-filter-select
+          ></label>
+          <label
+            >Номенклатура / артикул<app-filter-select
+              [ngModel]="product"
+              [ngModelOptions]="{ standalone: true }"
+              [options]="productOptions()"
+              label="Товар финансового отчёта"
+              key="product"
+              [showLabel]="false"
+              (ngModelChange)="product = $event; navigate()"
+            ></app-filter-select
+          ></label>
+          <label
+            >Артикул<app-filter-text
+              [ngModel]="article"
+              [ngModelOptions]="{ standalone: true }"
+              label="Поиск по артикулу финансового отчёта"
+              key="article"
+              [showLabel]="false"
+              (ngModelChange)="article = $event"
+            ></app-filter-text
+          ></label>
+        </div>
+        <div class="finance-extra-filters">
+          <h3>Фильтры товаров · множественный выбор</h3>
+          <div class="finance-facet-grid">
+            @for (field of facetFields; track field[0]) {
+              <app-filter-multiselect
+                [key]="field[0]"
+                [label]="field[1]"
+                [options]="facetOptions(field[0])"
+                [ngModel]="facets | filterValues: field[0]"
+                (ngModelChange)="setFacet(field[0], $event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            }
+          </div>
+        </div>
+      }
+      <div class="finance-filter-actions">
+        <button type="button" class="button" (click)="resetFilters()">Сбросить</button>
+        <button type="submit" class="button primary" [disabled]="loading()">
+          Применить фильтры
+        </button>
+      </div>
+    </form>
+  </section>
   @if (
     ObjectKeys(columnRules()).length ||
     query().category ||
@@ -333,49 +428,6 @@
       </div>
     </details>
   }
-  <section class="preview">
-    <div class="section-title">
-      <h2>Выгрузка Excel</h2>
-      <span>Период построенного отчёта</span>
-    </div>
-    <div class="toolbar">
-      <label
-        >Вид выгрузки<select [(ngModel)]="exportKind">
-          <option value="view">Текущая вкладка · {{ viewLabel() }}</option>
-          <option value="summary">Финрезультат · сводная v1</option>
-          <option value="gross">Валовая · формулы и начисления</option>
-          <option value="excel">
-            {{
-              data()?.local_preview
-                ? 'Все финансовые отчёты'
-                : 'Сводка, заказы, финансы, остатки, цены'
-            }}
-          </option>
-          <option value="backup">
-            {{
-              data()?.local_preview
-                ? 'Финансы, цены и заказы · локальный набор'
-                : 'Полная рабочая выгрузка'
-            }}
-          </option>
-        </select></label
-      ><button class="button" (click)="export()" [disabled]="busy() || loading() || !data()">
-        <app-icon name="download" />{{ exporting() ? 'Формируем файл…' : 'Скачать .xlsx' }}
-      </button>
-    </div>
-    @if (data()?.local_preview) {
-      <p class="explanation">
-        Текущая вкладка и валовая выгружаются с её отбором; операции — все подходящие строки,
-        включая следующие страницы. «Сводная» v1 охватывает весь магазин за период. Все данные
-        тестовые, внешние API не используются.
-      </p>
-    }
-    @if (exporting()) {
-      <p class="explanation" role="status">
-        Готовим выгрузку. Полная история может потребовать больше времени.
-      </p>
-    }
-  </section>
   @if (data()?.can_manage) {
     <section class="preview">
       <h2>Налоговый режим</h2>

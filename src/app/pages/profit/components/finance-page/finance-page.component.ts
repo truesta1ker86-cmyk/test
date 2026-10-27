@@ -186,6 +186,7 @@ export class FinancePage {
   }
   applyFacets() {
     this.navigate();
+    if (!this.error()) this.toolbarPanel.set(null);
   }
 
   readonly filterCategories = computed(() =>
@@ -231,6 +232,7 @@ export class FinancePage {
     this.columnsFilter = JSON.stringify(filters);
     this.navigate();
   }
+  readonly toolbarPanel = signal<'filters' | 'export' | null>(null);
   readonly loading = signal(false);
   readonly busy = signal(false);
   readonly exporting = signal(false);
