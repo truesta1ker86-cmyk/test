@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { FilterTextComponent } from '../../../../shared/directives/filter-panel/components/filter-text/filter-text.component';
-import { FilterDateComponent } from '../../../../shared/directives/filter-panel/components/filter-date/filter-date.component';
+import { PeriodPickerComponent } from '../../../../shared/period-picker/components/period-picker/period-picker.component';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { EMPTY } from 'rxjs';
@@ -34,7 +34,7 @@ describe('Financial view adapters', () => {
     page.setFacet('brand', []);
     expect(page.filterTypes()).toEqual(['T2', 'T3']);
   });
-  it('transfers original text and calendar controls to the unchanged reporting query', async () => {
+  it('transfers text and the applied calendar period to the unchanged reporting query', async () => {
     TestBed.configureTestingModule({
       imports: [FinancePageModule],
       providers: [
@@ -60,11 +60,9 @@ describe('Financial view adapters', () => {
       .map((n) => n.componentInstance as FilterTextComponent)
       .find((c) => c.key === 'q')!;
     (search as any).updateValue('A-001');
-    for (const node of fixture.debugElement.queryAll(By.directive(FilterDateComponent))) {
-      const control = node.componentInstance as FilterDateComponent;
-      (control as any).updateValue(new Date(2026, 9, control.key === 'start' ? 1 : 17));
-    }
-    page.navigate();
+    const calendar = fixture.debugElement.query(By.directive(PeriodPickerComponent))
+      .componentInstance as PeriodPickerComponent;
+    calendar.applied.emit({ start: '2026-10-01', end: '2026-10-17', period: 'custom' });
     expect(navigate.mock.calls.at(-1)?.[1]?.queryParams).toMatchObject({
       q: 'A-001',
       start: '2026-10-01',

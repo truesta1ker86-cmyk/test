@@ -395,7 +395,7 @@ body.o1c-ui {
   pointer-events: auto;
 }
 @media (max-width: 1023px) {
-  body.o1c-ui .p-datepicker-panel:not(.p-datepicker-inline) {
+  body.o1c-ui .p-datepicker-panel:not(.p-datepicker-panel-inline) {
     position: fixed !important;
     inset: 64px 12px auto !important;
     width: auto !important;

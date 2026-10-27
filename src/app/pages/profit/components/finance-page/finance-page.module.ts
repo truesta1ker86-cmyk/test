@@ -9,6 +9,7 @@ import { ModalFocusModule } from '../../../../shared/directives/modal-focus/moda
 import { ProfitSummaryModule } from '../profit-summary/profit-summary.module';
 import { IconModule } from '../../../../shared/icons-sprite/icon/icon.module';
 import { FinanceCellSelectionModule } from '../../directives/finance-cell-selection/finance-cell-selection.module';
+import { PeriodPickerModule } from '../../../../shared/period-picker/period-picker.module';
 
 @NgModule({
   declarations: [FinancePage],
@@ -22,6 +23,7 @@ import { FinanceCellSelectionModule } from '../../directives/finance-cell-select
     ProfitSummaryModule,
     IconModule,
     FinanceCellSelectionModule,
+    PeriodPickerModule,
   ],
   exports: [FinancePage],
 })

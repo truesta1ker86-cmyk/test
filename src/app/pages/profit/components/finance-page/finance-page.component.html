@@ -21,36 +21,13 @@
     <div class="notice" role="status">{{ notice() }}</div>
   }
   <form class="toolbar" (ngSubmit)="navigate()">
-    <label
-      >Период<app-filter-select
-        name="period"
-        [ngModel]="period"
-        (ngModelChange)="setPeriod($event)"
-        [options]="periodOptions()"
-        label="Период"
-        key="period"
-        [showLabel]="false"
-      ></app-filter-select
-    ></label>
-    <label
-      >С даты<app-filter-date
-        name="start"
-        [ngModel]="start"
-        label="С даты"
-        key="start"
-        [showLabel]="false"
-        (ngModelChange)="start = $event; period = 'custom'"
-      ></app-filter-date></label
-    ><label
-      >По дату<app-filter-date
-        name="end"
-        [ngModel]="end"
-        label="По дату"
-        key="end"
-        [showLabel]="false"
-        (ngModelChange)="end = $event; period = 'custom'"
-      ></app-filter-date></label
-    ><label class="search"
+    <app-period-picker
+      [start]="start"
+      [end]="end"
+      [period]="period"
+      (applied)="applyPeriod($event)"
+    />
+    <label class="search"
       >Поиск<app-filter-text
         name="q"
         [ngModel]="q"

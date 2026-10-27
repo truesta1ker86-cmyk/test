@@ -1,5 +1,6 @@
 import { FINANCE_PAGE_FILTER_OPTIONS_10 } from './infrastructure/constants/filter-options.constants';
 import { FilterService } from '../../../../shared/directives/filter-panel/infrastructure/services/filter.service';
+import type { PeriodSelection } from '../../../../shared/period-picker/infrastructure/interfaces/period-selection.interfaces';
 import {
   FINANCE_PAGE_API_ROOT,
   FINANCE_PAGE_TABS,
@@ -252,6 +253,12 @@ export class FinancePage {
   cost = '';
   exportKind = 'summary';
   period = '30';
+  applyPeriod(value: PeriodSelection) {
+    this.start = value.start;
+    this.end = value.end;
+    this.period = value.period;
+    this.navigate();
+  }
   setPeriod(days: string) {
     this.period = days;
     if (days === 'custom') return;

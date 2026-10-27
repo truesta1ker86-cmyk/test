@@ -1,0 +1,83 @@
+<button
+  #trigger
+  type="button"
+  class="button period-trigger"
+  aria-haspopup="dialog"
+  [attr.aria-expanded]="opened()"
+  (click)="open()"
+>
+  <span>{{ label }}</span
+  ><app-icon [name]="opened() ? 'up' : 'down'" />
+</button>
+@if (opened()) {
+  <dialog
+    #dialog
+    class="period-dialog"
+    aria-label="Выбор периода"
+    appModalFocus
+    (modalEscape)="cancel()"
+    (cancel)="$event.preventDefault(); cancel()"
+    (click)="outside($event)"
+    [style.left.px]="position().left"
+    [style.top.px]="position().top"
+  >
+    <div class="period-body">
+      <div class="period-calendar">
+        <p-datepicker
+          [inline]="true"
+          selectionMode="range"
+          [numberOfMonths]="monthCount()"
+          (onMonthChange)="viewChanged($event)"
+          [firstDayOfWeek]="1"
+          [showOtherMonths]="false"
+          [maxDate]="today()"
+          [defaultDate]="cursor()"
+          [ngModel]="draft"
+          (ngModelChange)="setDraft($event)"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <ng-template #date let-day>
+            <span
+              class="period-day"
+              [class.weekend]="weekend(day)"
+              [class.in-range]="inside(day)"
+              [class.edge]="edge(day)"
+              [class.unavailable]="day.selectable === false"
+              >{{ day.day }}</span
+            >
+          </ng-template>
+        </p-datepicker>
+      </div>
+      <aside class="period-quick" aria-label="Быстрый выбор периода">
+        <strong>Быстрый выбор</strong>
+        <div class="period-presets">
+          @for (days of shortcuts; track days) {
+            <button type="button" [class.active]="draftPeriod === '' + days" (click)="preset(days)">
+              {{ days }} дней
+            </button>
+          }
+        </div>
+        <div class="period-months">
+          @for (item of months(); track item.offset) {
+            <button
+              type="button"
+              [class.active]="activeMonth === item.offset"
+              (click)="month(item.offset)"
+            >
+              {{ item.label }}
+            </button>
+          }
+        </div>
+      </aside>
+    </div>
+    <footer>
+      <span>{{ draftLabel }}</span>
+      <div class="button-row">
+        <button type="button" class="button" (click)="cancel()">Отмена</button
+        ><button type="button" class="button primary" [disabled]="!canApply" (click)="apply()">
+          Применить
+        </button>
+      </div>
+    </footer>
+  </dialog>
+}
