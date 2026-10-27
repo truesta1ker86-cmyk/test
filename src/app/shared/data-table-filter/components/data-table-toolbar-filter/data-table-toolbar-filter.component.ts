@@ -28,6 +28,7 @@ export class DataTableToolbarFilterComponent implements OnChanges {
   @Input() schemes: DataTableToolbarFilterOption[] = [];
   @Input() sorts: DataTableToolbarFilterOption[] = [];
   @Input() loading = false;
+  @Input() compact = false;
   @Input() searchLabel = 'Поиск';
   @Input() searchPlaceholder = 'Номер, артикул…';
   @Output() filterChange = new EventEmitter<DataTableToolbarFilterValue>();

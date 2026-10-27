@@ -1,4 +1,4 @@
-<form class="operational-filters filter-bar" (ngSubmit)="applyFilter()">
+<form class="operational-filters filter-bar" [class.compact]="compact" (ngSubmit)="applyFilter()">
   @if (lifecycles.length) {
     <app-filter-select
       key="lifecycle"
@@ -30,6 +30,7 @@
     />
   }
   <app-filter-text
+    [showLabel]="!compact"
     key="search"
     [label]="searchLabel"
     [placeholder]="searchPlaceholder"

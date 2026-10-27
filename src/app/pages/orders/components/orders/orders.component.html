@@ -1,4 +1,4 @@
-<div class="operational-page workspace-surface">
+<div class="orders-page operational-page workspace-surface">
   <div class="page-heading">
     <div>
       <h1>Заказы</h1>
@@ -22,41 +22,42 @@
       </button>
     </div>
   </div>
-  <div
-    class="lifecycle-tabs"
-    role="tablist"
-    aria-label="Состояние заказов"
-    (keydown)="tabKey($event)"
-  >
-    @for (group of ['current', 'completed']; track group) {
-      <button
-        role="tab"
-        [id]="'orders-tab-' + group"
-        [attr.data-lifecycle]="group"
-        aria-controls="operational-table"
-        [class.active]="query().lifecycle === group"
-        [attr.aria-selected]="query().lifecycle === group"
-        [attr.tabindex]="query().lifecycle === group ? 0 : -1"
-        (click)="lifecycle(group)"
-      >
-        {{ group === 'current' ? 'Текущие' : 'Завершённые' }}
-        <span>{{ data()?.summary?.[group === 'current' ? 'current' : 'completed'] ?? '—' }}</span>
-      </button>
-    }
-  </div>
-  @if (notice()) {
-    <p class="editor-success" role="status">{{ notice() }}</p>
-  }
-  <section class="panel operational-panel">
+  <div class="orders-toolbar">
+    <div
+      class="lifecycle-tabs"
+      role="tablist"
+      aria-label="Состояние заказов"
+      (keydown)="tabKey($event)"
+    >
+      @for (group of ['current', 'completed']; track group) {
+        <button
+          role="tab"
+          [id]="'orders-tab-' + group"
+          [attr.data-lifecycle]="group"
+          aria-controls="operational-table"
+          [class.active]="query().lifecycle === group"
+          [attr.aria-selected]="query().lifecycle === group"
+          [attr.tabindex]="query().lifecycle === group ? 0 : -1"
+          (click)="lifecycle(group)"
+        >
+          {{ group === 'current' ? 'Текущие' : 'Завершённые' }}
+          <span>{{ data()?.summary?.[group === 'current' ? 'current' : 'completed'] ?? '—' }}</span>
+        </button>
+      }
+    </div>
     <app-data-table-toolbar-filter
       [filter]="query()"
       searchLabel="Артикул"
       searchPlaceholder="Поиск по артикулу"
+      [compact]="true"
       [loading]="loading()"
       (filterChange)="onFilterChange($event)"
-    /><span class="list-total"
-      >Показано {{ data()?.items?.length ?? '—' }} из {{ data()?.meta?.total ?? '—' }}</span
-    >
+    />
+  </div>
+  @if (notice()) {
+    <p class="editor-success" role="status">{{ notice() }}</p>
+  }
+  <section class="panel operational-panel" id="operational-table">
     @if (error()) {
       <div class="editor-error" role="alert">
         {{ error() }} <button class="text-button" (click)="refresh()">Повторить</button>
@@ -91,6 +92,13 @@
       (dataLoaded)="onDataLoaded($event)"
     />
     <div class="operational-export">
+      @if (data(); as page) {
+        @if (page.meta.total <= query().page_size) {
+          <span class="single-page-total" role="status">
+            {{ page.meta.total ? 1 : 0 }}–{{ page.items.length }} из {{ page.meta.total }}
+          </span>
+        }
+      }
       <button
         class="text-button"
         [disabled]="loading() || exporting() || !data()?.meta?.total"

@@ -21,6 +21,28 @@
   min-width: 0;
   max-width: 480px;
 }
+.operational-filters.compact {
+  padding: 0;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.operational-filters.compact > app-filter-text {
+  flex: 1 1 160px;
+  max-width: none;
+}
+.operational-filters.compact .button {
+  min-height: 30px;
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+:host ::ng-deep .operational-filters.compact app-filter-text input.p-inputtext {
+  height: 30px;
+  min-height: 30px;
+  padding: 4px 9px;
+  font-size: 12px;
+}
 
 @media (max-width: 700px) {
   .operational-filters > app-filter-select,
@@ -28,5 +50,13 @@
     flex-basis: 100%;
     min-width: 0;
     max-width: none;
+  }
+}
+@media (max-width: 420px) {
+  .operational-filters.compact {
+    flex-wrap: wrap;
+  }
+  .operational-filters.compact > app-filter-text {
+    flex-basis: 100%;
   }
 }

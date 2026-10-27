@@ -239,7 +239,7 @@ describe('V2 orders and separate returns pages', () => {
     page.selected.set([{ ...ready, posting_number: 'HIDDEN' }]);
     const filter = fixture.debugElement.query(By.directive(DataTableToolbarFilterComponent));
     expect(filter.nativeElement.querySelectorAll('app-filter-select')).toHaveLength(0);
-    expect(filter.nativeElement.textContent).toContain('Артикул');
+    expect(filter.nativeElement.querySelector('input')?.getAttribute('aria-label')).toBe('Артикул');
     expect(fixture.nativeElement.querySelector('[aria-label="Фильтр: Схема"]')).not.toBeNull();
     page.columnChanged({
       field: 'scheme',
@@ -339,7 +339,8 @@ describe('V2 orders and separate returns pages', () => {
     const { fixture, http } = setup(),
       root: HTMLElement = fixture.nativeElement;
     expect(root.querySelectorAll('[role=tab]').length).toBe(2);
-    expect(root.querySelector('.list-total')?.textContent).toContain('3 из 3');
+    expect(root.querySelector('.list-total')).toBeNull();
+    expect(root.querySelector('.operational-export')?.textContent).toContain('3 из 3');
     expect(root.querySelectorAll('thead th').length).toBe(8);
     expect(root.querySelectorAll('app-data-table-filter').length).toBe(6);
     expect(root.textContent).toContain('Собрать заказ');
