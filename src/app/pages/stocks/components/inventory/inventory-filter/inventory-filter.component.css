@@ -17,41 +17,47 @@
   background: var(--brand-soft);
   color: var(--brand);
 }
-.stock-filter-panel {
+:host ::ng-deep app-popup-button .popup-button-popover.inventory-filter-popover.is-bottom-right {
   position: fixed;
-  inset: 0 0 0 auto;
-  margin: 0;
-  width: min(560px, 100vw);
-  max-width: 100vw;
-  height: 100dvh;
-  max-height: 100dvh;
+  inset: 12px 12px 12px auto;
+  height: calc(100dvh - 24px);
+  max-height: calc(100dvh - 24px);
   padding: 0;
-  border: 0;
-  border-left: 1px solid var(--border);
-  border-radius: 0;
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: -12px 0 36px #0f172a1f;
+  z-index: 70;
+  animation: none;
 }
-.stock-filter-panel[open] {
+:host ::ng-deep .inventory-filter-popover::before {
+  display: none;
+}
+.stock-filter-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
-.stock-filter-panel::backdrop {
-  background: #0f172a47;
+/* PrimeNG positions appended dropdowns in viewport coordinates. */
+.stock-filter-overlays {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+:host ::ng-deep .stock-filter-overlays > .p-overlay {
+  pointer-events: auto;
 }
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 24px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 15px;
 }
 header p {
   margin: 6px 0 0;
@@ -65,9 +71,10 @@ header button {
 .stock-filter-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  padding: 24px;
+  gap: 12px;
+  padding: 16px;
   overflow: auto;
+  overscroll-behavior: contain;
   min-height: 0;
   flex: 1;
   align-content: start;
@@ -91,26 +98,28 @@ header button {
   box-sizing: border-box;
   font-size: 14px;
 }
-footer {
+.stock-filter-panel > footer {
+  position: static;
+  z-index: auto;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 18px 24px;
+  padding: 10px 16px;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
 footer button {
-  min-height: 36px;
+  min-height: 32px;
   padding: 7px 10px;
   font-size: 12px;
 }
 @media (max-width: 480px) {
   .stock-filter-grid {
     grid-template-columns: 1fr;
-    padding: 18px;
+    padding: 12px;
   }
   header,
-  footer {
-    padding: 18px;
+  .stock-filter-panel > footer {
+    padding: 10px 12px;
   }
 }

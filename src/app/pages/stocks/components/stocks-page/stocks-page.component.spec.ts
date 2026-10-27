@@ -11,6 +11,15 @@ import { AllocationMatrixComponent } from '../allocation/allocation-matrix/alloc
 import type { MatrixPreview } from '../../infrastructure/interfaces/contracts.interfaces';
 
 describe('Allocation preview validity', () => {
+  it('labels an empty facet without changing the server filter value or hiding brands', () => {
+    const { page } = setup();
+    page.facts.set({ items: [], facets: { brand: ['Docke', 'Grand Line', '__empty__'] } });
+    expect(page.filterChoices()['brand']).toEqual([
+      { value: 'Docke', label: 'Docke' },
+      { value: 'Grand Line', label: 'Grand Line' },
+      { value: '__empty__', label: 'Не заполнено' },
+    ]);
+  });
   it('does not restore a saved-rule check for an older product selection', () => {
     const { page, http } = setup();
     page.selection.set(new Set(['A']));

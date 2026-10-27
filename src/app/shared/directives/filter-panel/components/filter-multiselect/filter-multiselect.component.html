@@ -5,6 +5,7 @@
   </label>
 
   <p-select
+    [appendTo]="appendTo"
     [ariaLabel]="getDisplayLabel()"
     [id]="key"
     [options]="filterConfig?.options || []"

@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { InventoryFilterComponent } from './inventory-filter.component';
 import { FilterMultiselectComponent } from '../../../../../shared/directives/filter-panel/components/filter-multiselect/filter-multiselect.component';
+import { Select } from 'primeng/select';
 
 describe('Stock filters drawer from v1', () => {
   const original = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'showModal');
@@ -81,6 +82,23 @@ describe('Stock filters drawer from v1', () => {
     fixture.componentRef.setInput('values', { brand: ['a', 'b'], fin_type: ['Товар'] });
     fixture.componentRef.setInput('article', 'A-00');
     expect(component.activeCount()).toBe(3);
+  });
+  it('renders dropdowns outside the scrolling grid while keeping them inside the popup', () => {
+    const { fixture, component } = setup();
+    component.opened.set(true);
+    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector('.stock-filter-panel');
+    const grid = fixture.nativeElement.querySelector('.stock-filter-grid');
+    const overlays = fixture.nativeElement.querySelector('.stock-filter-overlays');
+    const selects = fixture.debugElement.queryAll(By.directive(Select));
+    expect(selects.length).toBeGreaterThan(2);
+    for (const select of selects) {
+      expect(select.componentInstance.appendTo()).toBe(overlays);
+    }
+    expect(panel.contains(grid)).toBe(true);
+    expect(grid.contains(panel)).toBe(false);
+    expect(panel.contains(overlays)).toBe(true);
+    expect(grid.contains(overlays)).toBe(false);
   });
 });
 

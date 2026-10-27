@@ -1,6 +1,6 @@
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { forwardRef } from '@angular/core';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FilterBaseComponent } from '../filter-base/filter-base.component';
 
 @Component({
@@ -19,6 +19,7 @@ import { FilterBaseComponent } from '../filter-base/filter-base.component';
   styleUrls: ['./filter-select.component.scss'],
 })
 export class FilterSelectComponent extends FilterBaseComponent {
+  @Input() appendTo: HTMLElement | 'body' | undefined;
   protected override controlType = 'select' as const;
   getSelectedLabel(): string {
     if (!this.filterConfig?.options) return '';

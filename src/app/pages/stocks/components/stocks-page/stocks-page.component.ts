@@ -234,7 +234,7 @@ export class StocksPage {
         ...Object.fromEntries(
           Object.entries(this.facts()?.facets || {}).map(([key, values]) => [
             key,
-            values.map((value) => ({ value, label: value })),
+            values.map((value) => ({ value, label: value === '__empty__' ? 'Не заполнено' : value })),
           ]),
         ),
         rules_status: [

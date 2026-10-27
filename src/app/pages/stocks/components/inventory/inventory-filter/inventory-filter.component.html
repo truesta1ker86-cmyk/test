@@ -5,75 +5,82 @@
   [count]="activeCount()"
   [open]="opened()"
   (openChange)="opened.set($event)"
-  popupWidth="min(720px, calc(100vw - 64px))"
+  popoverClass="inventory-filter-popover"
+  popupWidth="min(720px, calc(100vw - 24px))"
 >
-  <header>
-    <div>
-      <h2>Фильтры</h2>
-      <p>Категория, тип Фин и характеристики товара</p>
+  <section class="stock-filter-panel">
+    <header>
+      <div>
+        <h2>Фильтры</h2>
+        <p>Категория, тип Фин и характеристики товара</p>
+      </div>
+      <button type="button" aria-label="Закрыть фильтры товаров" (click)="close()">×</button>
+    </header>
+    <div class="stock-filter-grid">
+      <label
+        >Номенклатура
+        <app-filter-select
+          [ngModel]="nameOperator()"
+          (ngModelChange)="textChanged.emit({ field: 'nameOperator', value: $event })"
+          [options]="nameOperatorOptions()"
+          label="Условие поиска номенклатуры"
+          [appendTo]="filterOverlays"
+          key="nameOperator__"
+          [showLabel]="false"
+        ></app-filter-select>
+        <app-filter-text
+          [ngModel]="name()"
+          (ngModelChange)="textChanged.emit({ field: 'name', value: $event })"
+          (keydown.enter)="done()"
+          placeholder="Название товара"
+          label="Номенклатура"
+          key="name__"
+          [showLabel]="false"
+        ></app-filter-text>
+      </label>
+      <label
+        >Артикул
+        <app-filter-select
+          [ngModel]="articleOperator()"
+          (ngModelChange)="textChanged.emit({ field: 'articleOperator', value: $event })"
+          [options]="articleOperatorOptions()"
+          label="Условие поиска артикула"
+          [appendTo]="filterOverlays"
+          key="articleOperator__"
+          [showLabel]="false"
+        ></app-filter-select>
+        <app-filter-text
+          [ngModel]="article()"
+          (ngModelChange)="textChanged.emit({ field: 'article', value: $event })"
+          (keydown.enter)="done()"
+          placeholder="Артикул, SKU маркетплейса или 1С"
+          label="Артикул"
+          key="article__"
+          [showLabel]="false"
+        ></app-filter-text>
+      </label>
+      @for (field of fields(); track field[0]) {
+        <app-filter-multiselect
+          [appendTo]="filterOverlays"
+          [key]="field[0]"
+          [label]="field[1]"
+          [options]="choices()[field[0]] || []"
+          [ngModel]="values()[field[0]] || []"
+          (ngModelChange)="filterChanged.emit({ key: field[0], values: $event })"
+          [ngModelOptions]="{ standalone: true }"
+        />
+      }
     </div>
-    <button type="button" aria-label="Закрыть фильтры товаров" (click)="close()">×</button>
-  </header>
-  <div class="stock-filter-grid">
-    <label
-      >Номенклатура
-      <app-filter-select
-        [ngModel]="nameOperator()"
-        (ngModelChange)="textChanged.emit({ field: 'nameOperator', value: $event })"
-        [options]="nameOperatorOptions()"
-        label="Условие поиска номенклатуры"
-        key="nameOperator__"
-        [showLabel]="false"
-      ></app-filter-select>
-      <app-filter-text
-        [ngModel]="name()"
-        (ngModelChange)="textChanged.emit({ field: 'name', value: $event })"
-        (keydown.enter)="done()"
-        placeholder="Название товара"
-        label="Номенклатура"
-        key="name__"
-        [showLabel]="false"
-      ></app-filter-text>
-    </label>
-    <label
-      >Артикул
-      <app-filter-select
-        [ngModel]="articleOperator()"
-        (ngModelChange)="textChanged.emit({ field: 'articleOperator', value: $event })"
-        [options]="articleOperatorOptions()"
-        label="Условие поиска артикула"
-        key="articleOperator__"
-        [showLabel]="false"
-      ></app-filter-select>
-      <app-filter-text
-        [ngModel]="article()"
-        (ngModelChange)="textChanged.emit({ field: 'article', value: $event })"
-        (keydown.enter)="done()"
-        placeholder="Артикул, SKU маркетплейса или 1С"
-        label="Артикул"
-        key="article__"
-        [showLabel]="false"
-      ></app-filter-text>
-    </label>
-    @for (field of fields(); track field[0]) {
-      <app-filter-multiselect
-        [key]="field[0]"
-        [label]="field[1]"
-        [options]="choices()[field[0]] || []"
-        [ngModel]="values()[field[0]] || []"
-        (ngModelChange)="filterChanged.emit({ key: field[0], values: $event })"
-        [ngModelOptions]="{ standalone: true }"
-      />
-    }
-  </div>
-  <footer>
-    <button class="button" type="button" (click)="filtersReset.emit()">Сбросить фильтры</button>
-    <button class="button" type="button" (click)="clearProducts()" [disabled]="!selected()">
-      Снять выбор
-    </button>
-    <button class="button" type="button" (click)="selectProducts()" [disabled]="busy()">
-      Выбрать найденные
-    </button>
-    <button class="button primary" type="button" (click)="done()">Готово</button>
-  </footer>
+    <footer>
+      <button class="button" type="button" (click)="filtersReset.emit()">Сбросить фильтры</button>
+      <button class="button" type="button" (click)="clearProducts()" [disabled]="!selected()">
+        Снять выбор
+      </button>
+      <button class="button" type="button" (click)="selectProducts()" [disabled]="busy()">
+        Выбрать найденные
+      </button>
+      <button class="button primary" type="button" (click)="done()">Готово</button>
+    </footer>
+    <div #filterOverlays class="stock-filter-overlays"></div>
+  </section>
 </app-popup-button>

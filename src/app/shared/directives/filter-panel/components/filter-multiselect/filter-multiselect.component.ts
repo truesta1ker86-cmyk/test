@@ -1,6 +1,6 @@
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { forwardRef } from '@angular/core';
-import { ChangeDetectionStrategy, Component, Output, EventEmitter } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter } from '@angular/core';
 import { FilterBaseComponent } from '../filter-base/filter-base.component';
 
 @Component({
@@ -19,6 +19,7 @@ import { FilterBaseComponent } from '../filter-base/filter-base.component';
   styleUrls: ['./filter-multiselect.component.scss'],
 })
 export class FilterMultiselectComponent extends FilterBaseComponent {
+  @Input() appendTo: HTMLElement | 'body' | undefined;
   protected override controlType = 'multiselect' as const;
   @Output() filterChanged = new EventEmitter<string>();
 }
