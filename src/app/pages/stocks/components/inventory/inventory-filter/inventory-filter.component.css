@@ -29,6 +29,13 @@
 :host ::ng-deep .inventory-filter-popover::before {
   display: none;
 }
+@media (max-width: 1023px) {
+  :host ::ng-deep app-popup-button .popup-button-popover.inventory-filter-popover.is-bottom-right {
+    inset: 64px 12px 12px auto;
+    height: calc(100dvh - 76px);
+    max-height: calc(100dvh - 76px);
+  }
+}
 .stock-filter-panel {
   position: relative;
   display: flex;

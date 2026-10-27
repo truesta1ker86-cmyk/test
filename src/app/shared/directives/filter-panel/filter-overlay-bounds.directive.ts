@@ -43,11 +43,17 @@ export class FilterOverlayBoundsDirective {
     const panel = this.panel;
     if (!panel?.isConnected) return;
     const anchor = this.host.nativeElement.getBoundingClientRect();
+    const content = this.host.nativeElement.closest('.page-content');
+    const nativeDialog = this.host.nativeElement.closest('dialog[open]');
+    const minimumTop = nativeDialog
+      ? 12
+      : Math.max(12, (content?.getBoundingClientRect().top || 0) + 12);
+    const availableHeight = Math.max(1, window.innerHeight - minimumTop - 12);
     const width = panel.offsetWidth;
-    const height = Math.min(panel.offsetHeight, window.innerHeight - 24);
+    const height = Math.min(panel.offsetHeight, availableHeight);
     const below = anchor.bottom + 6;
     const preferred = below + height <= window.innerHeight - 12 ? below : anchor.top - height - 6;
-    const top = Math.max(12, Math.min(preferred, window.innerHeight - height - 12));
+    const top = Math.max(minimumTop, Math.min(preferred, window.innerHeight - height - 12));
     const left = Math.max(12, Math.min(anchor.left, window.innerWidth - width - 12));
     const styles = {
       position: 'fixed',
@@ -55,7 +61,7 @@ export class FilterOverlayBoundsDirective {
       left: `${left}px`,
       insetInlineStart: `${left}px`,
       marginTop: '0px',
-      maxHeight: `${window.innerHeight - 24}px`,
+      maxHeight: `${availableHeight}px`,
       overflowY: 'auto',
     };
     for (const [key, value] of Object.entries(styles)) {

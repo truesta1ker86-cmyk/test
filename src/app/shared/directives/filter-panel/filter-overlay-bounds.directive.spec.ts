@@ -74,6 +74,7 @@ describe('Select dropdown viewport bounds', () => {
     });
     TestBed.runInInjectionContext(() => new FilterOverlayBoundsDirective());
     return {
+      anchor,
       panel,
       size,
       cancel,
@@ -125,6 +126,25 @@ describe('Select dropdown viewport bounds', () => {
       expect(state.mutationDisconnected).toHaveBeenCalledOnce();
     } finally {
       state.panel.remove();
+    }
+  });
+
+  it('keeps dropdown controls below the fixed mobile application header', () => {
+    const state = setup();
+    const content = document.createElement('main');
+    content.className = 'page-content';
+    vi.spyOn(content, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 52, 320, 428));
+    content.append(state.anchor);
+    document.body.append(content);
+    try {
+      state.show();
+      state.flush();
+      expect(state.panel.style.top).toBe('64px');
+      expect(state.panel.style.maxHeight).toBe('404px');
+      state.hide();
+    } finally {
+      state.panel.remove();
+      content.remove();
     }
   });
 });

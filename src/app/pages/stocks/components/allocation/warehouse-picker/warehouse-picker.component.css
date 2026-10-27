@@ -52,6 +52,12 @@
   min-height: 0;
   padding: 10px;
 }
+@media (max-width: 1023px) {
+  .warehouse-menu {
+    top: 64px;
+    height: min(640px, calc(100dvh - 76px));
+  }
+}
 .warehouse-selection-control {
   display: flex;
   flex: 1;

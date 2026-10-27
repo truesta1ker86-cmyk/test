@@ -43,3 +43,10 @@ are released when the overlay closes. No selection or query logic changes.
 Validation: 359 tests in 69 files, architecture/employer/filter integration
 checks, production build and synthetic browser search/resize behavior. Native
 dialog dropdown ownership and the inline warehouse checklist remain unchanged.
+
+Mobile overlays also reserve the shell's 52px top bar. Non-native dropdowns,
+inventory panels and the warehouse picker start below it, preserving the lower
+viewport margin. Native dialogs retain their top-layer placement. Mobile calendar
+panels receive bounded fixed positioning so month/navigation controls stay
+clickable. The regression case covers the mobile content origin; 360 tests in
+69 files and the production build pass.

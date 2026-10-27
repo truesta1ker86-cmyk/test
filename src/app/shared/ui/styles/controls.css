@@ -394,3 +394,14 @@ body.o1c-ui {
 .filter-overlay-layer > .p-overlay {
   pointer-events: auto;
 }
+@media (max-width: 1023px) {
+  body.o1c-ui .p-datepicker-panel:not(.p-datepicker-inline) {
+    position: fixed !important;
+    inset: 64px 12px auto !important;
+    width: auto !important;
+    max-height: calc(100dvh - 76px);
+    margin: 0 !important;
+    overflow: auto;
+    z-index: 1000 !important;
+  }
+}
