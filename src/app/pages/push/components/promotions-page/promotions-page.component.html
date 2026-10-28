@@ -4,8 +4,12 @@
       <h1>Акции и модели участия</h1>
       <p>Правила категорий и товаров, проверка участия в конкретной акции.</p>
     </div>
-    <button class="button" [disabled]="loading() || busy()" (click)="load()">
-      <app-icon name="refresh" />Обновить экран
+    <button
+      class="button"
+      [disabled]="loading() || busy()"
+      (click)="data() && api.allowed(data()) ? restoreCatalog() : load()"
+    >
+      <app-icon name="refresh" />{{ busy() ? 'Обновляем данные…' : 'Обновить данные' }}
     </button>
   </header>
   <nav class="promo-tabs" aria-label="Разделы акций">
@@ -28,6 +32,9 @@
       </button>
     }
   </nav>
+  @if (data()?.connection_error) {
+    <p class="editor-error" role="alert">{{ data()?.connection_error }}</p>
+  }
   @if (error()) {
     <p class="editor-error" role="alert">
       {{ error() }} <button class="text-button" (click)="load()">Повторить</button>

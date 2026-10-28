@@ -369,6 +369,26 @@ export class PromotionsPage {
       },
     });
   }
+  restoreCatalog() {
+    const state = this.data();
+    if (!state || this.busy() || !this.api.allowed(state)) return;
+    this.busy.set(true);
+    this.error.set('');
+    this.api
+      .restoreCatalog(state)
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (result) => {
+          this.busy.set(false);
+          this.notice.set(`Карточки обновлены. Восстановлено связей: ${result.restored.length}.`);
+          this.load();
+        },
+        error: (error) => {
+          this.error.set(errorMessage(error));
+          this.busy.set(false);
+        },
+      });
+  }
   load() {
     this.read?.unsubscribe();
     this.loading.set(true);

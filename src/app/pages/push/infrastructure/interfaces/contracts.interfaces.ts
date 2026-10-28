@@ -75,6 +75,8 @@ export interface RuleOperation {
 export interface PromoWorkspace {
   sandbox_db?: boolean;
   local_preview?: boolean;
+  planning_enabled?: boolean;
+  connection_error?: string;
   sends_enabled: boolean;
   revision: string;
   can_manage: boolean;

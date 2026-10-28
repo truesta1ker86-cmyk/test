@@ -18,7 +18,8 @@ export class PromotionsApi {
   allowed(state: PromoWorkspace | null) {
     const s = this.context.session();
     return (
-      (state?.local_preview === true ||
+      (state?.planning_enabled === true ||
+        state?.local_preview === true ||
         (state?.sandbox_db === true && this.context.databaseCopy())) &&
       state.can_manage &&
       !!s &&
@@ -28,6 +29,13 @@ export class PromotionsApi {
   workspace() {
     return this.http.get<PromoWorkspace>(this.root + '/workspace');
   }
+  restoreCatalog(state: PromoWorkspace) {
+    if (!this.allowed(state)) return throwError(() => new Error('Обновление каталога недоступно.'));
+    return this.http.post<{ restored: string[]; skipped: Record<string, string> }>(
+      this.root + '/catalog/restore',
+      {},
+    );
+  }
   save(
     state: PromoWorkspace,
     scope: 'category' | 'product',
@@ -36,8 +44,7 @@ export class PromotionsApi {
   ) {
     if (!this.allowed(state) || !ids.length || (scope === 'category' && model === 0))
       return throwError(
-        () =>
-          new Error('Сохранение правил доступно только в локальном макете владельцу и менеджеру.'),
+        () => new Error('Изменение правил доступно владельцу и менеджеру этого магазина.'),
       );
     return this.http.post<{ operation_id: string; changed: number }>(this.root + '/models/save', {
       scope,
@@ -59,8 +66,7 @@ export class PromotionsApi {
     return this.http.post<PromotionPlan>(this.root + '/local/prepare', body);
   }
   operation(state: PromoWorkspace, id: string) {
-    if (state.local_preview !== true)
-      return throwError(() => new Error('Локальный результат недоступен.'));
+    if (!this.allowed(state)) return throwError(() => new Error('Локальный результат недоступен.'));
     return this.http.get<PromotionPlan>(this.root + '/local/operation', {
       params: { operation_id: id },
     });

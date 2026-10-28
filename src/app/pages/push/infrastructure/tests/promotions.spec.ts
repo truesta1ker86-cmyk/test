@@ -437,3 +437,30 @@ beforeEach(() =>
     imports: [PromotionsPageModule, PromotionModelEditorModule, CatalogCampaignModule],
   }),
 );
+
+it('uses the server planning capability for catalog restoration and saved previews', () => {
+  const http = setup();
+  const api = TestBed.inject(PromotionsApi);
+  const state = { ...workspace(), local_preview: false, planning_enabled: true };
+  expect(api.allowed(state)).toBe(true);
+  api.restoreCatalog(state).subscribe();
+  http.expectOne(root + '/catalog/restore').flush({ restored: ['ZRSG-1098'], skipped: {} });
+  api
+    .prepare(state, {
+      action_id: 501,
+      offer_ids: ['ZRSG-1098'],
+      operation: 'join',
+      price_mode: 'minimum',
+    })
+    .subscribe();
+  http.expectOne(root + '/local/prepare').flush(plan());
+  api.operation(state, 'a'.repeat(32)).subscribe();
+  http.expectOne((r) => r.url === root + '/local/operation').flush(plan());
+  TestBed.inject(SessionContext).session.update((s) => ({
+    ...s!,
+    is_owner: false,
+    role: 'reader',
+  }));
+  expect(api.allowed(state)).toBe(false);
+  http.verify();
+});
