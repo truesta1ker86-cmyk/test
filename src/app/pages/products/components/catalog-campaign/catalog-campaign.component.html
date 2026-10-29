@@ -23,10 +23,18 @@
     }
     @if (state(); as s) {
       @if (!s.preview.actions.length) {
-        <p role="status">
-          В копии базы нет сохранённого снимка акций. Загрузка из Ozon отключена; вымышленные акции
-          не подставляются.
-        </p>
+        @if (s.connection_error) {
+          <p role="alert">
+            {{ s.connection_error }} <a href="/account?tab=shops">Настройки подключения Ozon</a>
+          </p>
+        } @else if (s.planning_enabled) {
+          <p role="status">Нет загруженных акций. Нажмите «Обновить данные» на странице акций.</p>
+        } @else {
+          <p role="status">
+            В копии базы нет сохранённого снимка акций. Загрузка из Ozon отключена; вымышленные
+            акции не подставляются.
+          </p>
+        }
       }
       <div class="campaign-controls">
         <label
