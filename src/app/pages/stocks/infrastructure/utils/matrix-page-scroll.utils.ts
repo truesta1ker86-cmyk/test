@@ -1,102 +1,62 @@
-/** Keep the matrix header pinned without measuring/restyling the table on scroll. */
+/** Pin column names and sync the bottom scrollbar without scroll-time layout reads. */
 export function bindMatrixPageScroll(host: HTMLElement, scrollbar: HTMLElement): () => void {
   const view = host.ownerDocument.defaultView;
   if (!view) return () => {};
   const page = host.closest<HTMLElement>('.page-content');
   const scrollSource = page || view;
-  const motion = view.matchMedia?.('(prefers-reduced-motion: reduce)');
-  const supportsTimeline = !!(
-    page &&
-    view.CSS?.supports?.('animation-timeline', '--matrix-page-scroll') &&
-    view.CSS.supports('animation-range', '0px 1px') &&
-    view.CSS.supports('animation-duration', 'auto')
-  );
-  const previousTimeline = page?.style.getPropertyValue('scroll-timeline') || '';
-  const previousPriority = page?.style.getPropertyPriority('scroll-timeline') || '';
-  let native = false;
+  const content = scrollbar.querySelector<HTMLElement>('.allocation-horizontal-content');
   let frame = 0;
-  let measureNeeded = true;
   let header: HTMLTableSectionElement | null = null;
   let start = 0;
   let travel = 0;
   let lastOffset = -1;
-  let listening = false;
 
   const scrollTop = () => page?.scrollTop ?? view.scrollY;
   const pin = () => {
-    if (!header || native) return;
+    if (!header) return;
     const offset = Math.max(0, Math.min(scrollTop() - start, travel));
     if (offset === lastOffset) return;
     lastOffset = offset;
-    // Scope the changing property to the header, never the thousands of body cells.
-    header.style.setProperty('--matrix-header-offset', `${offset}px`);
-  };
-  const update = () => {
-    frame = 0;
-    if (measureNeeded) {
-      measureNeeded = false;
-      const table = host.querySelector('table');
-      const nextHeader = table?.querySelector('thead') || null;
-      const tableBounds = table?.getBoundingClientRect();
-      const height = nextHeader?.getBoundingClientRect().height || 0;
-      const edge = page ? page.getBoundingClientRect().top + page.clientTop : 0;
-      const top = scrollTop();
-      const contentWidth = host.scrollWidth;
-      const viewportWidth = host.clientWidth;
-      const scrollbarWidth = scrollbar.clientWidth;
-      if (header !== nextHeader) {
-        header?.classList.remove('matrix-native-pinning');
-        header = nextHeader;
-        lastOffset = -1;
-        if (header) observer?.observe(header);
-        if (table) observer?.observe(table);
-      }
-      if (tableBounds && header) {
-        start = tableBounds.top - edge + top;
-        travel = Math.max(0, tableBounds.height - height);
-      }
-      native = supportsTimeline && !motion?.matches;
-      if (native) {
-        page!.style.setProperty('scroll-timeline', '--matrix-page-scroll block');
-        header?.style.setProperty('--matrix-scroll-start', `${start}px`);
-        header?.style.setProperty('--matrix-scroll-end', `${start + Math.max(1, travel)}px`);
-        header?.style.setProperty('--matrix-header-travel', `${travel}px`);
-      } else if (page) {
-        if (previousTimeline)
-          page.style.setProperty('scroll-timeline', previousTimeline, previousPriority);
-        else page.style.removeProperty('scroll-timeline');
-      }
-      header?.classList.toggle('matrix-native-pinning', native);
-      if (native && listening) {
-        scrollSource.removeEventListener('scroll', schedulePin);
-        listening = false;
-      } else if (!native && !listening) {
-        scrollSource.addEventListener('scroll', schedulePin, { passive: true });
-        listening = true;
-      }
-      scrollbar.hidden = contentWidth <= viewportWidth + 1;
-      if (!scrollbar.hidden) {
-        scrollbar.style.setProperty(
-          '--matrix-scroll-width',
-          `${contentWidth + (scrollbarWidth || scrollbar.clientWidth) - viewportWidth}px`,
-        );
-        fromMatrix();
-      }
-    }
-    pin();
-  };
-  const schedulePin = () => {
-    if (!frame) frame = view.requestAnimationFrame(update);
-  };
-  const scheduleMeasure = () => {
-    measureNeeded = true;
-    schedulePin();
+    // Direct styles survive Angular's compiled private CSS-variable names.
+    header.style.transform = `translate3d(0, ${offset}px, 0)`;
   };
   const fromMatrix = () => {
     if (scrollbar.scrollLeft !== host.scrollLeft) scrollbar.scrollLeft = host.scrollLeft;
   };
   const fromScrollbar = () => {
     if (host.scrollLeft !== scrollbar.scrollLeft) host.scrollLeft = scrollbar.scrollLeft;
+  };
+  const measure = () => {
+    frame = 0;
+    const table = host.querySelector('table');
+    const nextHeader = table?.querySelector('thead') || null;
+    const bounds = table?.getBoundingClientRect();
+    const height = nextHeader?.getBoundingClientRect().height || 0;
+    const edge = page ? page.getBoundingClientRect().top + page.clientTop : 0;
+    const top = scrollTop();
+    const contentWidth = host.scrollWidth;
+    const viewportWidth = host.clientWidth;
+    const scrollbarWidth = scrollbar.clientWidth;
+    if (header !== nextHeader) {
+      if (header) observer?.unobserve(header);
+      header = nextHeader;
+      lastOffset = -1;
+      if (header) observer?.observe(header);
+      if (table) observer?.observe(table);
+    }
+    if (bounds && header) {
+      start = bounds.top - edge + top;
+      travel = Math.max(0, bounds.height - height);
+    }
+    scrollbar.hidden = contentWidth <= viewportWidth + 1;
+    if (!scrollbar.hidden && content) {
+      content.style.width = `${contentWidth + (scrollbarWidth || scrollbar.clientWidth) - viewportWidth}px`;
+      fromMatrix();
+    }
+    pin();
+  };
+  const scheduleMeasure = () => {
+    if (!frame) frame = view.requestAnimationFrame(measure);
   };
   const observer =
     typeof view.ResizeObserver === 'function' ? new view.ResizeObserver(scheduleMeasure) : null;
@@ -105,25 +65,18 @@ export function bindMatrixPageScroll(host: HTMLElement, scrollbar: HTMLElement):
   const workspace = host.closest('app-stocks-page');
   if (workspace) observer?.observe(workspace);
   if (page) observer?.observe(page);
+  scrollSource.addEventListener('scroll', pin, { passive: true });
   host.addEventListener('scroll', fromMatrix, { passive: true });
   scrollbar.addEventListener('scroll', fromScrollbar, { passive: true });
   view.addEventListener('resize', scheduleMeasure);
-  motion?.addEventListener('change', scheduleMeasure);
-  update();
+  measure();
 
   return () => {
     if (frame) view.cancelAnimationFrame(frame);
     observer?.disconnect();
-    scrollSource.removeEventListener('scroll', schedulePin);
+    scrollSource.removeEventListener('scroll', pin);
     host.removeEventListener('scroll', fromMatrix);
     scrollbar.removeEventListener('scroll', fromScrollbar);
     view.removeEventListener('resize', scheduleMeasure);
-    motion?.removeEventListener('change', scheduleMeasure);
-    header?.classList.remove('matrix-native-pinning');
-    if (page) {
-      if (previousTimeline)
-        page.style.setProperty('scroll-timeline', previousTimeline, previousPriority);
-      else page.style.removeProperty('scroll-timeline');
-    }
   };
 }

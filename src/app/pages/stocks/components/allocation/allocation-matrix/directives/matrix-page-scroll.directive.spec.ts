@@ -28,6 +28,7 @@ describe('Matrix scrolling with the page', () => {
     const matrix = document.createElement('div');
     matrix.innerHTML = '<table><thead><tr><th>Склад</th></tr></thead><tbody></tbody></table>';
     const scrollbar = document.createElement('div');
+    scrollbar.innerHTML = '<div class="allocation-horizontal-content"></div>';
     page.append(matrix, scrollbar);
     document.body.append(page);
     pages.push(page);
@@ -64,11 +65,11 @@ describe('Matrix scrolling with the page', () => {
 
   it('keeps the header at the page edge while the whole page scrolls', () => {
     const { page, matrix, header, flush } = setup();
-    expect(header.style.getPropertyValue('--matrix-header-offset')).toBe('0px');
+    expect(header.style.transform).toBe('translate3d(0, 0px, 0)');
     page.scrollTop = 220;
     page.dispatchEvent(new Event('scroll'));
     flush();
-    expect(header.style.getPropertyValue('--matrix-header-offset')).toBe('152px');
+    expect(header.style.transform).toBe('translate3d(0, 152px, 0)');
     expect(matrix.style.getPropertyValue('--matrix-header-offset')).toBe('');
     expect(matrix.scrollTop).toBe(0);
   });
@@ -78,7 +79,7 @@ describe('Matrix scrolling with the page', () => {
     page.scrollTop = 2220;
     page.dispatchEvent(new Event('scroll'));
     flush();
-    expect(header.style.getPropertyValue('--matrix-header-offset')).toBe('1960px');
+    expect(header.style.transform).toBe('translate3d(0, 1960px, 0)');
   });
 
   it('scrolls upward without layout reads and releases the header above the table', () => {
@@ -89,9 +90,7 @@ describe('Matrix scrolling with the page', () => {
       page.scrollTop = top;
       page.dispatchEvent(new Event('scroll'));
       flush();
-      expect(header.style.getPropertyValue('--matrix-header-offset')).toBe(
-        `${Math.max(0, top - 68)}px`,
-      );
+      expect(header.style.transform).toBe(`translate3d(0, ${Math.max(0, top - 68)}px, 0)`);
     }
     expect(table.getBoundingClientRect).toHaveBeenCalledTimes(initialReads);
     expect(page.getBoundingClientRect).toHaveBeenCalledTimes(1);
@@ -103,45 +102,26 @@ describe('Matrix scrolling with the page', () => {
     page.scrollTop = 220;
     page.dispatchEvent(new Event('scroll'));
     flush();
-    expect(header.style.getPropertyValue('--matrix-header-offset')).toBe('152px');
+    expect(header.style.transform).toBe('translate3d(0, 152px, 0)');
     setTop(200);
     window.dispatchEvent(new Event('resize'));
     flush();
-    expect(header.style.getPropertyValue('--matrix-header-offset')).toBe('72px');
+    expect(header.style.transform).toBe('translate3d(0, 72px, 0)');
   });
 
-  it('uses the browser timeline without running page-scroll callbacks when supported', () => {
+  it('pins immediately even when CSS animations are supported', () => {
     vi.stubGlobal('CSS', { supports: () => true });
     const { page, header } = setup();
-    expect(header.classList.contains('matrix-native-pinning')).toBe(true);
-    expect(header.style.getPropertyValue('--matrix-scroll-start')).toBe('68px');
-    expect(header.style.getPropertyValue('--matrix-scroll-end')).toBe('2028px');
-    page.scrollTop = 500;
-    page.dispatchEvent(new Event('scroll'));
-    expect(frames).toHaveLength(0);
-    TestBed.resetTestingModule();
-    expect(header.classList.contains('matrix-native-pinning')).toBe(false);
-  });
-
-  it('keeps the non-animated fallback when reduced motion is requested', () => {
-    vi.stubGlobal('CSS', { supports: () => true });
-    vi.stubGlobal('matchMedia', () => ({
-      matches: true,
-      addEventListener() {},
-      removeEventListener() {},
-    }));
-    const { page, header, flush } = setup();
-    expect(header.classList.contains('matrix-native-pinning')).toBe(false);
     page.scrollTop = 220;
     page.dispatchEvent(new Event('scroll'));
-    flush();
-    expect(header.style.getPropertyValue('--matrix-header-offset')).toBe('152px');
+    expect(header.style.transform).toBe('translate3d(0, 152px, 0)');
+    expect(frames).toHaveLength(0);
   });
 
   it('synchronizes the always accessible horizontal scrollbar in both directions', () => {
     const { matrix, scrollbar } = setup();
     expect(scrollbar.hidden).toBe(false);
-    expect(scrollbar.style.getPropertyValue('--matrix-scroll-width')).toBe('1400px');
+    expect((scrollbar.firstElementChild as HTMLElement).style.width).toBe('1400px');
     scrollbar.scrollLeft = 250;
     scrollbar.dispatchEvent(new Event('scroll'));
     expect(matrix.scrollLeft).toBe(250);
@@ -160,7 +140,7 @@ describe('Matrix scrolling with the page', () => {
     window.dispatchEvent(new Event('resize'));
     flush();
     expect(scrollbar.hidden).toBe(false);
-    expect(scrollbar.style.getPropertyValue('--matrix-scroll-width')).toBe('1400px');
+    expect((scrollbar.firstElementChild as HTMLElement).style.width).toBe('1400px');
   });
 
   it('hides the scrollbar when all columns fit and removes listeners on exit', () => {
@@ -169,7 +149,7 @@ describe('Matrix scrolling with the page', () => {
     window.dispatchEvent(new Event('resize'));
     flush();
     expect(scrollbar.hidden).toBe(true);
-    page.dispatchEvent(new Event('scroll'));
+    window.dispatchEvent(new Event('resize'));
     TestBed.resetTestingModule();
     expect(window.cancelAnimationFrame).toHaveBeenCalled();
     frames = [];
