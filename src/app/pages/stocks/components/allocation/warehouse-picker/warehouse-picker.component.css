@@ -35,6 +35,11 @@
   position: fixed;
   top: 12px;
   right: 12px;
+  left: auto;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  max-height: none;
   width: min(440px, calc(100vw - 24px));
   height: min(440px, calc(100dvh - 24px));
   display: flex;
@@ -44,6 +49,12 @@
   border-radius: 16px;
   box-shadow: 0 14px 40px #152b4b1f;
   overflow: visible;
+}
+.warehouse-menu:not([open]) {
+  display: none;
+}
+.warehouse-menu::backdrop {
+  background: #10182826;
 }
 .warehouse-menu-body {
   display: flex;

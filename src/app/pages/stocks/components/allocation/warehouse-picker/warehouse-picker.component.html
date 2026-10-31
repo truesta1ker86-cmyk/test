@@ -3,7 +3,7 @@
     <button
       type="button"
       class="picker-trigger"
-      [disabled]="!hasWarehouses || disabled"
+      [disabled]="!hasWarehouses"
       [attr.aria-expanded]="popoverOpen"
       (click)="togglePopover()"
     >
@@ -12,12 +12,14 @@
     </button>
   </div>
   @if (popoverOpen) {
-    <section
+    <dialog
+      #warehouseDialog
       class="warehouse-menu"
       role="dialog"
       aria-label="Склады маркетплейса"
       appModalFocus
       (modalEscape)="closePopover()"
+      (cancel)="$event.preventDefault(); closePopover()"
     >
       <header>
         <div>
@@ -67,6 +69,6 @@
           Применить
         </button>
       </footer>
-    </section>
+    </dialog>
   }
 </div>

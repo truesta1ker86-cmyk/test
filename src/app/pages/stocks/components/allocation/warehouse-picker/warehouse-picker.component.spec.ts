@@ -4,7 +4,51 @@ import { By } from '@angular/platform-browser';
 import { FilterMultiselectComponent } from '../../../../../shared/directives/filter-panel/components/filter-multiselect/filter-multiselect.component';
 import { WarehousePickerComponent } from './warehouse-picker.component';
 
+const originalShowModal = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'showModal');
+beforeEach(() => {
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value(this: HTMLDialogElement) {
+      this.open = true;
+    },
+  });
+});
+afterEach(() => {
+  if (originalShowModal)
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', originalShowModal);
+  else Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
+});
+
 describe('Selecting warehouse columns', () => {
+  it('opens as a native dialog above the table and reopens after closing', async () => {
+    const { fixture } = setup();
+    await fixture.whenStable();
+    const trigger = fixture.nativeElement.querySelector('.picker-trigger') as HTMLButtonElement;
+    trigger.click();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('dialog')?.open).toBe(true);
+    fixture.nativeElement.querySelector('button[aria-label="Закрыть выбор складов"]').click();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('dialog')).toBeNull();
+    trigger.click();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('dialog')?.open).toBe(true);
+  });
+
+  it('can show the chooser while busy but keeps edits and apply locked', async () => {
+    const { fixture, picker, emitted } = setup();
+    fixture.componentRef.setInput('disabled', true);
+    await fixture.whenStable();
+    const trigger = fixture.nativeElement.querySelector('.picker-trigger') as HTMLButtonElement;
+    expect(trigger.disabled).toBe(false);
+    trigger.click();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('dialog')?.open).toBe(true);
+    picker.selectionChanged(['1', '2']);
+    picker.applySelection();
+    expect(emitted).toEqual([]);
+    expect(picker.tempSelected).toEqual(['0']);
+  });
   function setup() {
     const fixture = TestBed.createComponent(WarehousePickerComponent);
     fixture.componentRef.setInput(

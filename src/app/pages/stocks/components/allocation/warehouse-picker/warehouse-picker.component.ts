@@ -8,6 +8,9 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   inject,
+  ElementRef,
+  effect,
+  viewChild,
 } from '@angular/core';
 import type { StockWarehouse } from '../../../infrastructure/interfaces/contracts.interfaces';
 import { FilterService } from '../../../../../shared/directives/filter-panel/infrastructure/services/filter.service';
@@ -27,6 +30,11 @@ export class WarehousePickerComponent implements OnChanges {
 
   @Input() disabled = false;
   popoverOpen = false;
+  private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('warehouseDialog');
+  private readonly showDialog = effect(() => {
+    const dialog = this.dialog()?.nativeElement;
+    if (dialog?.isConnected && !dialog.open) dialog.showModal();
+  });
   readonly filters = inject(FilterService);
   get tempSelected(): string[] {
     return this.filters.getValue('warehouses') || this.selectedWarehouseIds;
@@ -93,11 +101,12 @@ export class WarehousePickerComponent implements OnChanges {
     return `${this.selectedWarehouseIds.length} из ${this.warehouses.length}`;
   }
   get statusText(): string {
+    if (this.disabled) return 'Завершается операция. Пока можно просмотреть склады.';
     return `Выбрано: ${this.tempSelected.length} · максимум 12`;
   }
 
   togglePopover(): void {
-    if (!this.hasWarehouses || this.disabled) {
+    if (!this.hasWarehouses) {
       return;
     }
     if (!this.popoverOpen) {
