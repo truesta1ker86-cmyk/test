@@ -11,6 +11,75 @@ import { AllocationMatrixComponent } from '../allocation/allocation-matrix/alloc
 import type { MatrixPreview } from '../../infrastructure/interfaces/contracts.interfaces';
 
 describe('Allocation preview validity', () => {
+  it('selects every filtered product across pages and shows partial selection after an off-page removal', () => {
+    const { page, fixture, http } = setup();
+    page.page = 2;
+    page.pageSize = 50;
+    page.filters = { ...page.filters, category: ['Whole category'] };
+    page.facts.set({ items: [], meta: { total: 6001, page: 2, page_size: 50, has_more: true } });
+    fixture.detectChanges();
+    const checkbox = fixture.nativeElement.querySelector(
+      'app-data-table-selection input',
+    ) as HTMLInputElement;
+    checkbox.click();
+    const request = http.expectOne('/v2/api/workspace-v2/stocks/selection');
+    expect(request.request.body.category).toEqual(['Whole category']);
+    expect(request.request.body.page).toBe(2);
+    const offers = Array.from({ length: 6001 }, (_, i) => 'SKU-' + i);
+    request.flush({ offer_ids: offers });
+    fixture.detectChanges();
+    expect(page.selection().size).toBe(6001);
+    expect(page.selection().has('SKU-6000')).toBe(true);
+    expect(checkbox.checked).toBe(true);
+    page.page = 3;
+    page.direction = 'desc';
+    page.facts.set({ items: [], meta: { total: 6001, page: 3, page_size: 50, has_more: true } });
+    fixture.detectChanges();
+    expect(checkbox.checked).toBe(true);
+    page.toggle('SKU-6000', false);
+    fixture.detectChanges();
+    expect(checkbox.checked).toBe(false);
+    expect(checkbox.indeterminate).toBe(true);
+    http.verify();
+  });
+
+  it('unchecks only the current filter and preserves selection from another category', () => {
+    const { page, fixture, http } = setup();
+    page.selection.set(new Set(['OTHER-CATEGORY']));
+    page.selectAll();
+    http.expectOne('/v2/api/workspace-v2/stocks/selection').flush({ offer_ids: ['A', 'B'] });
+    fixture.detectChanges();
+    const checkbox = fixture.nativeElement.querySelector(
+      'app-data-table-selection input',
+    ) as HTMLInputElement;
+    expect(checkbox.checked).toBe(true);
+    checkbox.click();
+    fixture.detectChanges();
+    expect([...page.selection()]).toEqual(['OTHER-CATEGORY']);
+    expect(checkbox.checked).toBe(false);
+    http.verify();
+  });
+
+  it('does not apply a select-all response after the filter changes', () => {
+    const { page, http } = setup();
+    page.selectAll();
+    const request = http.expectOne('/v2/api/workspace-v2/stocks/selection');
+    page.filters = { ...page.filters, category: ['Another category'] };
+    request.flush({ offer_ids: ['OLD-CATEGORY'] });
+    expect(page.selection().size).toBe(0);
+    http.verify();
+  });
+
+  it('does not restore selection if the user clears it during select-all', () => {
+    const { page, http } = setup();
+    page.selectAll();
+    const request = http.expectOne('/v2/api/workspace-v2/stocks/selection');
+    page.clearSelection();
+    request.flush({ offer_ids: ['OLD-SELECTION'] });
+    expect(page.selection().size).toBe(0);
+    http.verify();
+  });
+
   it('labels an empty facet without changing the server filter value or hiding brands', () => {
     const { page } = setup();
     page.facts.set({ items: [], facets: { brand: ['Docke', 'Grand Line', '__empty__'] } });

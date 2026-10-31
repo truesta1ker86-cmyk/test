@@ -100,14 +100,15 @@
       <div class="selection-bar">
         <span
           >Выбрано: <strong>{{ selection().size }}</strong></span
-        ><button
-          aria-label="Выбрать все по фильтру"
-          type="button"
-          (click)="selectAll()"
-          [disabled]="busy() || loading()"
         >
-          Все по фильтру</button
-        ><button
+        <app-data-table-selection
+          [total]="filteredSelection().total"
+          [checked]="filteredSelection().checked"
+          [indeterminate]="filteredSelection().indeterminate"
+          [disabled]="busy() || loading()"
+          (selectionChange)="toggleAllFiltered($event)"
+        />
+        <button
           aria-label="Сбросить выделение"
           type="button"
           (click)="clearSelection()"
@@ -342,14 +343,13 @@
         <span
           >Изменено: <strong>{{ matrix().length }}</strong></span
         >
-        <button
-          type="button"
-          aria-label="Выбрать все по фильтру"
-          (click)="selectAll()"
+        <app-data-table-selection
+          [total]="filteredSelection().total"
+          [checked]="filteredSelection().checked"
+          [indeterminate]="filteredSelection().indeterminate"
           [disabled]="busy() || loading()"
-        >
-          Все по фильтру
-        </button>
+          (selectionChange)="toggleAllFiltered($event)"
+        />
         @if (canWrite()) {
           <button
             class="button"

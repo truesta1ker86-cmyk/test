@@ -86,6 +86,7 @@ export interface RawStock {
 
 export interface StockPage<T> {
   items: T[];
+  matching_offer_ids?: string[];
   meta?: { total: number; page: number; page_size: number; has_more: boolean };
   total?: number;
   has_more?: boolean;

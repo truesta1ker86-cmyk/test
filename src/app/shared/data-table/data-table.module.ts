@@ -9,9 +9,10 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
 import { DataTableComponent } from './components/data-table/data-table.component';
 import { DataTableFilterModule } from '../data-table-filter/data-table-filter.module';
+import { DataTableSelectionComponent } from './components/data-table-selection/data-table-selection.component';
 
 @NgModule({
-  declarations: [DataTableComponent],
+  declarations: [DataTableComponent, DataTableSelectionComponent],
   imports: [
     CommonModule,
     DataTableFilterModule,
@@ -23,6 +24,6 @@ import { DataTableFilterModule } from '../data-table-filter/data-table-filter.mo
     CheckboxModule,
     TooltipModule,
   ],
-  exports: [DataTableComponent],
+  exports: [DataTableComponent, DataTableSelectionComponent],
 })
 export class DataTableModule {}

@@ -133,6 +133,19 @@ export class StocksPage {
   readonly plans = signal<ExpectedPlan[]>([]);
   private readonly drafts = inject(StockDrafts).forShop(this.session.session()!.tenant_id);
   readonly selection = this.drafts.selection;
+  private readonly matchingProducts = signal<{ key: string; offers: string[] } | null>(null);
+  readonly filteredSelection = computed(() => {
+    const facts = this.facts();
+    this.loading();
+    this.tab();
+    const matching = this.matchingProducts();
+    const known = matching?.key === this.selectionKey();
+    const offers = known ? matching!.offers : facts?.items.map((row) => row.offer_id) || [];
+    const selected = offers.filter((offer) => this.selection().has(offer)).length;
+    const total = known ? offers.length : (facts?.meta?.total ?? facts?.total ?? offers.length);
+    const checked = total > 0 && selected === total && (known || offers.length === total);
+    return { total, checked, indeterminate: !checked && selected > 0 };
+  });
   readonly matrix = this.drafts.matrix;
   readonly validation = this.drafts.validation;
   private readonly allocation = viewChild(AllocationMatrixComponent);
@@ -234,7 +247,10 @@ export class StocksPage {
         ...Object.fromEntries(
           Object.entries(this.facts()?.facets || {}).map(([key, values]) => [
             key,
-            values.map((value) => ({ value, label: value === '__empty__' ? 'Не заполнено' : value })),
+            values.map((value) => ({
+              value,
+              label: value === '__empty__' ? 'Не заполнено' : value,
+            })),
           ]),
         ),
         rules_status: [
@@ -347,6 +363,10 @@ export class StocksPage {
   private query(): StockQuery {
     return { ...stockViewQuery(this.view()), view: this.tab() === 'matrix' ? 'matrix' : '' };
   }
+  private selectionKey(query = this.query()) {
+    const { page, page_size, sort, direction, ...scope } = query;
+    return JSON.stringify(scope);
+  }
   setChoice(key: string, values: string[]) {
     this.filters = { ...this.filters, [key]: values };
     this.applyFilters();
@@ -377,9 +397,11 @@ export class StocksPage {
     this.loading.set(true);
     this.error.set('');
     const tab = this.tab();
+    const query = this.query();
+    const selectionKey = this.selectionKey(query);
     this.request = forkJoin({
       context: this.api.context(),
-      facts: this.api.facts(this.query()),
+      facts: this.api.facts(query),
       rules: tab === 'rules' ? this.api.rules(this.query()) : of(null),
       raw:
         tab === 'warehouses' || tab === 'reconciliation' ? this.api.raw(this.rawQuery()) : of(null),
@@ -399,6 +421,11 @@ export class StocksPage {
             ),
           );
           this.facts.set(r.facts);
+          this.matchingProducts.set(
+            r.facts.matching_offer_ids
+              ? { key: selectionKey, offers: r.facts.matching_offer_ids }
+              : null,
+          );
           this.productNames.update((names) => ({
             ...names,
             ...Object.fromEntries(
@@ -513,11 +540,27 @@ export class StocksPage {
   selectAll() {
     this.expectedPreview.set(null);
     this.runPlan.set(null);
-    this.run(this.api.selection(this.query()), (r) => {
+    const query = this.query();
+    const key = this.selectionKey(query);
+    const previous = this.selection();
+    this.run(this.api.selection(query), (r) => {
+      if (this.selection() !== previous || this.selectionKey() !== key) return;
+      this.matchingProducts.set({ key, offers: r.offer_ids });
       this.selection.update((previous) => new Set([...previous, ...r.offer_ids]));
       if (r.names) this.productNames.update((names) => ({ ...names, ...r.names }));
-      this.notice.set('Выбрано товаров: ' + r.offer_ids.length);
+      this.notice.set('Выбраны все товары по фильтру на всех страницах: ' + r.offer_ids.length);
     });
+  }
+  toggleAllFiltered(checked: boolean) {
+    if (checked) {
+      this.selectAll();
+      return;
+    }
+    const matching = this.matchingProducts();
+    if (matching?.key !== this.selectionKey()) return;
+    const offers = new Set(matching.offers);
+    this.setSelection(new Set([...this.selection()].filter((offer) => !offers.has(offer))));
+    this.notice.set('Выбор по текущему фильтру снят на всех страницах.');
   }
   toMatrix() {
     this.preview.set(null);
