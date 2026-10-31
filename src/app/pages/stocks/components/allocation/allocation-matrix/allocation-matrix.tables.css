@@ -39,7 +39,29 @@
 :host(app-allocation-matrix) ::ng-deep app-data-table thead {
   position: relative;
   z-index: 5;
-  transform: translateY(var(--matrix-header-offset, 0px));
+  transform: translate3d(0, var(--matrix-header-offset, 0px), 0);
+  will-change: transform;
+}
+:host(app-allocation-matrix) ::ng-deep app-data-table thead.matrix-native-pinning {
+  animation: matrix-header-pin linear both;
+  animation-duration: auto;
+  animation-timeline: --matrix-page-scroll;
+  animation-range: var(--matrix-scroll-start) var(--matrix-scroll-end);
+}
+@keyframes matrix-header-pin {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, var(--matrix-header-travel), 0);
+  }
+}
+:host(app-allocation-matrix) ::ng-deep app-data-table .allocation-table thead th {
+  top: auto;
+  background: var(--surface-2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
 }
 :host(app-allocation-matrix) ::ng-deep th.warehouse-column > .warehouse-name {
   display: block;
